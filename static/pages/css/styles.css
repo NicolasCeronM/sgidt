@@ -420,3 +420,6 @@ body.sidebar-collapsed .sidebar--dashboard { width: var(--sidebar-w-collapsed); 
 body.sidebar-collapsed .main-content { margin-left: var(--sidebar-w-collapsed); }
 body.sidebar-collapsed .submenu { display: none !important; }
 
+
+
+

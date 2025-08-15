@@ -1,3 +1,2 @@
-from django.shortcuts import render
+# apps/usuarios/views.py
 
-# Create your views here.

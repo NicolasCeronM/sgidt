@@ -1,9 +1,8 @@
-<!-- Sidebar tipo dashboard (sin usar 'request') -->
+<!-- templates/includes/navbar.html -->
 <aside class="sidebar sidebar--dashboard" id="sidebar">
   <!-- Perfil / empresa -->
   <div class="sidebar-profile">
     <div class="avatar">
-      
       <i class="fas fa-user-circle"></i>
     </div>
     <div class="profile-meta">
@@ -58,5 +57,14 @@
     <ul id="sm-help" class="submenu">
       <li><a href="{% url 'pages:ayuda' %}" class="submenu-link"><i class="fas fa-book"></i> Centro de ayuda</a></li>
     </ul>
+
+    <!-- ACCESO -->
+    <div class="sidebar-sep" style="margin-top:.5rem;"></div>
+    <a href="{% url 'usuarios:login' %}" class="sidebar-link">
+      <i class="fas fa-right-to-bracket"></i><span>Iniciar sesión</span>
+    </a>
+    <a href="{% url 'usuarios:registro' %}" class="sidebar-link">
+      <i class="fas fa-user-plus"></i><span>Registrarse</span>
+    </a>
   </nav>
 </aside>
