@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SGIDT{% endblock %}</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <i class="fas fa-file-invoice"></i>
+        <span>SGIDT</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="{% url 'home' %}"           class="nav-link">Inicio</a></li>
+        <li><a href="{% url 'documentos' %}"     class="nav-link">Documentos</a></li>
+        <li><a href="{% url 'reportes' %}"       class="nav-link">Reportes</a></li>
+        <li><a href="{% url 'validaciones' %}"   class="nav-link">Validación SII</a></li>
+        <li><a href="{% url 'configuraciones' %}"class="nav-link">Configuración</a></li>
+        <li><a href="{% url 'ayuda' %}"          class="nav-link">Ayuda</a></li>
+      </ul>
+      <div class="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>SGIDT</h4>
+          <p>Sistema de Gestión Inteligente de Documentos Tributarios para PYMEs chilenas.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Contacto</h4>
+          <p>Email: soporte@sgidt.cl</p>
+          <p>Teléfono: +56 2 2345 6789</p>
+        </div>
+        <div class="footer-section">
+          <h4>Legal</h4>
+          <a href="#">Términos y Condiciones</a>
+          <a href="#">Política de Privacidad</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 SGIDT. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script src="{% static 'js/script.js' %}"></script>
+  <script>
+    // Marcar link activo
+    (function () {
+      const here = location.pathname.replace(/\/+$/, '');
+      document.querySelectorAll('.nav-link').forEach(a => {
+        const href = a.getAttribute('href')?.replace(/\/+$/, '');
+        if (href && (here === href || (href === '' && href === '/'))) {
+          a.classList.add('active');
+        }
+      });
+    })();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
