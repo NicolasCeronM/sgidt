@@ -30,13 +30,13 @@
 
       <!-- Acciones: ahora son enlaces a tus URLs -->
       <div class="welcome-actions">
-        <a class="btn btn-primary btn-large" href="{% url 'documentos' %}">
+        <a class="btn btn-primary btn-large" href="{% url 'pages:documentos' %}">
           <i class="fas fa-upload"></i> Subir Documento
         </a>
-        <a class="btn btn-secondary btn-large" href="{% url 'reportes' %}">
+        <a class="btn btn-secondary btn-large" href="{% url 'pages:reportes' %}">
           <i class="fas fa-chart-line"></i> Ver Reportes
         </a>
-        <a class="btn btn-outline btn-large" href="{% url 'validaciones' %}">
+        <a class="btn btn-outline btn-large" href="{% url 'pages:validaciones' %}">
           <i class="fas fa-shield-alt"></i> Validar con SII
         </a>
       </div>
@@ -138,7 +138,7 @@
               <small class="alert-description">Factura #1234 vence en 3 días</small>
               <span class="alert-time">Hace 2 horas</span>
             </div>
-            <div class="alert-actions"><a class="btn btn-tiny btn-primary" href="{% url 'documentos' %}">Ver</a></div>
+            <div class="alert-actions"><a class="btn btn-tiny btn-primary" href="{% url 'pages:documentos' %}">Ver</a></div>
           </div>
 
           <div class="alert-item error unread">
@@ -148,7 +148,7 @@
               <small class="alert-description">Boleta #5678 no válida</small>
               <span class="alert-time">Hace 4 horas</span>
             </div>
-            <div class="alert-actions"><a class="btn btn-tiny btn-secondary" href="{% url 'validaciones' %}">Revisar</a></div>
+            <div class="alert-actions"><a class="btn btn-tiny btn-secondary" href="{% url 'pages:validaciones' %}">Revisar</a></div>
           </div>
 
           <div class="alert-item success">
@@ -167,12 +167,12 @@
               <small class="alert-description">Nueva versión del sistema disponible</small>
               <span class="alert-time">Hace 2 días</span>
             </div>
-            <div class="alert-actions"><a class="btn btn-tiny btn-primary" href="{% url 'ayuda' %}">Actualizar</a></div>
+            <div class="alert-actions"><a class="btn btn-tiny btn-primary" href="{% url 'pages:ayuda' %}">Actualizar</a></div>
           </div>
         </div>
 
         <div class="alerts-footer">
-          <a class="btn btn-ghost btn-small" href="{% url 'ayuda' %}">
+          <a class="btn btn-ghost btn-small" href="{% url 'pages:ayuda' %}">
             Ver todas las alertas <i class="fas fa-arrow-right"></i>
           </a>
         </div>

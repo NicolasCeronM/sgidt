@@ -1,0 +1,19 @@
+<nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <i class="fas fa-file-invoice"></i>
+        <span>SGIDT</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="{% url 'pages:home' %}"           class="nav-link">Inicio</a></li>
+        <li><a href="{% url 'pages:documentos' %}"     class="nav-link">Documentos</a></li>
+        <li><a href="{% url 'pages:reportes' %}"       class="nav-link">Reportes</a></li>
+        <li><a href="{% url 'pages:validaciones' %}"   class="nav-link">Validación SII</a></li>
+        <li><a href="{% url 'pages:configuraciones' %}"class="nav-link">Configuración</a></li>
+        <li><a href="{% url 'pages:ayuda' %}"          class="nav-link">Ayuda</a></li>
+      </ul>
+      <div class="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
