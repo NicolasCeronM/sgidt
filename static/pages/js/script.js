@@ -493,3 +493,48 @@ if (typeof CanvasRenderingContext2D !== "undefined" && !CanvasRenderingContext2D
     this.closePath();
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Toggle de submenús
+document.querySelectorAll('.sidebar-toggleitem').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetSel = btn.getAttribute('data-target');
+    const target = document.querySelector(targetSel);
+    if (!target) return;
+    const caret = btn.querySelector('.caret');
+    target.classList.toggle('open');
+    if (caret) caret.style.transform = target.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+  });
+});
+
+// (Opcional) abrir menú móvil con un botón que tengas en tu topbar
+const mobileBtn = document.getElementById('mobileMenuBtn');
+if (mobileBtn) {
+  mobileBtn.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+}
+
+// Resaltar link activo por URL (sin 'request')
+(function highlightActiveSidebar() {
+  const cur = window.location.pathname.replace(/\/+$/, '');
+  document.querySelectorAll('.sidebar-nav a.sidebar-link').forEach(a => {
+    const href = a.getAttribute('href')?.replace(/\/+$/, '');
+    if (href && href === cur) a.classList.add('active');
+  });
+})();

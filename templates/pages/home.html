@@ -4,229 +4,95 @@
 {% block content %}
 <section class="section">
   <div class="container">
-    <!-- Hero / Bienvenida -->
-    <div class="welcome-section">
-      <div class="welcome-content">
-        <h1 class="welcome-title">Bienvenido a SGIDT</h1>
-        <p class="welcome-subtitle">
-          Sistema de Gestión Inteligente de Documentos Tributarios para PYMEs chilenas.
-          Sube, procesa y gestiona tus boletas y facturas de forma automática.
-        </p>
-        <div class="quick-stats">
-          <div class="quick-stat">
-            <span class="quick-stat-number">247</span>
-            <span class="quick-stat-label">Documentos procesados</span>
-          </div>
-          <div class="quick-stat">
-            <span class="quick-stat-number">98.5%</span>
-            <span class="quick-stat-label">Precisión validación</span>
-          </div>
-          <div class="quick-stat">
-            <span class="quick-stat-number">15min</span>
-            <span class="quick-stat-label">Tiempo promedio</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Acciones: ahora son enlaces a tus URLs -->
-      <div class="welcome-actions">
-        <a class="btn btn-primary btn-large" href="{% url 'pages:documentos' %}">
-          <i class="fas fa-upload"></i> Subir Documento
-        </a>
-        <a class="btn btn-secondary btn-large" href="{% url 'pages:reportes' %}">
-          <i class="fas fa-chart-line"></i> Ver Reportes
-        </a>
-        <a class="btn btn-outline btn-large" href="{% url 'pages:validaciones' %}">
-          <i class="fas fa-shield-alt"></i> Validar con SII
-        </a>
-      </div>
+    <!-- Encabezado mínimo -->
+    <header style="margin-bottom: 1.25rem;">
+      <h1 class="page-title" style="margin-bottom:.25rem;">Bienvenido a SGIDT</h1>
+      <p style="color:#64748b; max-width: 760px;">
+        Plataforma minimalista para subir, organizar y validar documentos tributarios de tu PYME.
+      </p>
+    </header>
+
+    <!-- Acciones rápidas -->
+    <div class="settings-card" style="display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; margin-bottom:1.25rem;">
+      <a href="{% url 'pages:documentos' %}" class="btn btn-primary">
+        <i class="fas fa-upload"></i> Subir documento
+      </a>
+      <a href="{% url 'pages:reportes' %}" class="btn btn-secondary">
+        <i class="fas fa-chart-line"></i> Ver reportes
+      </a>
+      <a href="{% url 'pages:validaciones' %}" class="btn btn-secondary">
+        <i class="fas fa-shield-alt"></i> Validar en SII
+      </a>
     </div>
 
-    <!-- Tarjetas de estadísticas -->
-    <div class="stats-grid">
-      <div class="stat-card primary">
-        <div class="stat-icon"><i class="fas fa-receipt"></i></div>
-        <div class="stat-content">
-          <h3>Documentos Este Mes</h3>
-          <p class="stat-number" data-target="247">0</p>
-          <span class="stat-change positive"><i class="fas fa-arrow-up"></i> +12% vs mes anterior</span>
-        </div>
-        <!-- placeholder opcional para mini-gráfico -->
-        <div class="stat-chart">
-          <canvas id="docsChart" width="80" height="40"></canvas>
+    <!-- KPIs compactos (neutros) -->
+    <div class="stats-grid" style="margin-bottom: 1.25rem;">
+      <div class="settings-card">
+        <div style="display:flex; justify-content:space-between; align-items:end;">
+          <div>
+            <p style="color:#64748b; font-size:.875rem; margin-bottom:.25rem;">Documentos este mes</p>
+            <p class="stat-number" data-target="247" style="font-size:1.75rem; font-weight:700;">0</p>
+          </div>
+          <i class="fas fa-file-invoice" style="color:#94a3b8;"></i>
         </div>
       </div>
 
-      <div class="stat-card success">
-        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
-        <div class="stat-content">
-          <h3>IVA Total</h3>
-          <p class="stat-number" data-target="2847320">$0</p>
-          <span class="stat-change positive"><i class="fas fa-arrow-up"></i> +8% vs mes anterior</span>
-        </div>
-        <div class="stat-progress">
-          <div class="progress-bar"><div class="progress-fill" style="width: 75%"></div></div>
-          <span class="progress-label">75% del objetivo</span>
+      <div class="settings-card">
+        <div style="display:flex; justify-content:space-between; align-items:end;">
+          <div>
+            <p style="color:#64748b; font-size:.875rem; margin-bottom:.25rem;">IVA total</p>
+            <p class="stat-number" data-target="2847320" style="font-size:1.75rem; font-weight:700;">$0</p>
+          </div>
+          <i class="fas fa-dollar-sign" style="color:#94a3b8;"></i>
         </div>
       </div>
 
-      <div class="stat-card warning">
-        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-        <div class="stat-content">
-          <h3>Gastos Totales</h3>
-          <p class="stat-number" data-target="15234890">$0</p>
-          <span class="stat-change negative"><i class="fas fa-arrow-down"></i> -3% vs mes anterior</span>
-        </div>
-        <div class="stat-trend">
-          <canvas id="expenseTrend" width="100" height="30"></canvas>
-        </div>
-      </div>
-
-      <div class="stat-card danger">
-        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <div class="stat-content">
-          <h3>Alertas Pendientes</h3>
-          <p class="stat-number" data-target="5">0</p>
-          <span class="stat-change warning"><i class="fas fa-clock"></i> Requieren atención</span>
-        </div>
-        <div class="alert-indicators">
-          <div class="alert-dot high"></div>
-          <div class="alert-dot medium"></div>
-          <div class="alert-dot low"></div>
+      <div class="settings-card">
+        <div style="display:flex; justify-content:space-between; align-items:end;">
+          <div>
+            <p style="color:#64748b; font-size:.875rem; margin-bottom:.25rem;">Gastos totales</p>
+            <p class="stat-number" data-target="15234890" style="font-size:1.75rem; font-weight:700;">$0</p>
+          </div>
+          <i class="fas fa-wallet" style="color:#94a3b8;"></i>
         </div>
       </div>
     </div>
 
-    <!-- Grid inferior: gráfico + alertas -->
-    <div class="dashboard-grid">
-      <div class="chart-container enhanced">
-        <div class="chart-header">
-          <h3>Gastos por Categoría</h3>
-          <div class="chart-controls">
-            <select id="chartPeriod" class="chart-select">
-              <option value="month">Este mes</option>
-              <option value="quarter">Trimestre</option>
-              <option value="year">Año</option>
-            </select>
-          </div>
-        </div>
-        <div class="chart-wrapper">
-          <canvas id="expenseChart"></canvas>
-          <div class="chart-legend">
-            <div class="legend-item"><div class="legend-color" style="background:#10b981"></div><span>Servicios</span></div>
-            <div class="legend-item"><div class="legend-color" style="background:#3b82f6"></div><span>Materiales</span></div>
-            <div class="legend-item"><div class="legend-color" style="background:#f59e0b"></div><span>Personal</span></div>
-            <div class="legend-item"><div class="legend-color" style="background:#ef4444"></div><span>Marketing</span></div>
-            <div class="legend-item"><div class="legend-color" style="background:#8b5cf6"></div><span>Otros</span></div>
-          </div>
-        </div>
+    <!-- Dos paneles simples -->
+    <div class="reports-grid">
+      <div class="settings-card">
+        <h3 style="font-size:1.1rem; margin-bottom:1rem; color:#1e293b;">Últimos movimientos</h3>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:.75rem;">
+          <li style="display:flex; justify-content:space-between; color:#475569;">
+            <span>Factura #12345 procesada</span><small style="color:#94a3b8;">hace 15 min</small>
+          </li>
+          <li style="display:flex; justify-content:space-between; color:#475569;">
+            <span>Validación SII boleta #67890</span><small style="color:#94a3b8;">hace 1 h</small>
+          </li>
+          <li style="display:flex; justify-content:space-between; color:#475569;">
+            <span>Exportación reporte mensual</span><small style="color:#94a3b8;">hace 2 h</small>
+          </li>
+        </ul>
       </div>
 
-      <div class="alerts-container enhanced">
-        <div class="alerts-header">
-          <h3>Alertas Recientes</h3>
-          <button class="btn btn-small btn-ghost" onclick="markAllAlertsRead()">
-            <i class="fas fa-check-double"></i> Marcar todas
-          </button>
-        </div>
-
-        <div class="alert-list">
-          <div class="alert-item warning unread">
-            <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-            <div class="alert-content">
-              <p class="alert-title">Documento próximo a vencer</p>
-              <small class="alert-description">Factura #1234 vence en 3 días</small>
-              <span class="alert-time">Hace 2 horas</span>
-            </div>
-            <div class="alert-actions"><a class="btn btn-tiny btn-primary" href="{% url 'pages:documentos' %}">Ver</a></div>
-          </div>
-
-          <div class="alert-item error unread">
-            <div class="alert-icon"><i class="fas fa-times-circle"></i></div>
-            <div class="alert-content">
-              <p class="alert-title">Error en validación SII</p>
-              <small class="alert-description">Boleta #5678 no válida</small>
-              <span class="alert-time">Hace 4 horas</span>
-            </div>
-            <div class="alert-actions"><a class="btn btn-tiny btn-secondary" href="{% url 'pages:validaciones' %}">Revisar</a></div>
-          </div>
-
-          <div class="alert-item success">
-            <div class="alert-icon"><i class="fas fa-check-circle"></i></div>
-            <div class="alert-content">
-              <p class="alert-title">Backup completado</p>
-              <small class="alert-description">Documentos respaldados exitosamente</small>
-              <span class="alert-time">Hace 1 día</span>
-            </div>
-          </div>
-
-          <div class="alert-item info">
-            <div class="alert-icon"><i class="fas fa-info-circle"></i></div>
-            <div class="alert-content">
-              <p class="alert-title">Actualización disponible</p>
-              <small class="alert-description">Nueva versión del sistema disponible</small>
-              <span class="alert-time">Hace 2 días</span>
-            </div>
-            <div class="alert-actions"><a class="btn btn-tiny btn-primary" href="{% url 'pages:ayuda' %}">Actualizar</a></div>
-          </div>
-        </div>
-
-        <div class="alerts-footer">
-          <a class="btn btn-ghost btn-small" href="{% url 'pages:ayuda' %}">
-            Ver todas las alertas <i class="fas fa-arrow-right"></i>
+      <div class="settings-card">
+        <h3 style="font-size:1.1rem; margin-bottom:1rem; color:#1e293b;">Atajos</h3>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:.75rem;">
+          <a href="{% url 'pages:documentos' %}" class="btn btn-secondary" style="width:100%; justify-content:center;">
+            <i class="fas fa-folder-open"></i> Ver documentos
+          </a>
+          <a href="{% url 'pages:configuraciones' %}" class="btn btn-secondary" style="width:100%; justify-content:center;">
+            <i class="fas fa-sliders-h"></i> Configuración
+          </a>
+          <a href="{% url 'pages:ayuda' %}" class="btn btn-secondary" style="width:100%; justify-content:center;">
+            <i class="fas fa-question-circle"></i> Ayuda
           </a>
         </div>
       </div>
     </div>
 
-    <!-- Actividad reciente -->
-    <div class="activity-section">
-      <div class="activity-header">
-        <h3>Actividad Reciente</h3>
-        <div class="activity-filters">
-          <button class="filter-btn active" data-filter="all">Todas</button>
-          <button class="filter-btn" data-filter="uploads">Subidas</button>
-          <button class="filter-btn" data-filter="validations">Validaciones</button>
-          <button class="filter-btn" data-filter="exports">Exportaciones</button>
-        </div>
-      </div>
-
-      <div class="activity-timeline">
-        <div class="timeline-item" data-type="upload">
-          <div class="timeline-marker upload"><i class="fas fa-upload"></i></div>
-          <div class="timeline-content">
-            <div class="timeline-header">
-              <h4>Documento subido</h4><span class="timeline-time">Hace 15 min</span>
-            </div>
-            <p>Factura #12345 procesada correctamente</p>
-            <div class="timeline-meta"><span class="meta-tag">PDF</span><span class="meta-tag">$150.000</span></div>
-          </div>
-        </div>
-
-        <div class="timeline-item" data-type="validation">
-          <div class="timeline-marker validation"><i class="fas fa-shield-check"></i></div>
-          <div class="timeline-content">
-            <div class="timeline-header">
-              <h4>Validación SII completada</h4><span class="timeline-time">Hace 1 hora</span>
-            </div>
-            <p>Boleta #67890 validada exitosamente</p>
-            <div class="timeline-meta"><span class="meta-tag success">Válido</span></div>
-          </div>
-        </div>
-
-        <div class="timeline-item" data-type="export">
-          <div class="timeline-marker export"><i class="fas fa-download"></i></div>
-          <div class="timeline-content">
-            <div class="timeline-header">
-              <h4>Reporte exportado</h4><span class="timeline-time">Hace 2 horas</span>
-            </div>
-            <p>Reporte mensual descargado en formato Excel</p>
-            <div class="timeline-meta"><span class="meta-tag">Excel</span><span class="meta-tag">247 docs</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    
   </div>
 </section>
 {% endblock %}
