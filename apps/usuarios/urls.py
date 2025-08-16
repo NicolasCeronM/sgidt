@@ -1,11 +1,10 @@
-# apps/usuarios/urls.py
 from django.urls import path
-from .views import LoginUsuario, LogoutUsuario, RegistroUsuario
+from .views import VistaLogin, cerrar_sesion, registro_persona, registro_empresa
 
 app_name = "usuarios"
-
 urlpatterns = [
-    path("login/", LoginUsuario.as_view(), name="login"),
-    path("logout/", LogoutUsuario.as_view(), name="logout"),
-    path("registro/", RegistroUsuario.as_view(), name="registro"),
+    path("login/", VistaLogin.as_view(), name="login"),
+    path("logout/", cerrar_sesion, name="logout"),
+    path("registro/persona/", registro_persona, name="registro_persona"),
+    path("registro/empresa/", registro_empresa, name="registro_empresa"),
 ]

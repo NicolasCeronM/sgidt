@@ -37,10 +37,26 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.companias',
     'apps.documentos',
     'apps.usuarios',
-    'apps.pages',
+    'apps.empresas',
+    'apps.panel',
+    'apps.sitio',
+]
+
+AUTH_USER_MODEL = "usuarios.Usuario"   # <--- MUY IMPORTANTE (antes de migrar)
+
+LOGIN_URL = "usuarios:login"
+LOGIN_REDIRECT_URL = "dashboard"      # /app/
+LOGOUT_REDIRECT_URL = "usuarios:login"
+
+
+# Validadores de contraseña (profesional)
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 MIDDLEWARE = [
@@ -112,13 +128,17 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
+# Zona horaria recomendada
+TIME_ZONE = "America/Santiago"
+USE_TZ = True
+
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
 
-USE_I18N = True
+# USE_I18N = True
 
-USE_TZ = True
+# USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)

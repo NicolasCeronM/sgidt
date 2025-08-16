@@ -1,0 +1,11 @@
+<nav>
+  <a href="{% url 'sitio:landing' %}">SGIDT</a>
+  <span style="float: right">
+    {% if request.user.is_authenticated %}
+    <a href="{% url 'panel:dashboard' %}">Mi espacio</a>
+    <a href="{% url 'usuarios:logout' %}">Salir</a>
+    {% else %}
+    <a href="{% url 'usuarios:login' %}">Entrar a mi espacio</a>
+    {% endif %}
+  </span>
+</nav>

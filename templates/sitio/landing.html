@@ -1,0 +1,26 @@
+{% extends "base_public.html" %} {% block title %}SGIDT – Gestión Inteligente de
+Documentos Tributarios{% endblock %} {% block content %}
+<h1>SGIDT</h1>
+<p>
+  Centraliza boletas y facturas, extrae datos (OCR), valida con SII y genera
+  reportes.
+</p>
+<ul>
+  <li>Sube PDF/JPG/PNG</li>
+  <li>Campos clave: proveedor, RUT, folio, fecha, neto, IVA, total</li>
+  <li>Validación tributaria y detección de duplicados</li>
+  <li>Reportes mensuales y por categoría</li>
+</ul>
+<p>
+  {% if request.user.is_authenticated %}
+  <a href="{% url 'panel:dashboard' %}">Entrar a mi espacio</a>
+  {% else %}
+  <a href="{% url 'usuarios:login' %}">Entrar a mi espacio</a>
+  {% endif %}
+</p>
+<p>
+  ¿Nuevo aquí?
+  <a href="{% url 'usuarios:registro_empresa' %}">Registrar empresa</a> o
+  <a href="{% url 'usuarios:registro_persona' %}">Registrar persona</a>.
+</p>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base_app.html' %} {% block title %}Reportes · SGIDT{% endblock %}
+<style></style>
+{%block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="page-title">Reportes</h1>
+
+    <!-- Controles superiores -->
+    <div class="reports-controls">
+      <div class="period-selector">
+        <label for="reportPeriod">Período:</label>
+        <select id="reportPeriod" class="form-select">
+          <option value="monthly" selected>Mensual</option>
+          <option value="quarterly">Trimestral</option>
+          <option value="yearly">Anual</option>
+        </select>
+      </div>
+
+      <div class="export-buttons">
+        <button class="btn btn-secondary" onclick="exportReport('csv', event)">
+          <i class="fas fa-file-csv"></i> Exportar CSV
+        </button>
+        <button
+          class="btn btn-secondary"
+          onclick="exportReport('excel', event)"
+        >
+          <i class="fas fa-file-excel"></i> Exportar Excel
+        </button>
+      </div>
+    </div>
+
+    <!-- Tarjeta de resumen -->
+    <div class="reports-grid">
+      <div class="report-card">
+        <h3>Resumen Financiero</h3>
+        <div class="report-summary">
+          <div class="summary-item">
+            <span class="label">Ingresos Totales:</span>
+            <span class="value positive" id="summaryIncome">$45.678.900</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Gastos Totales:</span>
+            <span class="value negative" id="summaryExpenses">$32.456.780</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">IVA Débito:</span>
+            <span class="value" id="summaryIvaDebit">$8.678.991</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">IVA Crédito:</span>
+            <span class="value" id="summaryIvaCredit">$6.166.787</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de detalle -->
+      <div class="report-table-container">
+        <h3>Detalle por Período</h3>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Período</th>
+              <th>Ingresos</th>
+              <th>Gastos</th>
+              <th>IVA Débito</th>
+              <th>IVA Crédito</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            <!-- Se rellena desde script.js → loadReports() -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

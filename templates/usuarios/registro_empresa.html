@@ -1,0 +1,28 @@
+{% extends "base_public.html" %} {% block content %}
+<h1>Registro – Empresa</h1>
+<form method="post">
+  {% csrf_token %} {{ form.non_field_errors }}
+  <fieldset>
+    <legend>Cuenta de usuario</legend>
+    <div><label>Usuario</label>{{ form.username }}</div>
+    <div><label>Email</label>{{ form.email }}</div>
+    <div><label>RUT (representante)</label>{{ form.rut }}</div>
+    <div><label>Teléfono</label>{{ form.telefono }}</div>
+    <div><label>Contraseña</label>{{ form.password1 }}</div>
+    <div><label>Confirmar</label>{{ form.password2 }}</div>
+  </fieldset>
+  <fieldset>
+    <legend>Datos empresa</legend>
+    <div><label>RUT empresa</label>{{ form.empresa_rut }}</div>
+    <div><label>Razón social</label>{{ form.razon_social }}</div>
+    <div><label>Giro</label>{{ form.giro }}</div>
+    <div><label>Régimen</label>{{ form.regimen }}</div>
+    <div><label>Dirección</label>{{ form.direccion }}</div>
+    <div><label>Comuna</label>{{ form.comuna }}</div>
+    <div><label>Región</label>{{ form.region }}</div>
+    <div><label>Email contacto</label>{{ form.contacto_email }}</div>
+    <div><label>Teléfono contacto</label>{{ form.contacto_telefono }}</div>
+  </fieldset>
+  <button>Crear empresa y cuenta</button>
+</form>
+{% endblock %}

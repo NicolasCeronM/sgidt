@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>{% block title %}SGIDT{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {% block head_extra %}{% endblock %}
+  </head>
+  <body>
+    {% include "includes/navbar_public.html" %}
+    <main>{% block content %}{% endblock %}</main>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

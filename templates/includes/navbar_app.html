@@ -1,0 +1,90 @@
+<!-- templates/includes/navbar.html -->
+<aside class="sidebar sidebar--dashboard" id="sidebar">
+  <!-- Perfil / empresa -->
+  <div class="sidebar-profile">
+    <div class="avatar">
+      <i class="fas fa-user-circle"></i>
+    </div>
+    <div class="profile-meta">
+      <strong>SGIDT</strong>
+      <small>Panel Administración</small>
+    </div>
+  </div>
+  <div class="sidebar-sep"></div>
+
+  <!-- Menú -->
+  <nav class="sidebar-nav">
+    <a href="{% url 'panel:dashboard' %}" class="sidebar-link">
+      <i class="fas fa-gauge"></i><span>Dashboard</span>
+    </a>
+
+    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-docs">
+      <i class="fas fa-folder-open"></i><span>Documentos</span>
+      <i class="fas fa-chevron-down caret"></i>
+    </button>
+    <ul id="sm-docs" class="submenu">
+      <li>
+        <a href="{% url 'panel:documentos' %}" class="submenu-link"
+          ><i class="fas fa-upload"></i> Subir / Listado</a
+        >
+      </li>
+    </ul>
+
+    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-reports">
+      <i class="fas fa-chart-line"></i><span>Reportes</span>
+      <i class="fas fa-chevron-down caret"></i>
+    </button>
+    <ul id="sm-reports" class="submenu">
+      <li>
+        <a href="{% url 'panel:reportes' %}" class="submenu-link"
+          ><i class="fas fa-table"></i> Resumen</a
+        >
+      </li>
+    </ul>
+
+    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-sii">
+      <i class="fas fa-shield-check"></i><span>Validación SII</span>
+      <i class="fas fa-chevron-down caret"></i>
+    </button>
+    <ul id="sm-sii" class="submenu">
+      <li>
+        <a href="{% url 'panel:validaciones' %}" class="submenu-link"
+          ><i class="fas fa-search"></i> Validar</a
+        >
+      </li>
+    </ul>
+
+    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-settings">
+      <i class="fas fa-sliders"></i><span>Configuración</span>
+      <i class="fas fa-chevron-down caret"></i>
+    </button>
+    <ul id="sm-settings" class="submenu">
+      <li>
+        <a href="{% url 'panel:configuraciones' %}" class="submenu-link"
+          ><i class="fas fa-gear"></i> General</a
+        >
+      </li>
+    </ul>
+
+    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-help">
+      <i class="fas fa-circle-question"></i><span>Ayuda</span>
+      <i class="fas fa-chevron-down caret"></i>
+    </button>
+    <ul id="sm-help" class="submenu">
+      <li>
+        <a href="{% url 'panel:ayuda' %}" class="submenu-link"
+          ><i class="fas fa-book"></i> Centro de ayuda</a
+        >
+      </li>
+    </ul>
+
+    <!-- ACCESO -->
+    <div class="sidebar-sep" style="margin-top: 0.5rem"></div>
+    <a href="{% url 'usuarios:login' %}" class="sidebar-link">
+      <i class="fas fa-right-to-bracket"></i><span>Iniciar sesión</span>
+    </a>
+    <a href="#" class="sidebar-link">
+      <i class="fas fa-user-plus"></i><span>Registrarse</span>
+    </a>
+  </nav>
+</aside>

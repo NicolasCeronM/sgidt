@@ -1,0 +1,15 @@
+{% extends "base.html" %} {% block content %}
+<h1>Iniciar sesión</h1>
+<form method="post">
+  {% csrf_token %} {{ form.non_field_errors }}
+  <div><label>Usuario</label>{{ form.username }}</div>
+  <div><label>Contraseña</label>{{ form.password }}</div>
+  <button>Entrar</button>
+</form>
+<p>
+  ¿Eres empresa?
+  <a href="{% url 'usuarios:registro_empresa' %}">Registrar empresa</a><br />
+  ¿Eres persona natural?
+  <a href="{% url 'usuarios:registro_persona' %}">Registrar persona</a>
+</p>
+{% endblock %}

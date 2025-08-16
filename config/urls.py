@@ -16,12 +16,25 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path("", include("apps.pages.urls", namespace="pages")),
-    path("usuarios/", include("apps.usuarios.urls", namespace="usuarios")),  
+    path("admin/", admin.site.urls),
+
+    # Público
+    path("", include("apps.sitio.urls", namespace="sitio")),             # /
+
+    # Autenticación (ya la tienes)
+    path("usuarios/", include("apps.usuarios.urls", namespace="usuarios")),
+
+    # App privada
+    path("app/", include("apps.panel.urls", namespace="panel")),         # /app/
 ]
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
