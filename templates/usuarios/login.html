@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base_public.html" %} {% block content %}
 <h1>Iniciar sesión</h1>
 <form method="post">
   {% csrf_token %} {{ form.non_field_errors }}

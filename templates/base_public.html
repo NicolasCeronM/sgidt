@@ -1,14 +1,38 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <title>{% block title %}SGIDT{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    {% block head_extra %}{% endblock %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      SGIDT - Sistema de Gestión Inteligente de Documentos Tributarios
+    </title>
+
+    <!-- Fonts / Icons (CDN – si luego quieres local, lo cambiamos) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- CSS propio -->
+    <link rel="stylesheet" href="{% static 'sitio/css/landing.css' %}" />
   </head>
   <body>
-    {% include "includes/navbar_public.html" %}
-    <main>{% block content %}{% endblock %}</main>
-    {% block scripts %}{% endblock %}
+    <!-- Header -->
+
+    {% include "includes/navbar_public.html " %}
+
+    <!-- Contenido principal -->
+    <main class="main-content">{% block content %}{% endblock %}</main>
+
+    <!-- Footer -->
+    {% include "includes/footer_public.html" %}
+
+    <!-- JS propio -->
+    <script src="{% static 'sitio/js/landing.js' %}"></script>
   </body>
 </html>

@@ -7,7 +7,7 @@
     <title>{% block title %}SGIDT{% endblock %}</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="{% static 'pages/css/styles.css' %}" />
+    <link rel="stylesheet" href="{% static 'panel/css/styles.css' %}" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
@@ -25,10 +25,10 @@
     <main class="main-content">{% block content %}{% endblock %}</main>
 
     <!-- Footer -->
-    {% include "includes/footer.html" %}
+    {% include "includes/footer_app.html" %}
 
     <!-- JS -->
-    <script src="{% static 'pages/js/script.js' %}"></script>
+    <script src="{% static 'panel/js/script.js' %}"></script>
     <script>
       // Marcar link activo
       (function () {

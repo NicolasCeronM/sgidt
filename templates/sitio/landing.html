@@ -1,26 +1,156 @@
-{% extends "base_public.html" %} {% block title %}SGIDT – Gestión Inteligente de
-Documentos Tributarios{% endblock %} {% block content %}
-<h1>SGIDT</h1>
-<p>
-  Centraliza boletas y facturas, extrae datos (OCR), valida con SII y genera
-  reportes.
-</p>
-<ul>
-  <li>Sube PDF/JPG/PNG</li>
-  <li>Campos clave: proveedor, RUT, folio, fecha, neto, IVA, total</li>
-  <li>Validación tributaria y detección de duplicados</li>
-  <li>Reportes mensuales y por categoría</li>
-</ul>
-<p>
-  {% if request.user.is_authenticated %}
-  <a href="{% url 'panel:dashboard' %}">Entrar a mi espacio</a>
-  {% else %}
-  <a href="{% url 'usuarios:login' %}">Entrar a mi espacio</a>
-  {% endif %}
-</p>
-<p>
-  ¿Nuevo aquí?
-  <a href="{% url 'usuarios:registro_empresa' %}">Registrar empresa</a> o
-  <a href="{% url 'usuarios:registro_persona' %}">Registrar persona</a>.
-</p>
+{% extends "base_public.html" %} {% load static %} {% block content %}
+<!-- Hero -->
+<section class="hero" id="inicio">
+  <div class="hero-container">
+    <div class="hero-content">
+      <h1>Gestión Inteligente de Documentos Tributarios para tu PYME</h1>
+      <p>
+        Sube, organiza y valida facturas y boletas automáticamente con conexión
+        al SII.
+      </p>
+      <div class="hero-buttons">
+        <a href="{% url 'usuarios:login' %}" class="btn-primary"
+          >Comenzar ahora</a
+        >
+        <a href="#caracteristicas" class="btn-outline">Ver características</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img
+        src="{% static 'img/landing-mock.png' %}"
+        alt="SGIDT Dashboard Mockup"
+      />
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features" id="caracteristicas">
+  <div class="container">
+    <h2 class="section-title">Características Principales</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-file-upload"></i></div>
+        <h3>Subir y organizar documentos</h3>
+        <p>
+          Carga facturas y boletas de forma masiva. El sistema organiza por
+          fecha, proveedor y tipo.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+        <h3>Reportes e IVA automático</h3>
+        <p>
+          Genera reportes tributarios con cálculos precisos de IVA y totales
+          para tu declaración.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
+        <h3>Validación directa con SII</h3>
+        <p>
+          Conecta con el Servicio de Impuestos Internos para validar la
+          autenticidad de los documentos.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Benefits -->
+<section class="benefits" id="beneficios">
+  <div class="container">
+    <h2 class="section-title">Beneficios para tu PYME</h2>
+    <div class="benefits-grid">
+      <div class="benefit-item">
+        <div class="benefit-icon"><i class="fas fa-lightbulb"></i></div>
+        <div class="benefit-content">
+          <h4>Ahorra tiempo en tu contabilidad</h4>
+          <p>
+            Reduce hasta un 80% el tiempo dedicado a la gestión contable y
+            tributaria.
+          </p>
+        </div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon"><i class="fas fa-lock"></i></div>
+        <div class="benefit-content">
+          <h4>Seguridad en tus datos</h4>
+          <p>
+            Almacenamiento seguro con respaldo automático y acceso controlado.
+          </p>
+        </div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="benefit-content">
+          <h4>Control tributario simplificado</h4>
+          <p>Mantén el control con herramientas intuitivas y automatizadas.</p>
+        </div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon"><i class="fas fa-handshake"></i></div>
+        <div class="benefit-content">
+          <h4>Hecho para PYMEs e independientes</h4>
+          <p>Diseñado para pequeñas empresas y profesionales de honorarios.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="stats" id="precios">
+  <div class="container">
+    <h2 class="section-title section-title--light">
+      Resultados que hablan por sí solos
+    </h2>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <h3>+1000</h3>
+        <p>documentos procesados</p>
+      </div>
+      <div class="stat-item">
+        <h3>+50</h3>
+        <p>PYMEs activas</p>
+      </div>
+      <div class="stat-item">
+        <h3>99%</h3>
+        <p>validaciones exitosas</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+  <div class="container">
+    <h2 class="section-title">Lo que dicen nuestros clientes</h2>
+    <div class="testimonial-card">
+      <p class="testimonial-text">
+        "SGIDT nos ahorra horas de trabajo cada mes. Ahora el SII ya no es un
+        dolor de cabeza."
+      </p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">MR</div>
+        <div class="testimonial-info">
+          <h5>María Rodríguez</h5>
+          <p>Gerente General, Comercial Los Andes</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <h2>Empieza a digitalizar tu gestión tributaria hoy mismo</h2>
+    <p>Únete a las PYMEs que ya confían en SGIDT</p>
+    <a href="{% url 'usuarios:login' %}" class="btn-secondary"
+      >Entrar a mi espacio</a
+    >
+  </div>
+</section>
+
 {% endblock %}
