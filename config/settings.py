@@ -47,7 +47,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = "usuarios.Usuario"   # <--- MUY IMPORTANTE (antes de migrar)
 
 LOGIN_URL = "usuarios:login"
-LOGIN_REDIRECT_URL = "dashboard"      # /app/
+LOGIN_REDIRECT_URL = "panel:dashboard"      # /app/
 LOGOUT_REDIRECT_URL = "usuarios:login"
 
 AUTHENTICATION_BACKENDS = [
