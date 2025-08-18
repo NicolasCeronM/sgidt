@@ -1,5 +1,5 @@
-{% extends 'base_app.html' %} {% block title %}Documentos · SGIDT{% endblock %}
-{% block content %}
+{% extends 'base_app.html' %} {% load static %} {% block title %}Documentos ·
+SGIDT{% endblock %} {% block content %}
 <section class="section">
   <div class="container">
     <h1 class="page-title">Gestión de Documentos</h1>
@@ -8,6 +8,24 @@
     <div class="upload-section">
       <div class="upload-card">
         <h3>Subir Nuevo Documento</h3>
+
+        <!-- form invisible para CSRF + input -->
+        <form
+          id="uploadForm"
+          method="post"
+          enctype="multipart/form-data"
+          style="display: none"
+        >
+          {% csrf_token %}
+          <input
+            type="file"
+            id="fileInput"
+            name="files[]"
+            accept=".pdf,.jpg,.jpeg,.png"
+            multiple
+          />
+        </form>
+
         <div class="upload-area" id="uploadArea">
           <i class="fas fa-cloud-upload-alt"></i>
           <p>Arrastra archivos aquí o haz clic para seleccionar</p>
@@ -16,16 +34,13 @@
           </p>
           <input
             type="file"
-            id="fileInput"
+            id="fileInputShadow"
             accept=".pdf,.jpg,.jpeg,.png"
             multiple
             hidden
           />
         </div>
-        <button
-          class="btn btn-primary"
-          onclick="document.getElementById('fileInput').click()"
-        >
+        <button class="btn btn-primary" id="btnSelect">
           <i class="fas fa-plus"></i> Seleccionar Archivos
         </button>
       </div>
@@ -60,7 +75,7 @@
             <option value="error">Error</option>
           </select>
         </div>
-        <button class="btn btn-secondary" onclick="applyFilters()">
+        <button class="btn btn-secondary" id="btnFilter">
           <i class="fas fa-filter"></i> Filtrar
         </button>
       </div>
@@ -81,10 +96,12 @@
           </tr>
         </thead>
         <tbody id="documentsTableBody">
-          <!-- Se completa por script.js (loadDocuments/applyFilters) -->
+          <!-- Se completa por script -->
         </tbody>
       </table>
     </div>
   </div>
 </section>
+
+<script src="{% static 'panel/js/panel_documentos.js' %}"></script>
 {% endblock %}
