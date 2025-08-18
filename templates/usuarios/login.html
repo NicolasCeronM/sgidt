@@ -1,22 +1,85 @@
-{% extends "base_public.html" %} {% block title %}Iniciar sesión{% endblock %}
+{% extends "base_public.html" %}
+{% load static %}
+
+{% block title %}Iniciar Sesión - SGIDT{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'usuarios/css/usuarios.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1>Iniciar sesión</h1>
-<form method="post" novalidate>
-  {% csrf_token %} {{ form.non_field_errors }}
-  <div>
-    <label for="{{ form.username.id_for_label }}">Email</label>
-    {{ form.username }} {{ form.username.errors }}
+<div class="login-container">
+  <h1 class="login-title">Bienvenido</h1>
+  <p class="login-subtitle">Accede a tu espacio de gestión tributaria</p>
+
+  {# Errores globales del formulario (p.ej. credenciales inválidas) #}
+  {% if form.non_field_errors %}
+  <div class="error-message" id="errorMessage" role="alert" style="display:block">
+    {% for err in form.non_field_errors %}{{ err }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
   </div>
-  <div>
-    <label for="{{ form.password.id_for_label }}">Contraseña</label>
-    {{ form.password }} {{ form.password.errors }}
-  </div>
-  <button type="submit">Entrar</button>
-</form>
-<p>
-  ¿Eres empresa?
-  <a href="{% url 'usuarios:registro_empresa' %}">Registrar empresa</a><br />
-  ¿Eres persona natural?
-  <a href="{% url 'usuarios:registro_persona' %}">Registrar persona</a>
-</p>
+  {% else %}
+  <div class="error-message" id="errorMessage" role="alert" style="display:none"></div>
+  {% endif %}
+
+  <form method="post" id="loginForm" novalidate>
+    {% csrf_token %}
+    {# Si LoginView pasó ?next=/ruta, mantenlo #}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+    <div class="form-group">
+      <label for="{{ form.username.id_for_label }}" class="form-label">Correo electrónico</label>
+      <input type="email" id="{{ form.username.auto_id }}" name="{{ form.username.html_name }}" class="form-input"
+        required autocomplete="email" inputmode="email" value="{{ form.username.value|default_if_none:'' }}"
+        placeholder="correo@ejemplo.com" {% if form.username.errors %}aria-invalid="true" {% endif %}>
+      {% if form.username.errors %}
+      <div class="field-error">
+        {% for err in form.username.errors %}{{ err }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.password.id_for_label }}" class="form-label">Contraseña</label>
+      <input type="password" id="{{ form.password.auto_id }}" name="{{ form.password.html_name }}" class="form-input"
+        required autocomplete="current-password" placeholder="••••••••" {% if form.password.errors %}aria-invalid="true"
+        {% endif %}>
+      {% if form.password.errors %}
+      <div class="field-error">
+        {% for err in form.password.errors %}{{ err }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="form-checkbox">
+      <input type="checkbox" id="remember" name="remember">
+      <label for="remember">Recordar mi sesión</label>
+    </div>
+
+    <button type="submit" class="btn-login">Iniciar Sesión</button>
+  </form>
+
+  <div class="divider"><span>o</span></div>
+
+  <p class="register-link">
+    ¿No tienes cuenta?
+    <a href="{% url 'usuarios:registro_persona' %}">Regístrate aquí</a>
+  </p>
+  <p class="register-link" style="margin-top:.5rem;">
+    ¿Eres empresa?
+    <a href="{% url 'usuarios:registro_empresa' %}">Registrar empresa</a>
+  </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'usuarios/js/usuarios.js' %}"></script>
+<script>
+  // Si tu usuarios.js espera ids 'email' y 'password', asegúralos sin romper el name de Django.
+  (function () {
+    const u = document.getElementById('{{ form.username.auto_id }}');
+    const p = document.getElementById('{{ form.password.auto_id }}');
+    if (u && u.id !== 'email') u.id = 'email';
+    if (p && p.id !== 'password') p.id = 'password';
+  })();
+</script>
 {% endblock %}

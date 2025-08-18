@@ -63,6 +63,12 @@ class FormularioRegistroPersona(UserCreationForm):
         return user
 
 
+
+
+
+
+
+
 class FormularioRegistroEmpresa(UserCreationForm):
     # datos de usuario
     first_name = forms.CharField(label="Nombres", max_length=150)
@@ -72,15 +78,20 @@ class FormularioRegistroEmpresa(UserCreationForm):
     telefono   = forms.CharField(label="Teléfono", required=False)
 
     # datos de empresa
-    empresa_rut      = forms.CharField(label="RUT empresa", validators=[validar_rut_chileno])
-    razon_social     = forms.CharField(label="Razón social")
-    giro             = forms.CharField(required=False)
-    regimen          = forms.ChoiceField(choices=[("pyme","Pro Pyme"),("general","Régimen general")], initial="pyme")
-    direccion        = forms.CharField(required=False)
-    comuna           = forms.CharField(required=False)
-    region           = forms.CharField(required=False)
-    contacto_email   = forms.EmailField(required=False)
-    contacto_telefono= forms.CharField(required=False)
+    empresa_rut       = forms.CharField(label="RUT empresa", validators=[validar_rut_chileno])
+    razon_social      = forms.CharField(label="Razón social")
+    giro              = forms.CharField(required=False, label="Giro")
+    regimen           = forms.ChoiceField(
+        label="Régimen",
+        choices=[("pyme", "Pro Pyme"), ("general", "Régimen general")],
+        initial="pyme",
+        widget=forms.Select(attrs={"class": "form-input"})
+    )
+    direccion         = forms.CharField(required=False, label="Dirección")
+    comuna            = forms.CharField(required=False, label="Comuna")
+    region            = forms.CharField(required=False, label="Región")
+    contacto_email    = forms.EmailField(required=False, label="Email contacto")
+    contacto_telefono = forms.CharField(required=False, label="Teléfono contacto")
 
     class Meta:
         model = Usuario
@@ -92,6 +103,60 @@ class FormularioRegistroEmpresa(UserCreationForm):
             "direccion", "comuna", "region", "contacto_email", "contacto_telefono"
         )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Clase base para TODOS los inputs
+        for name, field in self.fields.items():
+            # Select ya tiene 'form-input' en el widget de regimen
+            if not isinstance(field.widget, forms.Select):
+                field.widget.attrs.setdefault("class", "form-input")
+
+        # Placeholders + masks
+        self.fields["email"].widget.attrs.update({
+            "placeholder": "correo@ejemplo.com",
+            "autocomplete": "email",
+        })
+        self.fields["rut"].widget.attrs.update({
+            "placeholder": "12.345.678-9",
+            "data-mask": "rut",
+        })
+        self.fields["telefono"].widget.attrs.update({
+            "placeholder": "+56 9 1234 5678",
+            "data-mask": "phone",
+        })
+        self.fields["password1"].widget.attrs.update({
+            "placeholder": "••••••••",
+            "autocomplete": "new-password",
+        })
+        self.fields["password2"].widget.attrs.update({
+            "placeholder": "••••••••",
+            "autocomplete": "new-password",
+        })
+
+        self.fields["empresa_rut"].widget.attrs.update({
+            "placeholder": "12.345.678-9",
+            "data-mask": "rut",
+        })
+        self.fields["razon_social"].widget.attrs.update({"placeholder": "Razón social"})
+        self.fields["giro"].widget.attrs.update({"placeholder": "Giro o actividad (opcional)"})
+        self.fields["direccion"].widget.attrs.update({"placeholder": "Calle y número"})
+        self.fields["comuna"].widget.attrs.update({"placeholder": "Comuna"})
+        self.fields["region"].widget.attrs.update({"placeholder": "Región"})
+        self.fields["contacto_email"].widget.attrs.update({
+            "placeholder": "contacto@empresa.com",
+            "autocomplete": "email",
+        })
+        self.fields["contacto_telefono"].widget.attrs.update({
+            "placeholder": "+56 2 2345 6789",
+            "data-mask": "phone",
+        })
+
+        # Ocultar textos de ayuda largos del UserCreationForm
+        self.fields["password1"].help_text = ""
+        self.fields["password2"].help_text = ""
+
+    # Validaciones extra
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
         if Usuario.objects.filter(email__iexact=email).exists():
@@ -103,6 +168,10 @@ class FormularioRegistroEmpresa(UserCreationForm):
         validate_password(pwd)
         return pwd
 
+    # Normalización (opcional) por si no formateas en el front
+    def _clean_rut(self, rut):
+        return rut.replace(".", "").replace("-", "").strip().upper()
+
     def save(self, commit=True):
         user = super().save(commit=False)
         email = self.cleaned_data["email"].strip().lower()
@@ -110,9 +179,10 @@ class FormularioRegistroEmpresa(UserCreationForm):
         user.email      = email
         user.first_name = self.cleaned_data["first_name"].strip()
         user.last_name  = self.cleaned_data["last_name"].strip()
-        user.rut        = self.cleaned_data["rut"].strip()
+        user.rut        = self.cleaned_data["rut"].strip()   # o self._clean_rut(...)
         if hasattr(user, "telefono"):
             user.telefono = self.cleaned_data.get("telefono", "").strip()
         if commit:
             user.save()
         return user
+

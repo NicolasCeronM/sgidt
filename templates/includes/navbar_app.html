@@ -18,73 +18,35 @@
       <i class="fas fa-gauge"></i><span>Dashboard</span>
     </a>
 
-    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-docs">
+    <a href="{% url 'panel:documentos_page' %}" class="sidebar-link">
       <i class="fas fa-folder-open"></i><span>Documentos</span>
-      <i class="fas fa-chevron-down caret"></i>
-    </button>
-    <ul id="sm-docs" class="submenu">
-      <li>
-        <a href="{% url 'panel:documentos_page' %}" class="submenu-link"
-          ><i class="fas fa-upload"></i> Subir / Listado</a
-        >
-      </li>
-    </ul>
+    </a>
 
-    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-reports">
+
+    <a href="{% url 'panel:reportes' %}" class="sidebar-link">
       <i class="fas fa-chart-line"></i><span>Reportes</span>
-      <i class="fas fa-chevron-down caret"></i>
-    </button>
-    <ul id="sm-reports" class="submenu">
-      <li>
-        <a href="{% url 'panel:reportes' %}" class="submenu-link"
-          ><i class="fas fa-table"></i> Resumen</a
-        >
-      </li>
-    </ul>
+    </a>
 
-    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-sii">
-      <i class="fas fa-shield-check"></i><span>Validación SII</span>
-      <i class="fas fa-chevron-down caret"></i>
-    </button>
-    <ul id="sm-sii" class="submenu">
-      <li>
-        <a href="{% url 'panel:validaciones' %}" class="submenu-link"
-          ><i class="fas fa-search"></i> Validar</a
-        >
-      </li>
-    </ul>
 
-    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-settings">
+    <a href="{% url 'panel:validaciones' %}" class="sidebar-link">
+      <i class="fas fa-circle-check"></i><span>Validación SII</span>
+    </a>
+
+
+    <a href="{% url 'panel:configuraciones' %}" class="sidebar-link">
       <i class="fas fa-sliders"></i><span>Configuración</span>
-      <i class="fas fa-chevron-down caret"></i>
-    </button>
-    <ul id="sm-settings" class="submenu">
-      <li>
-        <a href="{% url 'panel:configuraciones' %}" class="submenu-link"
-          ><i class="fas fa-gear"></i> General</a
-        >
-      </li>
-    </ul>
+    </a>
 
-    <button class="sidebar-link sidebar-toggleitem" data-target="#sm-help">
+
+    <a href="{% url 'panel:ayuda' %}" class="sidebar-link">
       <i class="fas fa-circle-question"></i><span>Ayuda</span>
-      <i class="fas fa-chevron-down caret"></i>
-    </button>
-    <ul id="sm-help" class="submenu">
-      <li>
-        <a href="{% url 'panel:ayuda' %}" class="submenu-link"
-          ><i class="fas fa-book"></i> Centro de ayuda</a
-        >
-      </li>
-    </ul>
+    </a>
+
 
     <!-- ACCESO -->
     <div class="sidebar-sep" style="margin-top: 0.5rem"></div>
-    <a href="{% url 'usuarios:login' %}" class="sidebar-link">
-      <i class="fas fa-right-to-bracket"></i><span>Iniciar sesión</span>
-    </a>
-    <a href="#" class="sidebar-link">
-      <i class="fas fa-user-plus"></i><span>Registrarse</span>
+    <a href="{% url 'usuarios:logout' %}" class="sidebar-link">
+      <i class="fas fa-right-to-bracket"></i><span>Cerrar Sesión</span>
     </a>
   </nav>
 </aside>

@@ -1,34 +1,148 @@
-{% extends "base_public.html" %} {% block title %}Registro{% endblock %}
-<style></style>
-{%block content %}
-<h1>Crear cuenta</h1>
-<form method="post" novalidate>
-  {% csrf_token %} {{ form.non_field_errors }}
-  <div>
-    <label>Nombres</label>
-    {{ form.first_name }} {{ form.first_name.errors }}
+{% extends "base_public.html" %}
+{% load static %}
+{% block title %}Registro - SGIDT{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'usuarios/css/registro_persona.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="reg-container">
+  <div class="reg-header">
+    <div class="reg-logo">SGIDT</div>
+    <div class="reg-subtitle">Gestión tributaria, simple y clara</div>
+    <div class="reg-features">
+      <div class="feature">OCR de boletas y facturas</div>
+      <div class="feature">Cálculo automático de IVA</div>
+      <div class="feature">Validación con SII</div>
+      <div class="feature">Reportes exportables</div>
+    </div>
   </div>
-  <div>
-    <label>Apellidos</label>
-    {{ form.last_name }} {{ form.last_name.errors }}
+
+  <div class="reg-formwrap">
+    <div class="form-title">
+      <h2>Crear cuenta</h2>
+      <p>Regístrate para usar SGIDT</p>
+    </div>
+
+    {# Errores no asociados a campo (por ejemplo, email ya existe) #}
+    {% if form.non_field_errors %}
+    <div class="error-box" role="alert">
+      {% for err in form.non_field_errors %}{{ err }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" id="registrationForm" novalidate>
+      {% csrf_token %}
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="{{ form.first_name.id_for_label }}">Nombres</label>
+          <input type="text" id="{{ form.first_name.auto_id }}" name="{{ form.first_name.html_name }}"
+            class="form-input" data-field="first_name" value="{{ form.first_name.value|default_if_none:'' }}" required>
+          {% if form.first_name.errors %}
+          <div class="error-message">
+            {% for e in form.first_name.errors %}{{ e }}{% if not forloop.last %}
+            <br>
+            {% endif%}
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="success-message" data-success="first_name"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.last_name.id_for_label }}">Apellidos</label>
+          <input type="text" id="{{ form.last_name.auto_id }}" name="{{ form.last_name.html_name }}" class="form-input"
+            data-field="last_name" value="{{ form.last_name.value|default_if_none:'' }}" required>
+          {% if form.last_name.errors %}
+          <div class="error-message">
+            {% for e in form.last_name.errors %}{{ e }}{% if not forloop.last %}
+            <br>
+            {% endif%}
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="success-message" data-success="last_name"></div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.email.id_for_label }}">Email</label>
+        <input type="email" id="{{ form.email.auto_id }}" name="{{ form.email.html_name }}" class="form-input"
+          data-field="email" value="{{ form.email.value|default_if_none:'' }}" required autocomplete="email">
+        {% if form.email.errors %}
+        <div class="error-message">{% for e in form.email.errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}
+          {%endfor %}</div>
+        {% endif %}
+        <div class="success-message" data-success="email"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.rut.id_for_label }}">RUT</label>
+        <input type="text" id="{{ form.rut.auto_id }}" name="{{ form.rut.html_name }}" class="form-input"
+          data-field="rut" placeholder="12.345.678-9" value="{{ form.rut.value|default_if_none:'' }}" required>
+        <div class="rut-info">Ingresa tu RUT con puntos y guión</div>
+        {% if form.rut.errors %}
+        <div class="error-message">{% for e in form.rut.errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}
+          {%endfor %}</div>
+        {% endif %}
+        <div class="success-message" data-success="rut"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password1.id_for_label }}">Contraseña</label>
+        <input type="password" id="{{ form.password1.auto_id }}" name="{{ form.password1.html_name }}"
+          class="form-input" data-field="password1" required autocomplete="new-password">
+        <div class="password-strength" id="password_strength">
+          <div class="strength-bar">
+            <div class="strength-fill" id="strength_fill"></div>
+          </div>
+          <div class="strength-text" id="strength_text"></div>
+        </div>
+        {% if form.password1.errors %}
+        <div class="error-message">{% for e in form.password1.errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}
+          {%endfor %}</div>
+        {% endif %}
+        <div class="success-message" data-success="password1"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password2.id_for_label }}">Confirmar contraseña</label>
+        <input type="password" id="{{ form.password2.auto_id }}" name="{{ form.password2.html_name }}"
+          class="form-input" data-field="password2" required autocomplete="new-password">
+        {% if form.password2.errors %}
+        <div class="error-message">{% for e in form.password2.errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}
+          {%endfor %}</div>
+        {% endif %}
+        <div class="success-message" data-success="password2"></div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <span id="btnText">Crear cuenta</span>
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+        </div>
+      </button>
+    </form>
+
+    <div class="login-link">
+      <p>¿Ya tienes cuenta? <a href="{% url 'usuarios:login' %}">Inicia sesión</a></p>
+    </div>
   </div>
-  <div>
-    <label>Email</label>
-    {{ form.email }} {{ form.email.errors }}
-  </div>
-  <div>
-    <label>RUT</label>
-    {{ form.rut }} {{ form.rut.errors }}
-  </div>
-  <div>
-    <label>Contraseña</label>
-    {{ form.password1 }} {{ form.password1.errors }}
-  </div>
-  <div>
-    <label>Confirmar contraseña</label>
-    {{ form.password2 }} {{ form.password2.errors }}
-  </div>
-  <button type="submit">Crear cuenta</button>
-</form>
-<p>¿Ya tienes cuenta? <a href="{% url 'usuarios:login' %}">Inicia sesión</a></p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Pasa los ids reales de Django al JS (por si quieres depurar)
+  window.__REG_IDS__ = {
+    first_name: "{{ form.first_name.auto_id }}",
+    last_name: "{{ form.last_name.auto_id }}",
+    email: "{{ form.email.auto_id }}",
+    rut: "{{ form.rut.auto_id }}",
+    password1: "{{ form.password1.auto_id }}",
+    password2: "{{ form.password2.auto_id }}"
+  };
+</script>
+<script src="{% static 'usuarios/js/registro_persona.js' %}"></script>
 {% endblock %}

@@ -1,0 +1,256 @@
+/* Contenedor principal */
+.reg-container {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 100%;
+  max-width: 720px;
+  animation: slideUp 0.6s ease-out;
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Cabecera */
+.reg-header {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #fff;
+  padding: 36px 28px;
+  text-align: center;
+}
+.reg-logo {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.reg-subtitle {
+  opacity: 0.95;
+  margin-bottom: 10px;
+}
+.reg-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feature::before {
+  content: "✓";
+  color: #10b981;
+  font-weight: 700;
+}
+
+/* Cuerpo del formulario */
+.reg-formwrap {
+  padding: 34px 28px;
+}
+.form-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.form-title h2 {
+  color: #1f2937;
+  font-size: 1.6rem;
+  margin-bottom: 6px;
+}
+.form-title p {
+  color: #6b7280;
+}
+
+.form-row {
+  display: flex;
+  gap: 14px;
+}
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-weight: 600;
+}
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #f9fafb;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.error-box {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.error-message {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+.success-message {
+  color: #10b981;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  display: none;
+}
+
+.password-strength {
+  margin-top: 8px;
+  display: none;
+}
+.strength-bar {
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.2s;
+}
+.strength-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.rut-info {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 5px;
+}
+
+/* Botón */
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #fff;
+  border: 0;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+}
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.loading {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Link a login */
+.login-link {
+  text-align: center;
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid #e5e7eb;
+}
+.login-link a {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+.login-link a:hover {
+  color: #7c3aed;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .reg-container {
+    margin: 10px;
+    border-radius: 15px;
+  }
+  .reg-header {
+    padding: 28px 18px;
+  }
+  .reg-formwrap {
+    padding: 24px 18px;
+  }
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+/* Ayuda: centra el módulo dentro de tu main-content existente */
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+:root {
+  --header-h: 64px;
+} /* o la altura real de tu navbar */
+
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: calc(var(--header-h) + 16px);
+  padding-bottom: 2rem;
+}
+
+.reg-container {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
