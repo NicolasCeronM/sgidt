@@ -9,7 +9,8 @@ class Usuario(AbstractUser):
         ("persona", "Persona natural"),
     )
     tipo_contribuyente = models.CharField(max_length=10, choices=TIPO_CONTRIBUYENTE)
-    rut = models.CharField(max_length=12, unique=True)   # 12.345.678-9
+    email = models.EmailField(unique=True)
+    rut = models.CharField(max_length=12, unique=True)
     telefono = models.CharField(max_length=20, blank=True)
     # opcional: comuna, región
     comuna = models.CharField(max_length=100, blank=True)

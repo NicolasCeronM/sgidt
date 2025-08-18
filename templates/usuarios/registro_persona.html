@@ -1,13 +1,34 @@
-{% extends "base_public.html" %} {% block content %}
-<h1>Registro – Persona natural</h1>
-<form method="post">
+{% extends "base_public.html" %} {% block title %}Registro{% endblock %}
+<style></style>
+{%block content %}
+<h1>Crear cuenta</h1>
+<form method="post" novalidate>
   {% csrf_token %} {{ form.non_field_errors }}
-  <div><label>Usuario</label>{{ form.username }}</div>
-  <div><label>Email</label>{{ form.email }}</div>
-  <div><label>RUT</label>{{ form.rut }}</div>
-  <div><label>Teléfono</label>{{ form.telefono }}</div>
-  <div><label>Contraseña</label>{{ form.password1 }}</div>
-  <div><label>Confirmar</label>{{ form.password2 }}</div>
-  <button>Crear cuenta</button>
+  <div>
+    <label>Nombres</label>
+    {{ form.first_name }} {{ form.first_name.errors }}
+  </div>
+  <div>
+    <label>Apellidos</label>
+    {{ form.last_name }} {{ form.last_name.errors }}
+  </div>
+  <div>
+    <label>Email</label>
+    {{ form.email }} {{ form.email.errors }}
+  </div>
+  <div>
+    <label>RUT</label>
+    {{ form.rut }} {{ form.rut.errors }}
+  </div>
+  <div>
+    <label>Contraseña</label>
+    {{ form.password1 }} {{ form.password1.errors }}
+  </div>
+  <div>
+    <label>Confirmar contraseña</label>
+    {{ form.password2 }} {{ form.password2.errors }}
+  </div>
+  <button type="submit">Crear cuenta</button>
 </form>
+<p>¿Ya tienes cuenta? <a href="{% url 'usuarios:login' %}">Inicia sesión</a></p>
 {% endblock %}

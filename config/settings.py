@@ -50,6 +50,11 @@ LOGIN_URL = "usuarios:login"
 LOGIN_REDIRECT_URL = "dashboard"      # /app/
 LOGOUT_REDIRECT_URL = "usuarios:login"
 
+AUTHENTICATION_BACKENDS = [
+    "apps.usuarios.backends.EmailOrUsernameModelBackend",
+    "django.contrib.auth.backends.ModelBackend",  # respaldo
+]
+
 
 # Validadores de contraseña (profesional)
 AUTH_PASSWORD_VALIDATORS = [
