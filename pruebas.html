@@ -1,852 +1,180 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-      SGIDT - Sistema de Gestión Inteligente de Documentos Tributarios
-    </title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: "Inter", sans-serif;
-        line-height: 1.6;
-        color: #333;
-      }
-
-      /* Header */
-      .header {
-        background: #fff;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        position: fixed;
-        width: 100%;
-        top: 0;
-        z-index: 1000;
-      }
-
-      .nav-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        height: 70px;
-      }
-
-      .logo {
-        font-size: 24px;
-        font-weight: 700;
-        color: #2c3e50;
-      }
-
-      .nav-menu {
-        display: flex;
-        list-style: none;
-        gap: 30px;
-        align-items: center;
-      }
-
-      .nav-menu a {
-        text-decoration: none;
-        color: #555;
-        font-weight: 500;
-        transition: color 0.3s;
-      }
-
-      .nav-menu a:hover {
-        color: #3498db;
-      }
-
-      /* Changed login button to green as specified in wireframe */
-      .btn-login {
-        background: #27ae60;
-        color: white !important;
-        padding: 10px 20px;
-        border-radius: 6px;
-        transition: background 0.3s;
-      }
-
-      .btn-login:hover {
-        background: #229954;
-      }
-
-      .mobile-menu-btn {
-        display: none;
-        background: none;
-        border: none;
-        font-size: 24px;
-        color: #2c3e50;
-        cursor: pointer;
-      }
-
-      /* Hero Section */
-      .hero {
-        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-        color: white;
-        padding: 120px 0 80px;
-      }
-
-      .hero-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 60px;
-        align-items: center;
-      }
-
-      .hero-content {
-        text-align: left;
-      }
-
-      .hero h1 {
-        font-size: 3.2rem;
-        font-weight: 700;
-        margin-bottom: 20px;
-        line-height: 1.2;
-      }
-
-      .hero p {
-        font-size: 1.3rem;
-        margin-bottom: 40px;
-        opacity: 0.9;
-      }
-
-      /* Added two buttons as specified in wireframe */
-      .hero-buttons {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-      }
-
-      .btn-primary {
-        background: #27ae60;
-        color: white;
-        padding: 15px 30px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        text-decoration: none;
-        display: inline-block;
-      }
-
-      .btn-primary:hover {
-        background: #229954;
-        transform: translateY(-2px);
-      }
-
-      .btn-outline {
-        background: transparent;
-        color: white;
-        padding: 15px 30px;
-        border: 2px solid white;
-        border-radius: 8px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        text-decoration: none;
-        display: inline-block;
-      }
-
-      .btn-outline:hover {
-        background: white;
-        color: #2c3e50;
-      }
-
-      .hero-image {
-        text-align: center;
-      }
-
-      .hero-image img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 12px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-      }
-
-      /* Features Section */
-      .features {
-        padding: 80px 0;
-        background: #f8f9fa;
-      }
-
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-      }
-
-      .section-title {
-        text-align: center;
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 60px;
-      }
-
-      /* Ensured exactly 3 columns for features as specified */
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 40px;
-      }
-
-      .feature-card {
-        background: white;
-        padding: 40px 30px;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s;
-      }
-
-      .feature-card:hover {
-        transform: translateY(-5px);
-      }
-
-      .feature-icon {
-        font-size: 3rem;
-        color: #3498db;
-        margin-bottom: 20px;
-      }
-
-      .feature-card h3 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 15px;
-      }
-
-      .feature-card p {
-        color: #666;
-        line-height: 1.6;
-      }
-
-      /* Benefits Section */
-      .benefits {
-        padding: 80px 0;
-        background: white;
-      }
-
-      /* Changed to exactly 2x2 grid as specified in wireframe */
-      .benefits-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 30px;
-        margin-top: 40px;
-      }
-
-      .benefit-item {
-        padding: 30px;
-        border-left: 4px solid #3498db;
-        background: #f8f9fa;
-        border-radius: 8px;
-        display: flex;
-        align-items: flex-start;
-        gap: 15px;
-      }
-
-      .benefit-icon {
-        font-size: 2rem;
-        color: #3498db;
-        margin-top: 5px;
-      }
-
-      .benefit-content h4 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 10px;
-      }
-
-      .benefit-content p {
-        color: #666;
-      }
-
-      /* Stats Section */
-      .stats {
-        padding: 80px 0;
-        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
-        color: white;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 40px;
-        text-align: center;
-      }
-
-      .stat-item h3 {
-        font-size: 3rem;
-        font-weight: 700;
-        color: #3498db;
-        margin-bottom: 10px;
-      }
-
-      .stat-item p {
-        font-size: 1.1rem;
-        opacity: 0.9;
-      }
-
-      /* Added testimonials section as specified in wireframe */
-      .testimonials {
-        padding: 80px 0;
-        background: #f8f9fa;
-      }
-
-      .testimonial-card {
-        background: white;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        max-width: 600px;
-        margin: 0 auto;
-      }
-
-      .testimonial-text {
-        font-size: 1.2rem;
-        font-style: italic;
-        color: #555;
-        margin-bottom: 30px;
-        line-height: 1.6;
-      }
-
-      .testimonial-author {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-      }
-
-      .testimonial-avatar {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: #3498db;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.5rem;
-        font-weight: 600;
-      }
-
-      .testimonial-info h5 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 5px;
-      }
-
-      .testimonial-info p {
-        color: #666;
-        font-size: 0.9rem;
-      }
-
-      /* CTA Section */
-      .cta {
-        padding: 80px 0;
-        background: #3498db;
-        color: white;
-        text-align: center;
-      }
-
-      .cta h2 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 20px;
-      }
-
-      .cta p {
-        font-size: 1.2rem;
-        margin-bottom: 40px;
-        opacity: 0.9;
-      }
-
-      .btn-secondary {
-        background: white;
-        color: #3498db;
-        padding: 15px 30px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        text-decoration: none;
-        display: inline-block;
-      }
-
-      .btn-secondary:hover {
-        background: #f8f9fa;
-        transform: translateY(-2px);
-      }
-
-      /* Footer */
-      .footer {
-        background: #2c3e50;
-        color: white;
-        padding: 40px 0 20px;
-      }
-
-      .footer-content {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 40px;
-        margin-bottom: 30px;
-      }
-
-      .footer-section h4 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-      }
-
-      .footer-section a {
-        color: #bdc3c7;
-        text-decoration: none;
-        display: block;
-        margin-bottom: 8px;
-        transition: color 0.3s;
-      }
-
-      .footer-section a:hover {
-        color: #3498db;
-      }
-
-      .footer-bottom {
-        border-top: 1px solid #34495e;
-        padding-top: 20px;
-        text-align: center;
-        color: #bdc3c7;
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .nav-menu {
-          display: none;
-          position: absolute;
-          top: 70px;
-          left: 0;
-          width: 100%;
-          background: white;
-          flex-direction: column;
-          padding: 20px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-menu.active {
-          display: flex;
-        }
-
-        .mobile-menu-btn {
-          display: block;
-        }
-
-        .hero-container {
-          grid-template-columns: 1fr;
-          text-align: center;
-        }
-
-        .hero-content {
-          text-align: center;
-        }
-
-        .hero h1 {
-          font-size: 2.5rem;
-        }
-
-        .hero p {
-          font-size: 1.1rem;
-        }
-
-        .section-title {
-          font-size: 2rem;
-        }
-
-        .features-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .benefits-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .stats-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-
-        .stat-item h3 {
-          font-size: 2rem;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .hero h1 {
-          font-size: 2rem;
-        }
-
-        .stats-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .cta h2 {
-          font-size: 2rem;
-        }
-
-        .hero-buttons {
-          flex-direction: column;
-          align-items: center;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Header -->
-    <header class="header">
-      <nav class="nav-container">
-        <div class="logo">SGIDT</div>
-        <ul class="nav-menu" id="navMenu">
-          <li><a href="#caracteristicas">Características</a></li>
-          <li><a href="#beneficios">Beneficios</a></li>
-          <li><a href="#precios">Precios</a></li>
-          <li><a href="#contacto">Contacto</a></li>
-          <li><a href="#login" class="btn-login">Entrar a mi espacio</a></li>
-        </ul>
-        <button class="mobile-menu-btn" id="mobileMenuBtn">
-          <i class="fas fa-bars"></i>
-        </button>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SGIDT · Iniciar sesión</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary:#10b981;      /* verde acción */
+      --primary-700:#059669;
+      --secondary:#3498db;    /* azul enlaces */
+      --text:#1e293b;
+      --muted:#64748b;
+      --border:#e5e7eb;
+      --page:#f8fafc;
+      --radius:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--page); color:var(--text);
+      font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      display:flex; align-items:flex-start; justify-content:center;
+    }
+    .wrap{width:100%;max-width:980px;padding:32px 16px 80px;display:grid;place-items:center;margin:0 auto}
+    .card{
+      width:100%;max-width:460px;background:#fff;border:1px solid var(--border);
+      border-radius:var(--radius); box-shadow:0 10px 30px rgba(0,0,0,.04); padding:24px;
+    }
+    .brand{ text-align:center; font-weight:800; letter-spacing:.3px; margin-bottom:6px }
+    .brand span{ color:var(--primary) }
+    .title{ text-align:center; margin:4px 0 18px; font-weight:700 }
+
+    .form-group{ margin-bottom:14px }
+    label{ display:block; font-size:.9rem; margin-bottom:6px }
+    .input,.select{
+      width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:8px; font-size:1rem;
+      transition:border-color .15s, box-shadow .15s; background:#fff;
+    }
+    .input:focus,.select:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 4px rgba(16,185,129,.15) }
+    .hint{ font-size:.825rem; color:var(--muted); margin-top:6px }
+
+    .row{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      margin:8px 0 14px; font-size:.95rem; color:var(--muted);
+    }
+    .row a{ color:var(--secondary); text-decoration:none }
+    .row a:hover{ text-decoration:underline }
+    .checkbox{ display:flex; align-items:center; gap:8px; color:var(--text) }
+
+    .btn{
+      width:100%; display:inline-flex; justify-content:center; align-items:center; gap:10px;
+      padding:12px 16px; border:0; border-radius:10px; background:var(--primary); color:#fff;
+      font-weight:700; cursor:pointer; transition:background .15s, transform .02s; font-size:1rem;
+    }
+    .btn:hover{ background:var(--primary-700) }
+    .btn:active{ transform:translateY(1px) }
+    .btn .lock{ display:inline-block; width:14px; height:14px; border:2px solid currentColor; border-radius:3px; position:relative }
+    .btn .lock:before{ content:""; position:absolute; left:50%; transform:translateX(-50%); top:-8px; width:12px; height:8px; border:2px solid currentColor; border-bottom:0; border-radius:6px 6px 0 0 }
+
+    .meta{ margin-top:14px; padding-top:14px; border-top:1px solid var(--border); font-size:.85rem; color:var(--muted); line-height:1.5 }
+    .meta a{ color:var(--secondary); text-decoration:none }
+    .meta a:hover{ text-decoration:underline }
+
+    .site-footer{ width:100%; text-align:center; color:#94a3b8; font-size:.85rem; margin-top:24px }
+    .site-links{ display:flex; gap:16px; justify-content:center; margin-bottom:8px }
+    .site-links a{ color:#94a3b8; text-decoration:none }
+    .site-links a:hover{ text-decoration:underline }
+
+    /* Errores (demo) */
+    .input.error{ border-color:#ef4444; box-shadow:0 0 0 4px rgba(239,68,68,.15) }
+    .error-text{ color:#b91c1c; font-size:.82rem; margin-top:6px; display:none }
+
+    @media (max-width:520px){ .card{ padding:18px } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="card" role="main" aria-labelledby="heading">
+      <div class="brand" aria-hidden="true">SGIDT<span>·</span>Login</div>
+      <h1 id="heading" class="title">Accede a tu cuenta</h1>
+
+      <form id="login-form" novalidate>
+        <!-- Tipo de cuenta -->
+        <div class="form-group">
+          <label for="accountType">Tipo de cuenta</label>
+          <select id="accountType" class="select" aria-describedby="type-hint">
+            <option value="persona" selected>Persona natural</option>
+            <option value="empresa">Empresa / PYME</option>
+          </select>
+          <p id="type-hint" class="hint">Usa tu correo o tu RUT según corresponda.</p>
+        </div>
+
+        <!-- Usuario -->
+        <div class="form-group">
+          <label for="user">Correo o RUT</label>
+          <input class="input" id="user" name="user" type="text"
+                 placeholder="correo@empresa.cl o 12.345.678-9" autocomplete="username" required>
+          <p id="user-error" class="error-text">Ingresa un correo o RUT válido.</p>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="form-group">
+          <label for="pwd">Contraseña</label>
+          <input class="input" id="pwd" name="pwd" type="password"
+                 placeholder="********" autocomplete="current-password" required>
+          <p id="pwd-error" class="error-text">La contraseña es requerida.</p>
+        </div>
+
+        <div class="row">
+          <label class="checkbox"><input type="checkbox" id="remember"> Recordarme</label>
+          <a href="#">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button type="submit" class="btn"><span class="lock" aria-hidden="true"></span> Iniciar sesión</button>
+
+        <div class="meta" aria-live="polite">
+          ¿No tienes cuenta? <a href="#">Crear una cuenta</a>.
+        </div>
+      </form>
+    </main>
+
+    <footer class="site-footer" aria-label="Información del sitio">
+      <nav class="site-links">
+        <a href="#">Legal</a><a href="#">Privacidad</a><a href="#">Seguridad</a><a href="#">Soporte</a>
       </nav>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="hero-container">
-        <div class="hero-content">
-          <h1>Gestión Inteligente de Documentos Tributarios para tu PYME</h1>
-          <p>
-            Sube, organiza y valida facturas y boletas automáticamente con
-            conexión al SII.
-          </p>
-          <div class="hero-buttons">
-            <a href="#login" class="btn-primary">Comenzar ahora</a>
-            <a href="#caracteristicas" class="btn-outline"
-              >Ver características</a
-            >
-          </div>
-        </div>
-        <div class="hero-image">
-          <img
-            src="/placeholder.svg?height=400&width=600"
-            alt="SGIDT Dashboard Mockup"
-          />
-        </div>
-      </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features" id="caracteristicas">
-      <div class="container">
-        <h2 class="section-title">Características Principales</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">
-              <i class="fas fa-file-upload"></i>
-            </div>
-            <h3>Subir y organizar documentos</h3>
-            <p>
-              Carga facturas y boletas de forma masiva. Nuestro sistema los
-              organiza automáticamente por fecha, proveedor y tipo.
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <i class="fas fa-chart-bar"></i>
-            </div>
-            <h3>Reportes e IVA automático</h3>
-            <p>
-              Genera reportes tributarios automáticos con cálculos precisos de
-              IVA y totales para tu declaración mensual.
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <i class="fas fa-check-circle"></i>
-            </div>
-            <h3>Validación directa con SII</h3>
-            <p>
-              Conecta directamente con el Servicio de Impuestos Internos para
-              validar la autenticidad de todos tus documentos.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Benefits Section -->
-    <section class="benefits" id="beneficios">
-      <div class="container">
-        <h2 class="section-title">Beneficios para tu PYME</h2>
-        <div class="benefits-grid">
-          <div class="benefit-item">
-            <div class="benefit-icon">
-              <i class="fas fa-lightbulb"></i>
-            </div>
-            <div class="benefit-content">
-              <h4>Ahorra tiempo en tu contabilidad</h4>
-              <p>
-                Reduce hasta un 80% el tiempo dedicado a la gestión contable y
-                tributaria de tu empresa.
-              </p>
-            </div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">
-              <i class="fas fa-lock"></i>
-            </div>
-            <div class="benefit-content">
-              <h4>Seguridad en tus datos</h4>
-              <p>
-                Almacenamiento seguro en la nube con respaldo automático y
-                acceso controlado a tus documentos.
-              </p>
-            </div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="benefit-content">
-              <h4>Control tributario simplificado</h4>
-              <p>
-                Mantén el control total de tus obligaciones tributarias con
-                herramientas intuitivas y automatizadas.
-              </p>
-            </div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">
-              <i class="fas fa-handshake"></i>
-            </div>
-            <div class="benefit-content">
-              <h4>Hecho para PYMEs y trabajadores independientes</h4>
-              <p>
-                Diseñado específicamente para las necesidades de pequeñas
-                empresas y profesionales independientes.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="stats">
-      <div class="container">
-        <h2 class="section-title" style="color: white; margin-bottom: 60px">
-          Resultados que hablan por sí solos
-        </h2>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <h3>+1000</h3>
-            <p>documentos procesados</p>
-          </div>
-          <div class="stat-item">
-            <h3>+50</h3>
-            <p>PYMEs activas</p>
-          </div>
-          <div class="stat-item">
-            <h3>99%</h3>
-            <p>validaciones exitosas</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="testimonials">
-      <div class="container">
-        <h2 class="section-title">Lo que dicen nuestros clientes</h2>
-        <div class="testimonial-card">
-          <p class="testimonial-text">
-            "SGIDT nos ahorra horas de trabajo cada mes. Ahora el SII ya no es
-            un dolor de cabeza."
-          </p>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">MR</div>
-            <div class="testimonial-info">
-              <h5>María Rodríguez</h5>
-              <p>Gerente General, Comercial Los Andes</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta">
-      <div class="container">
-        <h2>Empieza a digitalizar tu gestión tributaria hoy mismo</h2>
-        <p>
-          Únete a las PYMEs que ya confían en SGIDT para su gestión documental
-        </p>
-        <a href="#login" class="btn-secondary">Entrar a mi espacio</a>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer" id="contacto">
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-section">
-            <h4>SGIDT</h4>
-            <p style="color: #bdc3c7; margin-bottom: 15px">
-              Sistema de Gestión Inteligente de Documentos Tributarios
-            </p>
-          </div>
-          <div class="footer-section">
-            <h4>Enlaces</h4>
-            <a href="#inicio">Inicio</a>
-            <a href="#caracteristicas">Características</a>
-            <a href="#contacto">Contacto</a>
-            <a href="#soporte">Soporte</a>
-          </div>
-          <div class="footer-section">
-            <h4>Soporte</h4>
-            <a href="#ayuda">Centro de ayuda</a>
-            <a href="#documentacion">Documentación</a>
-            <a href="#contacto">Contactar soporte</a>
-          </div>
-          <div class="footer-section">
-            <h4>Contacto</h4>
-            <p style="color: #bdc3c7; margin-bottom: 8px">
-              <i class="fas fa-envelope"></i> info@sgidt.cl
-            </p>
-            <p style="color: #bdc3c7; margin-bottom: 8px">
-              <i class="fas fa-phone"></i> +56 2 2345 6789
-            </p>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p>&copy; 2025 SGIDT. Todos los derechos reservados.</p>
-        </div>
-      </div>
+      <div>© 2025 SGIDT. Todos los derechos reservados.</div>
     </footer>
+  </div>
 
-    <script>
-      // Mobile menu toggle
-      const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-      const navMenu = document.getElementById("navMenu");
-
-      mobileMenuBtn.addEventListener("click", () => {
-        navMenu.classList.toggle("active");
-        const icon = mobileMenuBtn.querySelector("i");
-        icon.classList.toggle("fa-bars");
-        icon.classList.toggle("fa-times");
-      });
-
-      // Smooth scrolling for navigation links
-      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-        anchor.addEventListener("click", function (e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute("href"));
-          if (target) {
-            const headerHeight = document.querySelector(".header").offsetHeight;
-            const targetPosition = target.offsetTop - headerHeight;
-
-            window.scrollTo({
-              top: targetPosition,
-              behavior: "smooth",
-            });
-          }
-
-          // Close mobile menu if open
-          navMenu.classList.remove("active");
-          const icon = mobileMenuBtn.querySelector("i");
-          icon.classList.add("fa-bars");
-          icon.classList.remove("fa-times");
-        });
-      });
-
-      // Add scroll effect to header
-      window.addEventListener("scroll", () => {
-        const header = document.querySelector(".header");
-        if (window.scrollY > 100) {
-          header.style.background = "rgba(255, 255, 255, 0.95)";
-          header.style.backdropFilter = "blur(10px)";
-        } else {
-          header.style.background = "#fff";
-          header.style.backdropFilter = "none";
-        }
-      });
-
-      // Animate stats when they come into view
-      const observerOptions = {
-        threshold: 0.5,
-        rootMargin: "0px 0px -100px 0px",
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const statNumbers = entry.target.querySelectorAll(".stat-item h3");
-            statNumbers.forEach((stat) => {
-              const finalNumber = stat.textContent;
-              const isPercentage = finalNumber.includes("%");
-              const isPlus = finalNumber.includes("+");
-              const number = parseInt(finalNumber.replace(/[+%,]/g, ""));
-
-              let current = 0;
-              const increment = number / 50;
-              const timer = setInterval(() => {
-                current += increment;
-                if (current >= number) {
-                  current = number;
-                  clearInterval(timer);
-                }
-
-                let displayNumber = Math.floor(current);
-                if (isPlus) displayNumber = "+" + displayNumber;
-                if (isPercentage) displayNumber += "%";
-                if (number >= 1000) {
-                  displayNumber = displayNumber
-                    .toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                }
-
-                stat.textContent = displayNumber;
-              }, 20);
-            });
-            observer.unobserve(entry.target);
-          }
-        });
-      }, observerOptions);
-
-      const statsSection = document.querySelector(".stats");
-      if (statsSection) {
-        observer.observe(statsSection);
+  <script>
+    // Cambia placeholder según tipo de cuenta
+    const accountType = document.getElementById('accountType');
+    const userInput   = document.getElementById('user');
+    accountType.addEventListener('change', () => {
+      if (accountType.value === 'empresa') {
+        userInput.placeholder = 'Correo corporativo o RUT empresa (Ej: 76.123.456-7)';
+      } else {
+        userInput.placeholder = 'correo@dominio.cl o 12.345.678-9';
       }
-    </script>
-  </body>
+    });
+
+    // Validación mínima de demo (email o RUT chileno simple)
+    function isEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+    function isRut(v){
+      const clean = (v||'').replace(/[^0-9kK]/g,'').toUpperCase();
+      if(clean.length < 2) return false;
+      const body = clean.slice(0,-1), dv = clean.slice(-1);
+      let sum=0, m=2;
+      for(let i=body.length-1;i>=0;i--){
+        sum += parseInt(body[i],10)*m; m = m===7 ? 2 : m+1;
+      }
+      const r = 11 - (sum % 11);
+      const dvCalc = (r===11?'0':r===10?'K':String(r));
+      return dv === dvCalc;
+    }
+    function showError(input, id){ input.classList.add('error'); document.getElementById(id).style.display='block'; }
+    function clearError(input, id){ input.classList.remove('error'); document.getElementById(id).style.display='none'; }
+
+    document.getElementById('login-form').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const user = userInput;
+      const pwd  = document.getElementById('pwd');
+      let ok = true;
+
+      if(!user.value.trim() || (!isEmail(user.value.trim()) && !isRut(user.value.trim()))){
+        showError(user,'user-error'); ok=false;
+      } else { clearError(user,'user-error'); }
+
+      if(!pwd.value.trim()){ showError(pwd,'pwd-error'); ok=false; }
+      else { clearError(pwd,'pwd-error'); }
+
+      if(ok){
+        alert('Demo: login SGIDT (sin backend).');
+      }
+    });
+  </script>
+</body>
 </html>

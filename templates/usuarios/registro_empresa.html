@@ -1,14 +1,10 @@
-{% extends "base_public.html" %} 
-{% load static %} 
-{% block title %}Registro Empresa - SGIDT{% endblock %}  
-{% block css %}
+{% extends "base_public.html" %} {% load static %} {% block title %}Registro
+Empresa - SGIDT{% endblock %} {% block css %}
 <link
   rel="stylesheet"
   href="{% static 'usuarios/css/registro_persona.css' %}"
 />
-{% endblock %} 
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="reg-container">
   <!-- Header morado idéntico -->
   <div class="reg-header">
@@ -72,7 +68,7 @@
           <label for="{{ form.email.id_for_label }}">Email</label>
           {{ form.email }} {% if form.email.errors %}
           <div class="error-message django">
-            {% for e in form.email.errors %}{{ e }}{% if not forloop.last %}<br />{%endif %}{% endfor %}
+            {% for e in form.email.errors %}{{ e }}{% if not forloop.last %}<br />{%endif%}{% endfor %}
           </div>
           {% endif %}
         </div>
@@ -82,7 +78,7 @@
             <label for="{{ form.rut.id_for_label }}">RUT (representante)</label>
             {{ form.rut }} {% if form.rut.errors %}
             <div class="error-message django">
-              {% for e in form.rut.errors %}{{ e }}{% if not forloop.last %}<br />{%endif %}{% endfor %}
+              {% for e in form.rut.errors %}{{ e }}{% if not forloop.last %}<br />{%endif%}{% endfor %}
             </div>
             {% endif %}
           </div>
@@ -200,6 +196,10 @@
       <p>
         ¿Ya tienes cuenta?
         <a href="{% url 'usuarios:login' %}">Inicia sesión</a>
+      </p>
+      <p>
+        ¿Eres persona natural?
+        <a href="{% url 'usuarios:registro_persona' %}">Regístrate aquí</a>
       </p>
     </div>
   </div>
