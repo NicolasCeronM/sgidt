@@ -51,7 +51,8 @@ LOGIN_REDIRECT_URL = "panel:dashboard"      # /app/
 LOGOUT_REDIRECT_URL = "usuarios:login"
 
 AUTHENTICATION_BACKENDS = [
-    "apps.usuarios.backends.EmailOrUsernameModelBackend",
+    "apps.usuarios.backends.EmailRutOrUsernameBackend",
+    #"apps.usuarios.backends.EmailOrUsernameModelBackend",
     "django.contrib.auth.backends.ModelBackend",  # respaldo
 ]
 

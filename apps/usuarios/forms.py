@@ -16,9 +16,12 @@ def validar_rut_chileno(value: str):
 class FormularioLogin(AuthenticationForm):
     # Mostramos "Email" en vez de "Usuario".
     # OJO: el campo sigue llamándose 'username' porque así lo espera AuthenticationForm.
-    username = forms.EmailField(
-        label="Email",
-        widget=forms.EmailInput(attrs={"autofocus": True, "placeholder": "tucorreo@dominio.cl"})
+    username = forms.CharField(
+        label="Correo o RUT",
+        widget=forms.TextInput(attrs={
+            "autofocus": True,
+            "placeholder": "tucorreo@dominio.cl o 12.345.678-9"
+        })
     )
     password = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
 
