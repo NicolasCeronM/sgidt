@@ -44,15 +44,14 @@ INSTALLED_APPS = [
     'apps.sitio',
 ]
 
-AUTH_USER_MODEL = "usuarios.Usuario"   # <--- MUY IMPORTANTE (antes de migrar)
+AUTH_USER_MODEL = "usuarios.Usuario"   
 
 LOGIN_URL = "usuarios:login"
-LOGIN_REDIRECT_URL = "panel:dashboard"      # /app/
+LOGIN_REDIRECT_URL = "panel:dashboard" 
 LOGOUT_REDIRECT_URL = "usuarios:login"
 
 AUTHENTICATION_BACKENDS = [
     "apps.usuarios.backends.EmailRutOrUsernameBackend",
-    #"apps.usuarios.backends.EmailOrUsernameModelBackend",
     "django.contrib.auth.backends.ModelBackend",  # respaldo
 ]
 

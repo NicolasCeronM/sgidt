@@ -3,45 +3,65 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
 from django.utils.dateparse import parse_date
+from django.db import IntegrityError
+
 from .models import Documento
+
 
 @login_required
 def documentos_page(request):
-    return render(request, "panel/documentos.html")  # tu frontend
+    """Renderiza el panel de documentos (frontend)."""
+    return render(request, "panel/documentos.html")
+
 
 @login_required
 @require_GET
 def documentos_list_api(request):
+    """
+    API de listado con filtros:
+      - dateFrom, dateTo: YYYY-MM-DD
+      - docType: factura | boleta | nota-credito
+      - docStatus: validado | pendiente | error
+    """
     user = request.user
-    qs = Documento.objects.select_related("empresa").all() if user.is_superuser \
-         else Documento.objects.filter(empresa=user.empresas_propias.first())
 
-    # filtros
+    if user.is_superuser:
+        qs = Documento.objects.select_related("empresa").all()
+    else:
+        empresa = user.empresas_propias.first()
+        if not empresa:
+            return JsonResponse({"results": []})
+        qs = Documento.objects.select_related("empresa").filter(empresa=empresa)
+
     date_from = request.GET.get("dateFrom")
-    date_to   = request.GET.get("dateTo")
-    doc_type  = request.GET.get("docType")
-    doc_status= request.GET.get("docStatus")
+    date_to = request.GET.get("dateTo")
+    doc_type = request.GET.get("docType")
+    doc_status = request.GET.get("docStatus")
 
     if date_from:
         df = parse_date(date_from)
-        if df: qs = qs.filter(creado_en__date__gte=df)
+        if df:
+            qs = qs.filter(creado_en__date__gte=df)
     if date_to:
         dt = parse_date(date_to)
-        if dt: qs = qs.filter(creado_en__date__lte=dt)
+        if dt:
+            qs = qs.filter(creado_en__date__lte=dt)
 
     if doc_type:
         mapper = {
-            "factura": ["factura_afecta","factura_exenta"],
+            "factura": ["factura_afecta", "factura_exenta"],
             "boleta": ["boleta"],
             "nota-credito": ["nota_credito"],
         }
-        t = mapper.get(doc_type, [])
-        if t: qs = qs.filter(tipo__in=t)
+        types = mapper.get(doc_type, [])
+        if types:
+            qs = qs.filter(tipo__in=types)
 
     if doc_status:
-        st_map = {"validado":"Vigente", "pendiente":"Pendiente", "error":"Error"}
+        st_map = {"validado": "Vigente", "pendiente": "Pendiente", "error": "Error"}
         estado = st_map.get(doc_status)
-        if estado: qs = qs.filter(estado_sii__iexact=estado)
+        if estado:
+            qs = qs.filter(estado_sii__iexact=estado)
 
     data = [{
         "id": d.id,
@@ -56,42 +76,62 @@ def documentos_list_api(request):
 
     return JsonResponse({"results": data})
 
+
 @login_required
 @require_POST
 def documentos_upload_api(request):
+    """
+    API de subida de archivos.
+    - Valida extensión y tamaño.
+    - Evita duplicados por hash (UniqueConstraint) y los cuenta como 'skipped'.
+    Devuelve: {created, skipped, errors: []}
+    """
     user = request.user
-    empresa = user.empresas_propias.first() if not user.is_superuser else None
-    if not user.is_superuser and not empresa:
-        return HttpResponseBadRequest("Usuario sin empresa asociada.")
+
+    if user.is_superuser:
+        empresa = user.empresas_propias.first()
+        if not empresa:
+            return HttpResponseBadRequest("El superusuario no tiene empresa asociada.")
+    else:
+        empresa = user.empresas_propias.first()
+        if not empresa:
+            return HttpResponseBadRequest("Usuario sin empresa asociada.")
 
     files = request.FILES.getlist("files[]") or request.FILES.getlist("files")
     if not files:
         return HttpResponseBadRequest("No se enviaron archivos.")
 
     allowed_ext = {".pdf", ".jpg", ".jpeg", ".png"}
-    max_size = 10 * 1024 * 1024
+    max_size = 10 * 1024 * 1024  # 10MB
+
     created, skipped, errors = 0, 0, []
 
     for f in files:
-        name = f.name.lower()
-        if not any(name.endswith(ext) for ext in allowed_ext):
+        name_l = (f.name or "").lower()
+        if not any(name_l.endswith(ext) for ext in allowed_ext):
             errors.append(f"{f.name}: formato no permitido")
             continue
-        if f.size > max_size:
+        if f.size and f.size > max_size:
             errors.append(f"{f.name}: excede 10MB")
             continue
+
         try:
             doc = Documento(
-                empresa = empresa if empresa else user.empresas_propias.first(),
-                subido_por = user,
-                archivo = f
+                empresa=empresa,
+                subido_por=user,
+                archivo=f,
             )
-            doc.save()   # UniqueConstraint controla duplicados por hash
+            doc.save()
             created += 1
+
+        except IntegrityError:
+            skipped += 1
+
         except Exception as e:
-            if "uniq_doc_hash_empresa" in str(e):
+            msg = str(e)
+            if "UNIQUE constraint" in msg and "hash_sha256" in msg:
                 skipped += 1
             else:
-                errors.append(f"{f.name}: {str(e)}")
+                errors.append(f"{f.name}: {msg}")
 
     return JsonResponse({"created": created, "skipped": skipped, "errors": errors})

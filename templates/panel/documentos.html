@@ -1,5 +1,10 @@
 {% extends 'base_app.html' %} {% load static %} {% block title %}Documentos ·
 SGIDT{% endblock %} {% block content %}
+{% block css %} 
+<link rel="stylesheet" href="{% static 'panel/css/toasts.css' %}">
+{% endblock %}
+<!-- Contenedor para notificaciones -->
+<div id="toastContainer" class="toast-container"></div>
 <section class="section">
   <div class="container">
     <h1 class="page-title">Gestión de Documentos</h1>
