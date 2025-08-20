@@ -1,5 +1,17 @@
-<!-- templates/includes/navbar.html -->
-<aside class="sidebar sidebar--dashboard" id="sidebar">
+{% load static %}
+
+{# CSS específico del sidebar móvil #}
+<link rel="stylesheet" href="{% static 'panel/css/sidebar_mobile.css' %}">
+
+<aside class="sidebar sidebar--dashboard" id="sidebar" aria-hidden="true">
+  <!-- Header móvil dentro del sidebar -->
+  <div class="sidebar-mobile-header">
+    <strong>Menú</strong>
+    <button class="sidebar-close" id="sidebarClose" aria-label="Cerrar menú">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
   <!-- Perfil / empresa -->
   <div class="sidebar-profile">
     <div class="avatar">
@@ -22,31 +34,37 @@
       <i class="fas fa-folder-open"></i><span>Documentos</span>
     </a>
 
-
     <a href="{% url 'panel:reportes' %}" class="sidebar-link">
       <i class="fas fa-chart-line"></i><span>Reportes</span>
     </a>
-
 
     <a href="{% url 'panel:validaciones' %}" class="sidebar-link">
       <i class="fas fa-circle-check"></i><span>Validación SII</span>
     </a>
 
-
     <a href="{% url 'panel:configuraciones' %}" class="sidebar-link">
       <i class="fas fa-sliders"></i><span>Configuración</span>
     </a>
-
 
     <a href="{% url 'panel:ayuda' %}" class="sidebar-link">
       <i class="fas fa-circle-question"></i><span>Ayuda</span>
     </a>
 
-
-    <!-- ACCESO -->
     <div class="sidebar-sep" style="margin-top: 0.5rem"></div>
     <a href="{% url 'usuarios:logout' %}" class="sidebar-link">
       <i class="fas fa-right-to-bracket"></i><span>Cerrar Sesión</span>
     </a>
   </nav>
 </aside>
+
+<!-- Backdrop para móvil -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+
+<!-- Botón hamburguesa (se muestra sólo en <=900px) -->
+<button class="sidebar-hamburger" id="sidebarHamburger" aria-label="Abrir menú" aria-controls="sidebar"
+  aria-expanded="false">
+  <i class="fas fa-bars"></i>
+</button>
+
+{# JS específico del sidebar móvil #}
+<script src="{% static 'panel/js/sidebar_mobile.js' %}"></script>

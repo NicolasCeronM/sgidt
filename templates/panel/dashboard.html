@@ -1,159 +1,93 @@
-{% extends 'base_app.html' %} {% block title %}Inicio · SGIDT{% endblock %}
-
-<style></style>
+{% extends 'base_app.html' %}
+{% block title %}Inicio · SGIDT{% endblock %}
 
 {% block content %}
 <section class="section">
   <div class="container">
-    <!-- Encabezado mínimo -->
-    <header style="margin-bottom: 1.25rem">
-      <h1>Bienvenido {{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}</h1>
-      <p style="color: #64748b; max-width: 760px">
-        Plataforma minimalista para subir, organizar y validar documentos
-        tributarios de tu PYME.
+    <!-- Encabezado -->
+    <header class="page-head">
+      <h1 class="page-title">Bienvenido {{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}</h1>
+      <p class="muted max-w-760">
+        Plataforma minimalista para subir, organizar y validar documentos tributarios de tu PYME.
       </p>
     </header>
 
     <!-- Acciones rápidas -->
-    <div class="settings-card" style="
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        align-items: center;
-        margin-bottom: 1.25rem;
-      ">
+    <div class="settings-card actions-bar">
       <a href="{% url 'panel:documentos_page' %}" class="btn btn-primary">
         <i class="fas fa-upload"></i> Subir documento
       </a>
-      <a href="#" class="btn btn-secondary">
+      <a href="{% url 'panel:reportes' %}" class="btn btn-secondary">
         <i class="fas fa-chart-line"></i> Ver reportes
       </a>
-      <a href="#" class="btn btn-secondary">
+      <a href="{% url 'panel:validaciones' %}" class="btn btn-secondary">
         <i class="fas fa-shield-alt"></i> Validar en SII
       </a>
     </div>
 
-    <!-- KPIs compactos (neutros) -->
-    <div class="stats-grid" style="margin-bottom: 1.25rem">
-      <div class="settings-card">
-        <div style="
-            display: flex;
-            justify-content: space-between;
-            align-items: end;
-          ">
+    <!-- KPIs -->
+    <div class="stats-grid kpi-grid">
+      <div class="settings-card kpi-card">
+        <div class="kpi-row">
           <div>
-            <p style="
-                color: #64748b;
-                font-size: 0.875rem;
-                margin-bottom: 0.25rem;
-              ">
-              Documentos este mes
-            </p>
-            <p class="stat-number" data-target="247" style="font-size: 1.75rem; font-weight: 700">
-              0
-            </p>
+            <p class="kpi-title">Documentos este mes</p>
+            <p class="kpi-number stat-number" data-target="247">0</p>
           </div>
-          <i class="fas fa-file-invoice" style="color: #94a3b8"></i>
+          <i class="fas fa-file-invoice kpi-icon"></i>
         </div>
       </div>
 
-      <div class="settings-card">
-        <div style="
-            display: flex;
-            justify-content: space-between;
-            align-items: end;
-          ">
+      <div class="settings-card kpi-card">
+        <div class="kpi-row">
           <div>
-            <p style="
-                color: #64748b;
-                font-size: 0.875rem;
-                margin-bottom: 0.25rem;
-              ">
-              IVA total
-            </p>
-            <p class="stat-number" data-target="2847320" style="font-size: 1.75rem; font-weight: 700">
-              $0
-            </p>
+            <p class="kpi-title">IVA total</p>
+            <p class="kpi-number stat-number" data-target="2847320">$0</p>
           </div>
-          <i class="fas fa-dollar-sign" style="color: #94a3b8"></i>
+          <i class="fas fa-dollar-sign kpi-icon"></i>
         </div>
       </div>
 
-      <div class="settings-card">
-        <div style="
-            display: flex;
-            justify-content: space-between;
-            align-items: end;
-          ">
+      <div class="settings-card kpi-card">
+        <div class="kpi-row">
           <div>
-            <p style="
-                color: #64748b;
-                font-size: 0.875rem;
-                margin-bottom: 0.25rem;
-              ">
-              Gastos totales
-            </p>
-            <p class="stat-number" data-target="15234890" style="font-size: 1.75rem; font-weight: 700">
-              $0
-            </p>
+            <p class="kpi-title">Gastos totales</p>
+            <p class="kpi-number stat-number" data-target="15234890">$0</p>
           </div>
-          <i class="fas fa-wallet" style="color: #94a3b8"></i>
+          <i class="fas fa-wallet kpi-icon"></i>
         </div>
       </div>
     </div>
 
-    <!-- Dos paneles simples -->
+    <!-- Paneles -->
     <div class="reports-grid">
       <div class="settings-card">
-        <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: #1e293b">
-          Últimos movimientos
-        </h3>
-        <ul style="
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-          ">
-          <li style="
-              display: flex;
-              justify-content: space-between;
-              color: #475569;
-            ">
-            <span>Factura #12345 procesada</span><small style="color: #94a3b8">hace 15 min</small>
+        <h3 class="card-title">Últimos movimientos</h3>
+        <ul class="list-compact">
+          <li>
+            <span>Factura #12345 procesada</span>
+            <small>hace 15 min</small>
           </li>
-          <li style="
-              display: flex;
-              justify-content: space-between;
-              color: #475569;
-            ">
-            <span>Validación SII boleta #67890</span><small style="color: #94a3b8">hace 1 h</small>
+          <li>
+            <span>Validación SII boleta #67890</span>
+            <small>hace 1 h</small>
           </li>
-          <li style="
-              display: flex;
-              justify-content: space-between;
-              color: #475569;
-            ">
-            <span>Exportación reporte mensual</span><small style="color: #94a3b8">hace 2 h</small>
+          <li>
+            <span>Exportación reporte mensual</span>
+            <small>hace 2 h</small>
           </li>
         </ul>
       </div>
 
       <div class="settings-card">
-        <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: #1e293b">
-          Atajos
-        </h3>
-        <div style="
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 0.75rem;
-          ">
-          <a href="#" class="btn btn-secondary" style="width: 100%; justify-content: center">
+        <h3 class="card-title">Atajos</h3>
+        <div class="shortcuts-grid">
+          <a href="{% url 'panel:documentos_page' %}" class="btn btn-secondary btn-fill">
             <i class="fas fa-folder-open"></i> Ver documentos
           </a>
-          <a href="{% url 'panel:ayuda' %}" class="btn btn-secondary" style="width: 100%; justify-content: center">
+          <a href="{% url 'panel:configuraciones' %}" class="btn btn-secondary btn-fill">
             <i class="fas fa-sliders-h"></i> Configuración
           </a>
-          <a href="#" class="btn btn-secondary" style="width: 100%; justify-content: center">
+          <a href="{% url 'panel:ayuda' %}" class="btn btn-secondary btn-fill">
             <i class="fas fa-question-circle"></i> Ayuda
           </a>
         </div>
