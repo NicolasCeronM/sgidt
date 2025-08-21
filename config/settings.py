@@ -168,3 +168,14 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'antoniobarraza1133@gmail.com'  # tu correo de Gmail
+EMAIL_HOST_PASSWORD = 'sudvkveabkuhhrbs'  # clave de 16 dígitos
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+

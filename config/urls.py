@@ -32,6 +32,10 @@ urlpatterns = [
 
     # App privada
     path("app/", include("apps.panel.urls", namespace="panel")),         # /app/
+
+    #correo
+    path("correo/", include("apps.correo.urls", namespace="correo")),
+
 ]
 
 if settings.DEBUG:
