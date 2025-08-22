@@ -1,0 +1,64 @@
+{% extends "base_app.html" %}
+{% block title %}Proveedores - SGIDT{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+    <h2 style="margin:0;">Proveedores</h2>
+    <a href="{% url 'proveedor:proveedores_create' %}" class="btn btn-primary">+ Nuevo</a>
+  </div>
+
+  <div class="card-body">
+    <form method="get" style="display:flex;gap:8px;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Buscar (razón social / RUT / giro / email)" />
+      <button type="submit" class="btn">Buscar</button>
+      {% if q %}
+        <a href="{% url 'proveedor:proveedores_list' %}" class="btn btn-light">Limpiar</a>
+      {% endif %}
+    </form>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Razón social</th>
+            <th>RUT</th>
+            <th>Giro</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Activo</th>
+            <th style="width:120px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in page_obj %}
+            <tr>
+              <td><a href="{% url 'proveedor:proveedores_detail' p.id %}">{{ p.razon_social }}</a></td>
+              <td>{{ p.rut }}</td>
+              <td>{{ p.giro }}</td>
+              <td>{{ p.email }}</td>
+              <td>{{ p.telefono }}</td>
+              <td>{{ p.activo|yesno:"Sí,No" }}</td>
+              <td><a href="{% url 'proveedor:proveedores_update' p.id %}">Editar</a></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7">Sin resultados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+      <div class="pagination" style="display:flex;gap:12px;align-items:center;margin-top:1rem;">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}">« Anterior</a>
+        {% endif %}
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&q={{ q }}">Siguiente »</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

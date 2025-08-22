@@ -1,0 +1,44 @@
+{% extends "base_app.html" %}
+{% block title %}{{ title }} - SGIDT{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header"><h2 style="margin:0;">{{ title }}</h2></div>
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <fieldset style="margin-bottom:1rem;">
+        <legend>Datos del proveedor</legend>
+        {{ form.as_p }}
+      </fieldset>
+
+      <fieldset style="margin-bottom:1rem;">
+        <legend>Contactos de proveedor (opcional)</legend>
+        {{ formset.management_form }}
+        {% for f in formset %}
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px;">
+            <div>{{ f.nombre.label_tag }}{{ f.nombre }}</div>
+            <div>{{ f.email.label_tag }}{{ f.email }}</div>
+            <div>{{ f.telefono.label_tag }}{{ f.telefono }}</div>
+            <div>{{ f.cargo.label_tag }}{{ f.cargo }}</div>
+            <div>{{ f.nota.label_tag }}{{ f.nota }}</div>
+          </div>
+          {% if f.DELETE %}
+            <label style="display:inline-flex;gap:6px;align-items:center;">
+              {{ f.DELETE }} Eliminar
+            </label>
+          {% endif %}
+          {% if not forloop.last %}<hr>{% endif %}
+        {% endfor %}
+        <small>Puedes dejar esta sección en blanco si no quieres registrar contactos ahora.</small>
+      </fieldset>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'proveedor:proveedores_list' %}" class="btn btn-light">Volver</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

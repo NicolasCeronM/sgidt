@@ -27,11 +27,12 @@ urlpatterns = [
     # Público
     path("", include("apps.sitio.urls", namespace="sitio")),             # /
 
-    # Autenticación (ya la tienes)
+    # Autenticación
     path("usuarios/", include("apps.usuarios.urls", namespace="usuarios")),
 
     # App privada
     path("app/", include("apps.panel.urls", namespace="panel")),         # /app/
+    path("proveedor/", include(("apps.proveedores.urls"))),
 
     #correo
     path("correo/", include("apps.correo.urls", namespace="correo")),

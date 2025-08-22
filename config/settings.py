@@ -28,24 +28,43 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-# Application definition
-
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'apps.documentos',
-    'apps.usuarios',
-    'apps.empresas',
-    'apps.panel',
-    'apps.sitio',
+# -------------------------------------------------------------------
+# APPS
+# -------------------------------------------------------------------
+# Apps nativas de Django
+DJANGO_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 ]
+
+# Apps de terceros (activar segun uso)
+THIRD_PARTY_APPS = [
+    # "rest_framework",
+    # "corsheaders",
+    # "storages",
+]
+
+# Apps del proyecto
+LOCAL_APPS = [
+    "apps.documentos",
+    "apps.usuarios",
+    "apps.empresas",
+    "apps.panel",
+    "apps.sitio",
+    'apps.proveedores',
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 AUTH_USER_MODEL = "usuarios.Usuario"   
 
+# -------------------------------------------------------------------
+# AUTHENTICATION & LOGIN
+# -------------------------------------------------------------------
 LOGIN_URL = "usuarios:login"
 LOGIN_REDIRECT_URL = "panel:dashboard" 
 LOGOUT_REDIRECT_URL = "usuarios:login"
@@ -56,7 +75,6 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
-# Validadores de contraseña (profesional)
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
@@ -77,7 +95,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'config.urls'
 
 
-
+# -------------------------------------------------------------------
+# TEMPLATES
+# -------------------------------------------------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -93,15 +113,13 @@ TEMPLATES = [
     },
 ]
 
-TEMPLATES[0]["DIRS"] = [BASE_DIR / "templates"]
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# Database
+# -------------------------------------------------------------------
+# DATABASE
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# -------------------------------------------------------------------
 
 DATABASES = {
     'default': {
@@ -130,28 +148,23 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
+# -------------------------------------------------------------------
+# INTERNATIONALIZATION
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
-
-# Zona horaria recomendada
+# -------------------------------------------------------------------
+LANGUAGE_CODE = "es-cl"
 TIME_ZONE = "America/Santiago"
+USE_I18N = True
 USE_TZ = True
 
-LANGUAGE_CODE = 'en-us'
-
-# TIME_ZONE = 'UTC'
-
-# USE_I18N = True
-
-# USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
+# -------------------------------------------------------------------
+# STATIC & MEDIA FILES
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
+# -------------------------------------------------------------------
 
 # Estáticos (versionados)
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]      # carpeta con tus CSS/JS
+STATICFILES_DIRS = [BASE_DIR / "static"]      
 STATIC_ROOT = BASE_DIR / "staticfiles"        # para collectstatic en prod
 
 # Media (subidas de usuario)
@@ -162,20 +175,21 @@ MEDIA_ROOT = BASE_DIR / "media"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 
-# Default primary key field type
+# -------------------------------------------------------------------
+# DEFAULTS
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
+# -------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# -------------------------------------------------------------------
+# EMAIL (usar variables de entorno en prod)
+# -------------------------------------------------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'antoniobarraza1133@gmail.com'  # tu correo de Gmail
-EMAIL_HOST_PASSWORD = 'sudvkveabkuhhrbs'  # clave de 16 dígitos
+EMAIL_HOST_USER = 'antoniobarraza1133@gmail.com'
+EMAIL_HOST_PASSWORD = 'sudvkveabkuhhrbs'  
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
