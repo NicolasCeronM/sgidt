@@ -33,60 +33,22 @@
         </div>
       </div>
 
-      <!-- Sistemas contables -->
-      <div class="settings-card">
-        <h3>Sistemas Contables</h3>
 
-        <div class="integration-item">
-          <div class="integration-info">
-            <i class="fas fa-calculator"></i>
-            <span>Defontana</span>
-          </div>
-          <div class="integration-status">
-            <span class="status-badge connected">Conectado</span>
-            <button class="btn btn-small btn-secondary">Configurar</button>
-          </div>
-        </div>
-
-        <div class="integration-item">
-          <div class="integration-info">
-            <i class="fas fa-chart-bar"></i>
-            <span>Bind ERP</span>
-          </div>
-          <div class="integration-status">
-            <span class="status-badge disconnected">Desconectado</span>
-            <button class="btn btn-small btn-primary">Conectar</button>
-          </div>
-        </div>
-      </div>
 
       <!-- Configuración general -->
       <div class="settings-card">
         <h3>Configuración General</h3>
-        <form
-          id="generalSettingsForm"
-          onsubmit="event.preventDefault(); showNotification('Configuración guardada', 'success');"
-        >
+        <form id="generalSettingsForm"
+          onsubmit="event.preventDefault(); showNotification('Configuración guardada', 'success');">
           <div class="form-group">
             <label for="companyRut">RUT de la Empresa</label>
-            <input
-              type="text"
-              id="companyRut"
-              class="form-input"
-              placeholder="76.123.456-7"
-              value="76.123.456-7"
-            />
+            <input type="text" id="companyRut" class="form-input" placeholder="76.123.456-7" value="76.123.456-7" />
           </div>
 
           <div class="form-group">
             <label for="companyName">Razón Social</label>
-            <input
-              type="text"
-              id="companyName"
-              class="form-input"
-              placeholder="Mi Empresa SpA"
-              value="Mi Empresa SpA"
-            />
+            <input type="text" id="companyName" class="form-input" placeholder="Mi Empresa SpA"
+              value="Mi Empresa SpA" />
           </div>
 
           <div class="form-group">
