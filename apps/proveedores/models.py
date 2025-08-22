@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from .utils import clean_rut, is_valid_rut
+from django.conf import settings
 
 
 class CategoriaProveedor(models.Model):
@@ -18,25 +19,20 @@ class CategoriaProveedor(models.Model):
 
 
 class Proveedor(models.Model):
-    razon_social = models.CharField(max_length=255)
-    rut = models.CharField(
-        max_length=12,
-        unique=True,  # 👈 cada RUT debe ser único
-        help_text="Ej: 12345678-5"
+    owner = models.ForeignKey(              # 👈 dueño del proveedor (usuario autenticado)
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="proveedores"
     )
+    razon_social = models.CharField(max_length=255)
+    rut = models.CharField(max_length=12, help_text="Ej: 12345678-5")  # ya NO unique aquí
     giro = models.CharField(max_length=255, blank=True)
     email = models.EmailField(blank=True)
     telefono = models.CharField(max_length=30, blank=True)
     direccion = models.CharField(max_length=255, blank=True)
     comuna = models.CharField(max_length=120, blank=True)
     region = models.CharField(max_length=120, blank=True)
-    categoria = models.ForeignKey(
-        CategoriaProveedor,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="proveedores"
-    )
+    categoria = models.ForeignKey(CategoriaProveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name="proveedores")
     activo = models.BooleanField(default=True)
 
     creado = models.DateTimeField(auto_now_add=True)
@@ -45,9 +41,10 @@ class Proveedor(models.Model):
     class Meta:
         verbose_name = "Proveedor"
         verbose_name_plural = "Proveedores"
+        unique_together = (("owner", "rut"),)        # 👈 rut único por usuario
         indexes = [
-            models.Index(fields=["rut"]),
-            models.Index(fields=["razon_social"]),
+            models.Index(fields=["owner", "rut"]),   # 👈 búsquedas rápidas por usuario
+            models.Index(fields=["owner", "razon_social"]),
         ]
         ordering = ["razon_social"]
 
