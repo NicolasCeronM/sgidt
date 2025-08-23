@@ -1,44 +1,103 @@
 {% extends "base_app.html" %}
+{% load static %}
 {% block title %}{{ title }} - SGIDT{% endblock %}
 
 {% block content %}
-<div class="card">
-  <div class="card-header"><h2 style="margin:0;">{{ title }}</h2></div>
-  <div class="card-body">
-    <form method="post" novalidate>
-      {% csrf_token %}
+<link rel="stylesheet" href="{% static 'proveedores/css/proveedor_form.css' %}?v=1">
 
-      <fieldset style="margin-bottom:1rem;">
-        <legend>Datos del proveedor</legend>
-        {{ form.as_p }}
-      </fieldset>
 
-      <fieldset style="margin-bottom:1rem;">
-        <legend>Contactos de proveedor (opcional)</legend>
-        {{ formset.management_form }}
-        {% for f in formset %}
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px;">
-            <div>{{ f.nombre.label_tag }}{{ f.nombre }}</div>
-            <div>{{ f.email.label_tag }}{{ f.email }}</div>
-            <div>{{ f.telefono.label_tag }}{{ f.telefono }}</div>
-            <div>{{ f.cargo.label_tag }}{{ f.cargo }}</div>
-            <div>{{ f.nota.label_tag }}{{ f.nota }}</div>
+<div class="vd-page">
+  <h1 class="vd-title">{{ title }}</h1>
+
+  <div class="vd-grid">
+    <!-- FORMULARIO PRINCIPAL -->
+    <section class="vd-card">
+      <header class="vd-card__header">
+        <h2 class="vd-card__title">Ingrese datos del proveedor</h2>
+      </header>
+
+      <div class="vd-card__body">
+        <form method="post" novalidate class="vd-form">
+          {% csrf_token %}
+
+          <!-- Datos del proveedor (usa tu {{ form.as_p }}) -->
+          <fieldset class="fieldset">
+            <legend class="fieldset__legend">Información del Proveedor</legend>
+            <div class="form-as-p">
+              {{ form.as_p }}
+            </div>
+          </fieldset>
+
+          <!-- Contactos del proveedor (usa tu formset) -->
+          <fieldset class="fieldset">
+            <legend class="fieldset__legend">Contactos del Proveedor (opcional)</legend>
+            {{ formset.management_form }}
+            {% for f in formset %}
+            <div class="formset-row">
+              <div class="formset-field">{{ f.nombre.label_tag }}{{ f.nombre }}</div>
+              <div class="formset-field">{{ f.email.label_tag }}{{ f.email }}</div>
+              <div class="formset-field">{{ f.telefono.label_tag }}{{ f.telefono }}</div>
+              <div class="formset-field">{{ f.cargo.label_tag }}{{ f.cargo }}</div>
+              <div class="formset-field">{{ f.nota.label_tag }}{{ f.nota }}</div>
+            </div>
+
+            {% if f.DELETE %}
+            <label class="delete-checkbox">{{ f.DELETE }} Eliminar</label>
+            {% endif %}
+
+            {% if not forloop.last %}
+            <hr class="divider">{% endif %}
+            {% endfor %}
+
+            <small class="vd-hint">💡 Puedes dejar esta sección en blanco si no quieres registrar contactos
+              ahora.</small>
+          </fieldset>
+
+          <!-- Acciones -->
+          <div class="vd-actions">
+            <button type="submit" class="vd-btn vd-btn--success">
+              <svg class="vd-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              Guardar
+            </button>
+            <a href="{% url 'proveedor:proveedores_list' %}" class="vd-btn vd-btn--ghost">
+              <svg class="vd-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              Volver
+            </a>
           </div>
-          {% if f.DELETE %}
-            <label style="display:inline-flex;gap:6px;align-items:center;">
-              {{ f.DELETE }} Eliminar
-            </label>
-          {% endif %}
-          {% if not forloop.last %}<hr>{% endif %}
-        {% endfor %}
-        <small>Puedes dejar esta sección en blanco si no quieres registrar contactos ahora.</small>
-      </fieldset>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button type="submit" class="btn btn-primary">Guardar</button>
-        <a href="{% url 'proveedor:proveedores_list' %}" class="btn btn-light">Volver</a>
+        </form>
       </div>
-    </form>
+    </section>
+
+    <!-- PANEL LATERAL / VISTA PREVIA -->
+    <section class="vd-card">
+      <header class="vd-card__header">
+        <h2 class="vd-card__title">Vista Previa</h2>
+      </header>
+      <div class="vd-card__body vd-result">
+        <div class="vd-result__placeholder">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+            style="margin-bottom:1rem; color:var(--gray-400);">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          <p>Completa el formulario y presiona <strong>"Guardar"</strong> para registrar la información.</p>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
 {% endblock %}
