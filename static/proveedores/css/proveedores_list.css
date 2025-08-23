@@ -1,0 +1,282 @@
+:root {
+  --primary-color: #059669;
+  --primary-hover: #059669;
+  --secondary-color: #64748b;
+  --success-color: #059669;
+  --danger-color: #dc2626;
+  --warning-color: #d97706;
+  --light-gray: #f8fafc;
+  --medium-gray: #e2e8f0;
+  --dark-gray: #475569;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --border-radius: 8px;
+  --border-radius-lg: 12px;
+}
+
+.modern-card {
+  background: var(--white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  margin: 1.5rem 0;
+  border: 1px solid var(--medium-gray);
+}
+
+.modern-card-header {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-hover) 100%
+  );
+  color: var(--white);
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.modern-card-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.modern-card-body {
+  padding: 2rem;
+}
+
+/* Botones */
+.modern-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+.modern-btn-primary {
+  background: var(--primary-color);
+  color: var(--white);
+}
+.modern-btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  color: var(--white);
+  text-decoration: none;
+}
+.modern-btn-secondary {
+  background: var(--white);
+  color: var(--secondary-color);
+  border: 1px solid var(--medium-gray);
+}
+.modern-btn-secondary:hover {
+  background: var(--light-gray);
+  color: var(--dark-gray);
+  text-decoration: none;
+}
+.modern-btn-light {
+  background: var(--light-gray);
+  color: var(--secondary-color);
+  border: 1px solid var(--medium-gray);
+}
+.modern-btn-light:hover {
+  background: var(--medium-gray);
+  color: var(--dark-gray);
+  text-decoration: none;
+}
+
+/* Buscador */
+.search-container {
+  background: var(--light-gray);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 2rem;
+  border: 1px solid var(--medium-gray);
+}
+.search-form {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.search-input {
+  flex: 1;
+  min-width: 300px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--medium-gray);
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  background: var(--white);
+  transition: all 0.2s ease;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+}
+.search-input::placeholder {
+  color: var(--secondary-color);
+}
+
+/* Tabla */
+.modern-table-container {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid var(--medium-gray);
+  box-shadow: var(--shadow-sm);
+}
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.modern-table thead {
+  background: var(--light-gray);
+}
+.modern-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--dark-gray);
+  border-bottom: 1px solid var(--medium-gray);
+  white-space: nowrap;
+}
+.modern-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--medium-gray);
+  vertical-align: middle;
+}
+.modern-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+.modern-table tbody tr:hover {
+  background: var(--light-gray);
+}
+.modern-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.provider-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.provider-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.status-active {
+  background: rgb(220 252 231);
+  color: var(--success-color);
+}
+.status-inactive {
+  background: rgb(254 226 226);
+  color: var(--danger-color);
+}
+
+.action-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+.action-link:hover {
+  background: var(--light-gray);
+  color: var(--primary-hover);
+  text-decoration: none;
+}
+
+/* Paginación */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+  background: var(--light-gray);
+  border-radius: var(--border-radius);
+}
+.pagination-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.pagination-link:hover {
+  background: var(--white);
+  color: var(--primary-hover);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+}
+.pagination-info {
+  color: var(--secondary-color);
+  font-weight: 500;
+}
+
+/* Vacío */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--secondary-color);
+}
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modern-card-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-input {
+    min-width: auto;
+  }
+  .modern-table-container {
+    overflow-x: auto;
+  }
+  .modern-table {
+    min-width: 600px;
+  }
+  .pagination-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

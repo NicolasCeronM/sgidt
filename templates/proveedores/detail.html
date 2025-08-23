@@ -9,11 +9,11 @@
   </div>
   <div class="card-body">
     {% if messages %}
-      <div style="margin-bottom:1rem;">
-        {% for message in messages %}
-          <div class="alert {{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-      </div>
+    <div style="margin-bottom:1rem;">
+      {% for message in messages %}
+      <div class="alert {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
     {% endif %}
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;">
