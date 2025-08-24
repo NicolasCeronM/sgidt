@@ -3,14 +3,14 @@
 {% block title %}Proveedores - SGIDT{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'proveedores/css/proveedores_list.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'proveedores/css/proveedor_list.css' %}?v=1">
 
 <div class="modern-card">
   <!-- Header -->
   <div class="modern-card-header">
-    <h2>📋 Proveedores</h2>
+    <h2> Proveedores</h2>
     <a href="{% url 'proveedor:proveedores_create' %}" class="modern-btn modern-btn-primary">
-      ➕ Nuevo Proveedor
+      Nuevo Proveedor
     </a>
   </div>
 
@@ -18,7 +18,7 @@
     <!-- Buscador -->
     <div class="search-container">
       <form method="get" class="search-form">
-        <input type="text" name="q" value="{{ q }}" placeholder="🔍 Buscar por razón social, RUT, giro o email..."
+        <input type="text" name="q" value="{{ q }}" placeholder=" Buscar por razón social, RUT, giro o email..."
           class="search-input" />
         <button type="submit" class="modern-btn modern-btn-secondary">Buscar</button>
         {% if q %}
@@ -61,7 +61,7 @@
               {% endif %}
             </td>
             <td>
-              <a href="{% url 'proveedor:proveedores_update' p.id %}" class="action-link">✏️ Editar</a>
+              <a href="{% url 'proveedor:proveedores_update' p.id %}" class="action-link"> Editar</a>
             </td>
           </tr>
           {% empty %}

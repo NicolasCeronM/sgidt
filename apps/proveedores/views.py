@@ -62,7 +62,21 @@ def proveedores_update(request, pk):
         formset = ProveedorContactoFormSet(instance=proveedor)
     return render(request, "proveedores/form.html", {"form": form, "formset": formset, "title": "Editar proveedor"})
 
+
+@login_required
+def proveedores_delete(request, pk):
+    proveedor = get_object_or_404(Proveedor, pk=pk, owner=request.user)
+    if request.method == "POST":
+        proveedor.delete()
+        messages.success(request, "Proveedor eliminado correctamente.")
+        return redirect("proveedor:proveedores_list")
+    messages.error(request, "Acción no permitida.")
+    return redirect("proveedor:proveedores_list")
+
+
 @login_required
 def proveedores_detail(request, pk):
     proveedor = get_object_or_404(Proveedor, pk=pk, owner=request.user)  # 👈 acceso restringido
     return render(request, "proveedores/detail.html", {"proveedor": proveedor})
+
+
