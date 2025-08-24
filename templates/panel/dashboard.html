@@ -1,66 +1,70 @@
 {% extends 'base_app.html' %}
+{% load static %}
 {% block title %}Inicio · SGIDT{% endblock %}
 
 {% block content %}
-<section class="section">
-  <div class="container">
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=1">
+
+<section class="db-page">
+  <div class="db-container">
     <!-- Encabezado -->
-    <header class="page-head">
-      <h1 class="page-title">Bienvenido {{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}</h1>
-      <p class="muted max-w-760">
-        Plataforma minimalista para subir, organizar y validar documentos tributarios de tu PYME.
-      </p>
+    <header class="db-head">
+      <div>
+        <h1 class="db-title">Bienvenido {{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}</h1>
+        <p class="db-subtitle">
+          Plataforma minimalista para subir, organizar y validar documentos tributarios de tu PYME.
+        </p>
+      </div>
+
+      <div class="db-quick">
+        <a href="{% url 'panel:documentos_page' %}" class="btn btn-primary">
+          <i class="fas fa-upload"></i> Subir documento
+        </a>
+        <a href="{% url 'panel:reportes' %}" class="btn btn-ghost">
+          <i class="fas fa-chart-line"></i> Ver reportes
+        </a>
+        <a href="{% url 'panel:validaciones' %}" class="btn btn-ghost">
+          <i class="fas fa-shield-alt"></i> Validar en SII
+        </a>
+      </div>
     </header>
 
-    <!-- Acciones rápidas -->
-    <div class="settings-card actions-bar">
-      <a href="{% url 'panel:documentos_page' %}" class="btn btn-primary">
-        <i class="fas fa-upload"></i> Subir documento
-      </a>
-      <a href="{% url 'panel:reportes' %}" class="btn btn-secondary">
-        <i class="fas fa-chart-line"></i> Ver reportes
-      </a>
-      <a href="{% url 'panel:validaciones' %}" class="btn btn-secondary">
-        <i class="fas fa-shield-alt"></i> Validar en SII
-      </a>
-    </div>
-
     <!-- KPIs -->
-    <div class="stats-grid kpi-grid">
-      <div class="settings-card kpi-card">
+    <div class="kpi-grid">
+      <article class="kpi-card">
         <div class="kpi-row">
           <div>
             <p class="kpi-title">Documentos este mes</p>
-            <p class="kpi-number stat-number" data-target="247">0</p>
+            <p class="kpi-number" data-target="247">0</p>
           </div>
           <i class="fas fa-file-invoice kpi-icon"></i>
         </div>
-      </div>
+      </article>
 
-      <div class="settings-card kpi-card">
+      <article class="kpi-card">
         <div class="kpi-row">
           <div>
             <p class="kpi-title">IVA total</p>
-            <p class="kpi-number stat-number" data-target="2847320">$0</p>
+            <p class="kpi-number" data-target="2847320" data-prefix="$">0</p>
           </div>
           <i class="fas fa-dollar-sign kpi-icon"></i>
         </div>
-      </div>
+      </article>
 
-      <div class="settings-card kpi-card">
+      <article class="kpi-card">
         <div class="kpi-row">
           <div>
             <p class="kpi-title">Gastos totales</p>
-            <p class="kpi-number stat-number" data-target="15234890">$0</p>
+            <p class="kpi-number" data-target="15234890" data-prefix="$">0</p>
           </div>
           <i class="fas fa-wallet kpi-icon"></i>
         </div>
-      </div>
+      </article>
     </div>
 
     <!-- Paneles -->
-    <div class="reports-grid">
-      <div class="settings-card">
+    <div class="cards-grid">
+      <section class="card">
         <h3 class="card-title">Últimos movimientos</h3>
         <ul class="list-compact">
           <li>
@@ -76,23 +80,42 @@
             <small>hace 2 h</small>
           </li>
         </ul>
-      </div>
+      </section>
 
-      <div class="settings-card">
+      <section class="card">
         <h3 class="card-title">Atajos</h3>
         <div class="shortcuts-grid">
-          <a href="{% url 'panel:documentos_page' %}" class="btn btn-secondary btn-fill">
+          <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost btn-fill">
             <i class="fas fa-folder-open"></i> Ver documentos
           </a>
-          <a href="{% url 'panel:configuraciones' %}" class="btn btn-secondary btn-fill">
+          <a href="{% url 'panel:configuraciones' %}" class="btn btn-ghost btn-fill">
             <i class="fas fa-sliders-h"></i> Configuración
           </a>
-          <a href="{% url 'panel:ayuda' %}" class="btn btn-secondary btn-fill">
+          <a href="{% url 'panel:ayuda' %}" class="btn btn-ghost btn-fill">
             <i class="fas fa-question-circle"></i> Ayuda
           </a>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </section>
+
+<script>
+  // Animación simple para KPIs
+  document.querySelectorAll('.kpi-number').forEach(el => {
+    const target = +el.dataset.target || 0;
+    const prefix = el.dataset.prefix || '';
+    const duration = 900;
+    const start = performance.now();
+    const formatter = new Intl.NumberFormat('es-CL');
+
+    function tick(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const val = Math.round(target * (0.15 + 0.85 * p));
+      el.textContent = prefix + formatter.format(val);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+</script>
 {% endblock %}

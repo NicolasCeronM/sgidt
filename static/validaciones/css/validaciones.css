@@ -1,0 +1,197 @@
+/* Paleta consistente (sin verdes) */
+:root {
+  --top: #111827; /* gradiente superior */
+  --bottom: #1e293b; /* gradiente inferior */
+  --accent: #374151; /* gris oscuro p/ detalles */
+  --card: #ffffff;
+  --bg: #f5f7fb;
+  --text: #0f172a;
+  --muted: #64748b;
+  --b-200: #e5e7eb;
+  --b-300: #cbd5e1;
+  --shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  --radius: 16px;
+}
+
+/* Página */
+.section {
+  padding: 24px;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Título de la página */
+.page-title {
+  margin: 0 0 16px;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* Layout 2 columnas (form + resultado) */
+.validation-container {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr; /* mobile */
+}
+@media (min-width: 980px) {
+  .validation-container {
+    grid-template-columns: 1fr 1fr; /* desktop */
+  }
+}
+
+/* Tarjetas */
+.validation-form,
+.validation-result {
+  background: var(--card);
+  border: 1px solid var(--b-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* Header de tarjeta */
+.validation-form h3 {
+  margin: 0;
+  padding: 18px 22px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--top), var(--bottom));
+  border-bottom: 3px solid rgba(255, 255, 255, 0.08);
+  font-size: 18px;
+}
+
+/* Cuerpo de tarjeta */
+.validation-form form {
+  padding: 18px 22px;
+}
+.validation-result {
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+}
+
+/* Texto placeholder del resultado */
+.validation-result {
+  color: var(--muted);
+  background: linear-gradient(180deg, #fff, #fafcff);
+}
+
+/* Grid de campos */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px 16px;
+}
+@media (min-width: 720px) {
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+/* Control + etiqueta */
+.form-group label {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0f172a;
+  margin: 0 0 6px;
+}
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--b-300);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(55, 65, 81, 0.12);
+}
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--b-300);
+  background: #fff;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.05s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.btn:hover {
+  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--top), var(--bottom));
+  color: #fff;
+  border: none;
+}
+
+/* Estados de validación (para el panel derecho) */
+.val-box {
+  width: 100%;
+  border: 1px solid var(--b-200);
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+}
+.val-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--b-200);
+}
+.val-row:last-child {
+  border-bottom: none;
+}
+.val-label {
+  color: var(--muted);
+  font-weight: 700;
+}
+.val-value {
+  font-weight: 900;
+  color: #0f172a;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--b-300);
+}
+.badge.ok {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.badge.err {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Pequeños ajustes */
+i {
+  opacity: 0.95;
+}

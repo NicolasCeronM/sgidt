@@ -1,6 +1,10 @@
-{% extends 'base_app.html' %} {% block title %}Configuración · SGIDT{%endblock%}
-<style></style>
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}Configuración · SGIDT{% endblock %}
+
 {% block content %}
+<link rel="stylesheet" href="{% static 'configuraciones/css/configuraciones.css' %}?v=1">
+
 <section class="section">
   <div class="container">
     <h1 class="page-title">Configuración</h1>
@@ -32,8 +36,6 @@
           </div>
         </div>
       </div>
-
-
 
       <!-- Configuración general -->
       <div class="settings-card">
@@ -68,4 +70,5 @@
     </div>
   </div>
 </section>
+<script src="{% static 'configuraciones/js/configuraciones.js' %}?v=1"></script>
 {% endblock %}

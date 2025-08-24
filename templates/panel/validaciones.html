@@ -1,10 +1,11 @@
 {% extends 'base_app.html' %} {% block title %}Validaciones · SGIDT{% endblock%}
 
-<style></style>
+{% load static %}
 {% block content %}
+<link rel="stylesheet" href="{% static 'validaciones/css/validaciones.css' %}?v=1">
 <section class="section">
   <div class="container">
-    <h1 class="page-title">Validación de Documentos</h1>
+    <h1 class="page-title">Validación de Documentos SII</h1>
 
     <div class="validation-container">
       <!-- Formulario de validación -->
@@ -25,34 +26,17 @@
 
             <div class="form-group">
               <label for="docNumber">Número de Documento</label>
-              <input
-                type="text"
-                id="docNumber"
-                class="form-input"
-                placeholder="Ej: 123456"
-                required
-              />
+              <input type="text" id="docNumber" class="form-input" placeholder="Ej: 123456" required />
             </div>
 
             <div class="form-group">
               <label for="emissionDate">Fecha de Emisión</label>
-              <input
-                type="date"
-                id="emissionDate"
-                class="form-input"
-                required
-              />
+              <input type="date" id="emissionDate" class="form-input" required />
             </div>
 
             <div class="form-group">
               <label for="totalAmount">Monto Total</label>
-              <input
-                type="number"
-                id="totalAmount"
-                class="form-input"
-                placeholder="Ej: 250000"
-                required
-              />
+              <input type="number" id="totalAmount" class="form-input" placeholder="Ej: 250000" required />
             </div>
           </div>
 
@@ -70,4 +54,5 @@
     </div>
   </div>
 </section>
+<script src="{% static 'validaciones/js/validaciones.js' %}?v=1"></script>
 {% endblock %}

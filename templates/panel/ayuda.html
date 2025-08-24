@@ -1,13 +1,23 @@
-{% extends 'base_app.html' %} {% block title %}Ayuda · SGIDT{% endblock %}
-<style></style>
-{%block content %}
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}Ayuda · SGIDT{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=1">
+
 <section class="section">
   <div class="container">
+    <!-- Encabezado -->
     <h1 class="page-title">Ayuda y Soporte</h1>
+    <p class="muted max-w-760">
+      Encuentra respuestas rápidas, guías prácticas y soporte directo para sacar el máximo provecho de
+      <strong>SGIDT</strong>.
+    </p>
 
+    <!-- Tarjetas de ayuda -->
     <div class="help-grid">
       <div class="help-card">
-        <i class="fas fa-question-circle"></i>
+        <i class="fas fa-question-circle help-icon"></i>
         <h3>Preguntas Frecuentes</h3>
         <p>Respuestas a las dudas más comunes sobre el uso de SGIDT.</p>
         <a href="#" class="btn btn-secondary">
@@ -16,7 +26,7 @@
       </div>
 
       <div class="help-card">
-        <i class="fas fa-book"></i>
+        <i class="fas fa-book help-icon"></i>
         <h3>Manual de Usuario</h3>
         <p>Guía completa con ejemplos para aprovechar todas las funciones.</p>
         <a href="#" class="btn btn-secondary">
@@ -25,7 +35,7 @@
       </div>
 
       <div class="help-card">
-        <i class="fas fa-headset"></i>
+        <i class="fas fa-headset help-icon"></i>
         <h3>Soporte Técnico</h3>
         <p>¿Problemas técnicos? Nuestro equipo está para ayudarte.</p>
         <a href="mailto:soporte@sgidt.cl" class="btn btn-primary">
@@ -34,11 +44,9 @@
       </div>
 
       <div class="help-card">
-        <i class="fas fa-life-ring"></i>
+        <i class="fas fa-life-ring help-icon"></i>
         <h3>Centro de Estado</h3>
-        <p>
-          Revisa el estado de los servicios, integraciones y disponibilidad.
-        </p>
+        <p>Revisa el estado de los servicios, integraciones y disponibilidad.</p>
         <a href="#" class="btn btn-secondary">
           <i class="fas fa-signal"></i> Ver Estado
         </a>
@@ -46,42 +54,23 @@
     </div>
 
     <!-- Bloque de contacto rápido -->
-    <div class="settings-card" style="margin-top: 2rem">
-      <h3>Contacto Rápido</h3>
-      <form
-        id="helpContactForm"
-        onsubmit="event.preventDefault(); showNotification('Tu mensaje fue enviado. Te contactaremos pronto.', 'success');"
-      >
+    <div class="settings-card contact-card">
+      <h3 class="card-title">Contacto Rápido</h3>
+      <form id="helpContactForm"
+        onsubmit="event.preventDefault(); showNotification('Tu mensaje fue enviado. Te contactaremos pronto.', 'success');">
         <div class="form-grid">
           <div class="form-group">
             <label for="helpName">Nombre</label>
-            <input
-              type="text"
-              id="helpName"
-              class="form-input"
-              placeholder="Tu nombre"
-              required
-            />
+            <input type="text" id="helpName" class="form-input" placeholder="Tu nombre" required />
           </div>
           <div class="form-group">
             <label for="helpEmail">Email</label>
-            <input
-              type="email"
-              id="helpEmail"
-              class="form-input"
-              placeholder="tu@correo.cl"
-              required
-            />
+            <input type="email" id="helpEmail" class="form-input" placeholder="tu@correo.cl" required />
           </div>
           <div class="form-group" style="grid-column: 1 / -1">
             <label for="helpMessage">Mensaje</label>
-            <textarea
-              id="helpMessage"
-              class="form-input"
-              placeholder="Cuéntanos tu duda o problema"
-              rows="4"
-              required
-            ></textarea>
+            <textarea id="helpMessage" class="form-input" placeholder="Cuéntanos tu duda o problema" rows="4"
+              required></textarea>
           </div>
         </div>
         <button class="btn btn-primary" type="submit">

@@ -1,78 +1,112 @@
-{% extends 'base_app.html' %} {% block title %}Reportes · SGIDT{% endblock %}
-<style></style>
-{%block content %}
-<section class="section">
-  <div class="container">
-    <h1 class="page-title">Reportes</h1>
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}Reportes · SGIDT{% endblock %}
 
-    <!-- Controles superiores -->
-    <div class="reports-controls">
-      <div class="period-selector">
-        <label for="reportPeriod">Período:</label>
-        <select id="reportPeriod" class="form-select">
+{% block content %}
+<link rel="stylesheet" href="{% static 'reportes/css/reportes.css' %}?v=1">
+
+<section class="rp-page">
+  <div class="rp-container">
+    <!-- Encabezado -->
+    <header class="rp-head">
+      <div>
+        <h1 class="rp-title">Reportes</h1>
+        <p class="rp-subtitle">Visualiza y exporta tus indicadores tributarios por período.</p>
+      </div>
+
+      <!-- Controles superiores -->
+      <div class="rp-controls">
+        <label for="reportPeriod" class="rp-label">Período</label>
+        <select id="reportPeriod" class="rp-select">
           <option value="monthly" selected>Mensual</option>
           <option value="quarterly">Trimestral</option>
           <option value="yearly">Anual</option>
         </select>
-      </div>
 
-      <div class="export-buttons">
-        <button class="btn btn-secondary" onclick="exportReport('csv', event)">
-          <i class="fas fa-file-csv"></i> Exportar CSV
+        <button class="btn btn-ghost" onclick="exportReport('csv', event)">
+          <i class="fas fa-file-csv"></i> CSV
         </button>
-        <button
-          class="btn btn-secondary"
-          onclick="exportReport('excel', event)"
-        >
-          <i class="fas fa-file-excel"></i> Exportar Excel
+        <button class="btn btn-ghost" onclick="exportReport('excel', event)">
+          <i class="fas fa-file-excel"></i> Excel
         </button>
       </div>
-    </div>
+    </header>
 
-    <!-- Tarjeta de resumen -->
-    <div class="reports-grid">
-      <div class="report-card">
-        <h3>Resumen Financiero</h3>
-        <div class="report-summary">
-          <div class="summary-item">
-            <span class="label">Ingresos Totales:</span>
-            <span class="value positive" id="summaryIncome">$45.678.900</span>
+    <!-- Resumen + Detalle -->
+    <div class="rp-grid">
+      <!-- Resumen -->
+      <section class="card">
+        <h3 class="card-title">Resumen Financiero</h3>
+
+        <div class="rp-summary">
+          <div class="sum-item">
+            <span class="sum-label">Ingresos Totales</span>
+            <span class="sum-value positive" id="summaryIncome">$45.678.900</span>
           </div>
-          <div class="summary-item">
-            <span class="label">Gastos Totales:</span>
-            <span class="value negative" id="summaryExpenses">$32.456.780</span>
+          <div class="sum-item">
+            <span class="sum-label">Gastos Totales</span>
+            <span class="sum-value negative" id="summaryExpenses">$32.456.780</span>
           </div>
-          <div class="summary-item">
-            <span class="label">IVA Débito:</span>
-            <span class="value" id="summaryIvaDebit">$8.678.991</span>
+          <div class="sum-item">
+            <span class="sum-label">IVA Débito</span>
+            <span class="sum-value" id="summaryIvaDebit">$8.678.991</span>
           </div>
-          <div class="summary-item">
-            <span class="label">IVA Crédito:</span>
-            <span class="value" id="summaryIvaCredit">$6.166.787</span>
+          <div class="sum-item">
+            <span class="sum-label">IVA Crédito</span>
+            <span class="sum-value" id="summaryIvaCredit">$6.166.787</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Tabla de detalle -->
-      <div class="report-table-container">
-        <h3>Detalle por Período</h3>
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th>Período</th>
-              <th>Ingresos</th>
-              <th>Gastos</th>
-              <th>IVA Débito</th>
-              <th>IVA Crédito</th>
-              <th>Resultado</th>
-            </tr>
-          </thead>
-          <tbody id="reportTableBody">
-            <!-- Se rellena desde script.js → loadReports() -->
-          </tbody>
-        </table>
-      </div>
+      <!-- Tabla -->
+      <section class="card">
+        <h3 class="card-title">Detalle por Período</h3>
+
+        <div class="rp-tablewrap">
+          <table class="rp-table">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Ingresos</th>
+                <th>Gastos</th>
+                <th>IVA Débito</th>
+                <th>IVA Crédito</th>
+                <th>Resultado</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody">
+              <!-- se llena desde JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </div>
 </section>
+
+<script>
+  // Ejemplo de carga mínima si aún no tienes script
+  (function () {
+    const rows = [
+      { p: '2025-01', i: 4567890, g: 3245678, d: 867899, c: 616678, r: 1322212 },
+      { p: '2024-12', i: 4211000, g: 2978000, d: 801000, c: 571000, r: 1233000 },
+      { p: '2024-11', i: 3980000, g: 2846000, d: 760000, c: 545000, r: 1134000 },
+    ];
+    const fmt = new Intl.NumberFormat('es-CL');
+    const tbody = document.getElementById('reportTableBody');
+    if (!tbody || tbody.children.length) return;
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.p}</td>
+        <td>$${fmt.format(r.i)}</td>
+        <td>$${fmt.format(r.g)}</td>
+        <td>$${fmt.format(r.d)}</td>
+        <td>$${fmt.format(r.c)}</td>
+        <td><span class="badge ${r.r >= 0 ? 'ok' : 'off'}">${r.r >= 0 ? '▲ ' : '▼ '}$${fmt.format(Math.abs(r.r))}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  })();
+</script>
 {% endblock %}
