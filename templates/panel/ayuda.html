@@ -7,11 +7,9 @@
 
 <section class="section">
   <div class="container">
-    <!-- Encabezado -->
     <h1 class="page-title">Ayuda y Soporte</h1>
     <p class="muted max-w-760">
-      Encuentra respuestas rápidas, guías prácticas y soporte directo para sacar el máximo provecho de
-      <strong>SGIDT</strong>.
+      Encuentra respuestas rápidas, guías prácticas y soporte directo para <strong>SGIDT</strong>.
     </p>
 
     <!-- Tarjetas de ayuda -->
@@ -53,24 +51,25 @@
       </div>
     </div>
 
-    <!-- Bloque de contacto rápido -->
     <div class="settings-card contact-card">
       <h3 class="card-title">Contacto Rápido</h3>
-      <form id="helpContactForm"
-        onsubmit="event.preventDefault(); showNotification('Tu mensaje fue enviado. Te contactaremos pronto.', 'success');">
+
+      <form id="helpContactForm" action="{% url 'panel:ayuda_contacto' %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="hp" style="display:none" tabindex="-1" autocomplete="off">
         <div class="form-grid">
           <div class="form-group">
             <label for="helpName">Nombre</label>
-            <input type="text" id="helpName" class="form-input" placeholder="Tu nombre" required />
+            <input type="text" id="helpName" name="name" class="form-input" placeholder="Tu nombre" required>
           </div>
           <div class="form-group">
             <label for="helpEmail">Email</label>
-            <input type="email" id="helpEmail" class="form-input" placeholder="tu@correo.cl" required />
+            <input type="email" id="helpEmail" name="email" class="form-input" placeholder="tu@correo.cl" required>
           </div>
           <div class="form-group" style="grid-column: 1 / -1">
             <label for="helpMessage">Mensaje</label>
-            <textarea id="helpMessage" class="form-input" placeholder="Cuéntanos tu duda o problema" rows="4"
-              required></textarea>
+            <textarea id="helpMessage" name="message" class="form-input" rows="4"
+              placeholder="Cuéntanos tu duda o problema" required></textarea>
           </div>
         </div>
         <button class="btn btn-primary" type="submit">
@@ -80,4 +79,6 @@
     </div>
   </div>
 </section>
+
+<script src="{% static 'ayuda/js/ayuda_contacto.js' %}?v=3"></script>
 {% endblock %}
