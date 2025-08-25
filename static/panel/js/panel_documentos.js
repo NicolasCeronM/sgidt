@@ -84,13 +84,15 @@ const csrftoken = getCookie("csrftoken");
 btnSelect?.addEventListener("click", () => fileInput?.click());
 uploadArea?.addEventListener("click", () => fileInput?.click());
 uploadArea?.addEventListener("dragover", (e) => {
-  e.preventDefault(); uploadArea.classList.add("dragging");
+  e.preventDefault();
+  uploadArea.classList.add("dragging");
 });
 uploadArea?.addEventListener("dragleave", () => {
   uploadArea.classList.remove("dragging");
 });
 uploadArea?.addEventListener("drop", (e) => {
-  e.preventDefault(); uploadArea.classList.remove("dragging");
+  e.preventDefault();
+  uploadArea.classList.remove("dragging");
   if (e.dataTransfer?.files?.length) doUpload(e.dataTransfer.files);
 });
 fileInput?.addEventListener("change", () => {
@@ -111,7 +113,10 @@ async function doUpload(files) {
   if (![...fd.keys()].length) return;
 
   const UPLOAD_KEY = "upload-progress";
-  const uploadingToast = showToast("Subiendo archivos…", "info", { key: UPLOAD_KEY, persist: true });
+  const uploadingToast = showToast("Subiendo archivos…", "info", {
+    key: UPLOAD_KEY,
+    persist: true,
+  });
   if (uploadingToast && !uploadingToast.querySelector(".spinner")) {
     const sp = document.createElement("div");
     sp.className = "spinner";
@@ -127,18 +132,24 @@ async function doUpload(files) {
 
     if (!res.ok) {
       const text = await res.text();
-      showToast(`Error al subir: ${text}`, "error", { key: UPLOAD_KEY, duration: 6000 });
+      showToast(`Error al subir: ${text}`, "error", {
+        key: UPLOAD_KEY,
+        duration: 6000,
+      });
       return;
     }
 
     const data = await res.json();
     const normalizedErrors = (data.errors || []).map((e) =>
-      /UNIQUE constraint.*hash_sha256/i.test(e) ? "Archivo duplicado en la empresa" : e
+      /UNIQUE constraint.*hash_sha256/i.test(e)
+        ? "Archivo duplicado en la empresa"
+        : e
     );
 
     let msg = `Subidos: ${data.created}`;
     if (data.skipped) msg += ` | Duplicados: ${data.skipped}`;
-    if (normalizedErrors.length) msg += ` | Errores: ${normalizedErrors.join(", ")}`;
+    if (normalizedErrors.length)
+      msg += ` | Errores: ${normalizedErrors.join(", ")}`;
 
     if (data.created > 0 && !normalizedErrors.length) {
       showToast(msg, "success", { key: UPLOAD_KEY, duration: 5000 });
@@ -153,7 +164,10 @@ async function doUpload(files) {
     if (fileInput) fileInput.value = "";
     loadDocuments();
   } catch (err) {
-    showToast(`Error de red al subir: ${String(err)}`, "error", { key: UPLOAD_KEY, duration: 7000 });
+    showToast(`Error de red al subir: ${String(err)}`, "error", {
+      key: UPLOAD_KEY,
+      duration: 7000,
+    });
   }
 }
 
@@ -188,21 +202,33 @@ function renderRows(rows) {
     tbody.innerHTML = `<tr><td colspan="7">No hay documentos</td></tr>`;
     return;
   }
-  tbody.innerHTML = rows.map((r) => `
+
+  const fmtCLP = (v) =>
+    new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+      maximumFractionDigits: 0,
+    }).format(v);
+
+  tbody.innerHTML = rows
+    .map(
+      (r) => `
     <tr>
-      <td>${r.fecha}</td>
+      <td>${r.fecha || "—"}</td>
       <td>${r.tipo || "—"}</td>
       <td>${r.folio || "—"}</td>
       <td>${r.rut_emisor || "—"}</td>
-      <td>${
-        r.monto == null
-          ? "—"
-          : new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(r.monto)
-      }</td>
+      <td>${r.total == null ? "—" : fmtCLP(r.total)}</td>
       <td>${r.estado || "—"}</td>
-      <td>${r.archivo_url ? `<a href="${r.archivo_url}" target="_blank" rel="noopener">Ver</a>` : ""}</td>
+      <td>${
+        r.archivo
+          ? `<a href="${r.archivo}" target="_blank" rel="noopener">Ver</a>`
+          : ""
+      }</td>
     </tr>
-  `).join("");
+  `
+    )
+    .join("");
 }
 
 document.addEventListener("DOMContentLoaded", loadDocuments);
