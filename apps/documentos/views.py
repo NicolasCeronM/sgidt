@@ -8,10 +8,13 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from .models import Documento
-from apps.empresas.models import Empresa
+from apps.empresas.models import Empresa, EmpresaUsuario
 from apps.documentos import ocr
 import os
 
+def _empresa_ids_del_usuario(user):
+    """Retorna IDs de empresas a las que pertenece el usuario vía EmpresaUsuario."""
+    return EmpresaUsuario.objects.filter(usuario=user).values_list("empresa_id", flat=True)
 
 # -------------------------------------------------------------------
 # Helper: convierte cualquier estructura (dict/list) a una versión
@@ -57,9 +60,9 @@ def documentos_page(request):
 @login_required
 @require_GET
 def documentos_list_api(request):
-    # 1) Restringe por empresas del propietario
-    empresas = Empresa.objects.filter(propietario=request.user)
-    qs = Documento.objects.filter(empresa__in=empresas).order_by("-creado_en")
+    # 1) Restringe por empresas donde el usuario es miembro
+    empresa_ids = list(_empresa_ids_del_usuario(request.user))
+    qs = Documento.objects.filter(empresa_id__in=empresa_ids).order_by("-creado_en")
 
     # 2) Lee filtros desde querystring (se aceptan dos alias por campo)
     f_desde = request.GET.get("from") or request.GET.get("date_from")
@@ -115,10 +118,22 @@ def documentos_list_api(request):
 @login_required
 @require_POST
 def documentos_upload_api(request):
-    # 1) Selecciona empresa del usuario (MVP: la primera). Luego puedes manejar "empresa activa" en sesión.
-    empresa = Empresa.objects.filter(propietario=request.user).first()
+    # --- Empresa activa desde sesión si existe ---
+    empresa = None
+    eid = request.session.get("empresa_activa_id")
+    if eid:
+        # Valida que el usuario tenga membresía en esa empresa
+        if EmpresaUsuario.objects.filter(usuario=request.user, empresa_id=eid).exists():
+            empresa = Empresa.objects.filter(id=eid).first()
+
+    # --- Si no hay activa válida, toma la primera empresa donde es miembro (MVP) ---
     if not empresa:
-        return HttpResponseBadRequest("Debes crear primero una empresa")
+        eu = EmpresaUsuario.objects.filter(usuario=request.user).select_related("empresa").first()
+        if eu:
+            empresa = eu.empresa
+
+    if not empresa:
+        return HttpResponseBadRequest("Debes crear primero una empresa o no tienes permisos en ninguna.")
 
     # 2) Obtiene archivos desde el form-data (admite 'files[]' o 'files')
     files = request.FILES.getlist("files[]") or request.FILES.getlist("files")
@@ -129,19 +144,22 @@ def documentos_upload_api(request):
     skipped = 0
     errors = []
 
-    # 3) Itera archivos subidos
     for f in files:
         try:
-            # 3.1) Crea documento en estado 'procesando' (save() calcula hash/mime/size)
-            doc = Documento(empresa=empresa, subido_por=request.user, archivo=f, estado="procesando")
+            doc = Documento(
+                empresa=empresa,
+                subido_por=request.user,
+                archivo=f,
+                estado="procesando",
+            )
             doc.save()
 
-            # 3.2) Parsing sincrónico (MVP). Luego mover a Celery.
+            # Parsing/OCR (igual que antes)
             local_path = doc.archivo.path
             result = ocr.parse_file(local_path, doc.mime_type)
             doc.ocr_json = _to_jsonable(result)
 
-            # 3.3) Persistencia de campos extraídos
+            # Persistencia de campos extraídos (igual)
             doc.tipo_documento = result.get("tipo_documento", "desconocido")
             doc.folio = result.get("folio") or ""
             doc.fecha_emision = result.get("fecha_emision")
@@ -151,23 +169,17 @@ def documentos_upload_api(request):
             doc.iva = result.get("iva")
             doc.total = result.get("total")
 
-            # FIX: convierte cualquier Decimal en el dict a tipos JSON‑safe
-            doc.ocr_json = _to_jsonable(result)
-
             doc.estado = "procesado"
             doc.save()
             created += 1
 
         except IntegrityError:
-            # 3.4) Duplicado por hash (mismo archivo) -> se omite
             skipped += 1
 
         except Exception as e:
-            # 3.5) Cualquier error de parsing u otro -> marca como 'error' y registra mensaje
             if 'doc' in locals():
                 doc.estado = "error"
                 doc.save(update_fields=["estado"])
             errors.append(f"{getattr(f, 'name', 'archivo')}: {str(e)}")
 
-    # 4) Respuesta resumida para el frontend
     return JsonResponse({"created": created, "skipped": skipped, "errors": errors})

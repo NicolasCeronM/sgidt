@@ -30,6 +30,7 @@ urlpatterns = [
 
     # Autenticación
     path("usuarios/", include("apps.usuarios.urls", namespace="usuarios")),
+    path("empresas/", include(("apps.empresas.urls", "empresas"), namespace="empresas")),
 
     # App privada
     path("app/", include("apps.panel.urls", namespace="panel")),         # /app/
