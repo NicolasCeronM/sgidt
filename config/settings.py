@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,9 +25,12 @@ SECRET_KEY = 'django-insecure-=g+wgz+d6t+u60f(ar0$!#o#-$m=(nwcv)!_df5oz^gyuee*e0
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-ALLOWED_HOSTS = []
-
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 
 # -------------------------------------------------------------------
 # APPS
@@ -48,6 +52,18 @@ THIRD_PARTY_APPS = [
     # "storages",
 ]
 
+
+
+# --- Google OAuth (DEV) ---
+GOOGLE_CLIENT_ID = "823310417562-k5gtt54p653j47tjidrnq3utt7gdjvmr.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "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"
+GOOGLE_REDIRECT_URI = "http://localhost:8000/integraciones/google/callback/"
+GOOGLE_SCOPES = [
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive.metadata.readonly",
+]
+
+
 # Apps del proyecto
 LOCAL_APPS = [
     "apps.documentos",
@@ -56,6 +72,7 @@ LOCAL_APPS = [
     "apps.panel",
     "apps.sitio",
     'apps.proveedores',
+    "apps.integraciones",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

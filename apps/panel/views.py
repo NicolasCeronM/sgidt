@@ -14,6 +14,8 @@ from .forms import HelpContactForm
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from apps.integraciones.models import GoogleDriveCredential
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "panel/dashboard.html"
@@ -86,3 +88,12 @@ def help_contact(request):
 
     messages.success(request, "Tu mensaje fue enviado. Te contactaremos pronto.")
     return redirect(reverse("panel:ayuda"))
+
+
+
+@login_required
+def configuraciones(request):
+    drive_connected = GoogleDriveCredential.objects.filter(user=request.user).exists()
+    return render(request, "panel/configuraciones.html", {
+        "drive_connected": drive_connected
+    })

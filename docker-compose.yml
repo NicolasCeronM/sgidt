@@ -16,6 +16,12 @@ services:
       retries: 10
 
   web:
+    environment:
+      OAUTHLIB_INSECURE_TRANSPORT: "1"
+      GOOGLE_CLIENT_ID: "823310417562-k5gtt54p653j47tjidrnq3utt7gdjvmr.apps.googleusercontent.com"
+      GOOGLE_CLIENT_SECRET: "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"
+      GOOGLE_REDIRECT_URI: "http://localhost:8000/integraciones/google/callback/"
+      GOOGLE_SCOPES: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.metadata.readonly"
     build: .
     command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
@@ -25,7 +31,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      
+
   adminer:
     image: adminer
     restart: always
@@ -33,7 +39,6 @@ services:
       - "8080:8080"
     depends_on:
       - db
-
 
 volumes:
   pgdata:

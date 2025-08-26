@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
+from apps.panel import views as panel_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -33,9 +34,13 @@ urlpatterns = [
     # App privada
     path("app/", include("apps.panel.urls", namespace="panel")),         # /app/
     path("proveedor/", include(("apps.proveedores.urls"))),
+    path("configuracion/", panel_views.configuraciones, name="configuraciones"),
 
     #correo
     path("correo/", include("apps.correo.urls", namespace="correo")),
+
+    # Integraciones
+    path("integraciones/", include("apps.integraciones.urls", namespace="integraciones")),
 
 ]
 

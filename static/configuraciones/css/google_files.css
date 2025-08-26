@@ -1,0 +1,152 @@
+/* ---- Card base ---- */
+.gd-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.gd-card__header {
+  background: linear-gradient(180deg, #111827, #0b1320);
+  color: #fff;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.gd-card__title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.gd-card__title img {
+  width: 34px;
+  height: 34px;
+}
+.gd-card__title h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.gd-card__title small {
+  opacity: 0.75;
+  display: block;
+}
+
+.gd-card__body {
+  padding: 18px 22px;
+}
+
+/* ---- Actions (search + buttons) ---- */
+.gd-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gd-search {
+  position: relative;
+}
+.gd-search input {
+  background: #0f172a;
+  color: #fff;
+  border: 1px solid #24324a;
+  padding: 8px 36px 8px 12px;
+  border-radius: 10px;
+  width: 240px;
+}
+.gd-search i {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #93a4bf;
+}
+.gd-buttons .btn {
+  margin-left: 6px;
+}
+
+/* ---- Table ---- */
+.gd-table-wrap {
+  overflow-x: auto;
+}
+.gd-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.gd-table th,
+.gd-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f7;
+  text-align: left;
+  vertical-align: middle;
+}
+.gd-table th {
+  color: #5b6b86;
+  font-weight: 600;
+  font-size: 13px;
+}
+.gd-table td i.far.fa-file {
+  color: #64748b;
+  margin-right: 8px;
+}
+
+.mime-tag {
+  display: inline-block;
+  font-size: 12px;
+  background: #eef2ff;
+  color: #3949ab;
+  padding: 6px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.date-chip {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.link-open {
+  color: #2563eb;
+  font-weight: 600;
+}
+.link-open i {
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+/* ---- Empty state ---- */
+.gd-empty {
+  text-align: center;
+  color: #54657d;
+  padding: 34px 10px;
+}
+.gd-empty i {
+  font-size: 42px;
+  color: #93a4bf;
+  margin-bottom: 10px;
+}
+.gd-empty h4 {
+  margin: 6px 0 4px;
+  color: #0f172a;
+}
+.gd-empty__actions {
+  margin-top: 10px;
+}
+
+/* Small screens */
+@media (max-width: 640px) {
+  .gd-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .gd-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .gd-search input {
+    width: 100%;
+  }
+}

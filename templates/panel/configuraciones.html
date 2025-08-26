@@ -9,22 +9,50 @@
   <div class="container">
     <h1 class="page-title">Configuración</h1>
 
+    {# Mostrar solo errores/avisos, NO los success #}
+    {% if messages %}
+    <div class="messages-stack">
+      {% for message in messages %}
+      {% if 'error' in message.tags or 'warning' in message.tags %}
+      <div class="alert alert-{{ message.tags|default:'info' }}">
+        {{ message }}
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="settings-grid">
       <!-- Integraciones en la nube -->
       <div class="settings-card">
         <h3>Integraciones en la Nube</h3>
 
+        <!-- Google Drive -->
         <div class="integration-item">
           <div class="integration-info">
             <i class="fab fa-google-drive"></i>
             <span>Google Drive</span>
           </div>
+
           <div class="integration-status">
+            {% if drive_connected %}
             <span class="status-badge connected">Conectado</span>
-            <button class="btn btn-small btn-secondary">Configurar</button>
+            <a href="{% url 'integraciones:google_files' %}" class="btn btn-small btn-secondary">
+              Ver
+            </a>
+            <a href="{% url 'integraciones:google_disconnect' %}" class="btn btn-small btn-danger">
+              Desconectar
+            </a>
+            {% else %}
+            <span class="status-badge disconnected">Desconectado</span>
+            <a href="{% url 'integraciones:google_connect' %}" class="btn btn-small btn-primary">
+              Conectar
+            </a>
+            {% endif %}
           </div>
         </div>
 
+        <!-- Dropbox (placeholder) -->
         <div class="integration-item">
           <div class="integration-info">
             <i class="fab fa-dropbox"></i>
@@ -32,7 +60,9 @@
           </div>
           <div class="integration-status">
             <span class="status-badge disconnected">Desconectado</span>
-            <button class="btn btn-small btn-primary">Conectar</button>
+            <a href="#" class="btn btn-small btn-primary" aria-disabled="true">
+              Conectar
+            </a>
           </div>
         </div>
       </div>
@@ -40,6 +70,7 @@
       <!-- Configuración general -->
       <div class="settings-card">
         <h3>Configuración General</h3>
+
         <form id="generalSettingsForm"
           onsubmit="event.preventDefault(); showNotification('Configuración guardada', 'success');">
           <div class="form-group">
@@ -70,5 +101,6 @@
     </div>
   </div>
 </section>
+
 <script src="{% static 'configuraciones/js/configuraciones.js' %}?v=1"></script>
 {% endblock %}
