@@ -1,0 +1,153 @@
+{% extends "base_public.html" %}
+{% load static %}
+
+{% block title %}Registrar PyME - SGIDT{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<br>
+<br>
+<div class="container py-5" style="max-width: 880px;">
+  <div class="card shadow-sm">
+    <div class="card-body p-4 p-md-5">
+      <h1 class="h3 mb-3">Crear cuenta para tu PyME</h1>
+      <p class="text-muted mb-4">Completa los datos de tu empresa y del usuario administrador.</p>
+
+      {% if messages %}
+        {% for m in messages %}
+          <div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form id="registroEmpresaForm" method="post" novalidate>
+        {% csrf_token %}
+
+        <h5 class="mt-2">Datos de la Empresa</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">RUT de la empresa</label>
+            {{ form.empresa_rut }}
+            {% if form.empresa_rut.errors %}<div class="text-danger small">{{ form.empresa_rut.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Nombre o razón social</label>
+            {{ form.razon_social }}
+            {% if form.razon_social.errors %}<div class="text-danger small">{{ form.razon_social.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Tipo societario</label>
+            {{ form.tipo_societario }}
+            {% if form.tipo_societario.errors %}<div class="text-danger small">{{ form.tipo_societario.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Régimen tributario</label>
+            {{ form.regimen_tributario }}
+            {% if form.regimen_tributario.errors %}<div class="text-danger small">{{ form.regimen_tributario.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Giro (opcional)</label>
+            {{ form.giro }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Código actividad SII (opcional)</label>
+            {{ form.codigo_actividad }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Email empresa (opcional)</label>
+            {{ form.email_empresa }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Teléfono (opcional)</label>
+            {{ form.telefono }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Dirección (opcional)</label>
+            {{ form.direccion }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Comuna (opcional)</label>
+            {{ form.comuna }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Región (opcional)</label>
+            {{ form.region }}
+          </div>
+        </div>
+
+        <h5 class="mt-4">Usuario Administrador</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Nombre</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Apellido</label>
+            {{ form.last_name }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email de acceso</label>
+            {{ form.user_email }}
+            {% if form.user_email.errors %}<div class="text-danger small">{{ form.user_email.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">RUT representante (opcional)</label>
+            {{ form.user_rut }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Contraseña</label>
+            {{ form.password1 }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Repite la contraseña</label>
+            {{ form.password2 }}
+          </div>
+
+          <div class="col-12">
+            <div class="form-check mt-2">
+              {{ form.aceptar_terminos }}
+              <label class="form-check-label" for="id_aceptar_terminos">Acepto términos y condiciones</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid mt-4">
+          <button type="submit" id="submitBtn" class="btn btn-success">
+            <span id="btnText">Crear mi PyME</span>
+            <span id="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none;"></span>
+          </button>
+        </div>
+
+        <div class="text-center mt-3">
+          <a href="{% url 'usuarios:login' %}">¿Ya tienes cuenta? Inicia sesión</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Spinner al enviar
+  (function () {
+    const form = document.getElementById("registroEmpresaForm");
+    const btn = document.getElementById("submitBtn");
+    const txt = document.getElementById("btnText");
+    const load = document.getElementById("loading");
+    if (!form) return;
+    form.addEventListener("submit", function () {
+      if (!form.checkValidity()) return;
+      btn.disabled = true;
+      txt.style.display = "none";
+      load.style.display = "inline-block";
+    });
+  })();
+</script>
+{% endblock %}
