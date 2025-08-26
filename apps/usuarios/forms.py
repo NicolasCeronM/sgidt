@@ -10,7 +10,7 @@ class FormularioLogin(AuthenticationForm):
         label="Correo o RUT",
         widget=forms.TextInput(attrs={
             "autofocus": True,
-            "placeholder": "tucorreo@dominio.cl o 12.345.678-9"
+            "placeholder": "tucorreo@dominio.cl o 12345678-9"
         })
     )
     password = forms.CharField(label="Contraseña", widget=forms.PasswordInput)

@@ -9,7 +9,7 @@ from django.views import View
 from .forms import RegistroPyMEForm
 
 class RegistroPyMEView(View):
-    template_name = "usuarios/empresa_form.html"
+    template_name = "usuarios/registro.html"
 
     def get(self, request):
         return render(request, self.template_name, {"form": RegistroPyMEForm()})

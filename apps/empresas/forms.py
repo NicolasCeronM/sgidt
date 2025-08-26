@@ -25,7 +25,7 @@ class RegistroPyMEForm(forms.Form):
     first_name = forms.CharField(label="Nombre", max_length=150)
     last_name = forms.CharField(label="Apellido", max_length=150)
     user_email = forms.EmailField(label="Email de acceso")
-    user_rut = forms.CharField(label="RUT del representante (opcional)", max_length=12, required=False)
+    user_rut = forms.CharField(label="RUT del representante", max_length=12, required=True)
     password1 = forms.CharField(label="Contraseña", strip=False, widget=forms.PasswordInput)
     password2 = forms.CharField(label="Repite la contraseña", strip=False, widget=forms.PasswordInput)
     aceptar_terminos = forms.BooleanField(label="Acepto términos y condiciones", required=True)
