@@ -22,82 +22,88 @@
     </div>
     {% endif %}
 
+    {# GRID en 2 columnas: izquierda Integraciones / derecha Configuración General #}
     <div class="settings-grid">
-      <!-- Integraciones en la nube -->
-      <div class="settings-card">
-        <h3>Integraciones en la Nube</h3>
 
-        <!-- Google Drive -->
-        <div class="integration-item">
-          <div class="integration-info">
-            <i class="fab fa-google-drive"></i>
-            <span>Google Drive</span>
+      {# Columna IZQUIERDA: Integraciones en la Nube #}
+      <div class="integrations-column">
+        <div class="settings-card">
+          <h3>Integraciones en la Nube</h3>
+
+          <!-- Google Drive -->
+          <div class="integration-item">
+            <div class="integration-info">
+              <i class="fab fa-google-drive"></i>
+              <span>Google Drive</span>
+            </div>
+
+            <div class="integration-status">
+              {% if drive_connected %}
+              <span class="status-badge connected">Conectado</span>
+              <a href="{% url 'integraciones:google_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
+              <a href="{% url 'integraciones:google_files' %}" class="btn btn-small btn-secondary">Ver</a>
+              {% else %}
+              <span class="status-badge disconnected">Desconectado</span>
+              <a href="{% url 'integraciones:google_connect' %}" class="btn btn-small btn-primary">Conectar</a>
+              {% endif %}
+            </div>
           </div>
 
-          <div class="integration-status">
-            {% if drive_connected %}
-            <span class="status-badge connected">Conectado</span>
-            <a href="{% url 'integraciones:google_files' %}" class="btn btn-small btn-secondary">
-              Ver
-            </a>
-            <a href="{% url 'integraciones:google_disconnect' %}" class="btn btn-small btn-danger">
-              Desconectar
-            </a>
-            {% else %}
-            <span class="status-badge disconnected">Desconectado</span>
-            <a href="{% url 'integraciones:google_connect' %}" class="btn btn-small btn-primary">
-              Conectar
-            </a>
-            {% endif %}
-          </div>
-        </div>
+          <!-- Dropbox -->
+          <div class="integration-item">
+            <div class="integration-info">
+              <i class="fab fa-dropbox"></i>
+              <span>Dropbox</span>
+            </div>
 
-        <!-- Dropbox (placeholder) -->
-        <div class="integration-item">
-          <div class="integration-info">
-            <i class="fab fa-dropbox"></i>
-            <span>Dropbox</span>
-          </div>
-          <div class="integration-status">
-            <span class="status-badge disconnected">Desconectado</span>
-            <a href="#" class="btn btn-small btn-primary" aria-disabled="true">
-              Conectar
-            </a>
+            <div class="integration-status">
+              {% if dropbox_connected %}
+              <span class="status-badge connected">Conectado</span>
+              <a href="{% url 'integraciones:dropbox_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
+              <a href="{% url 'integraciones:dropbox_files' %}" class="btn btn-small btn-secondary">Ver</a>
+              {% else %}
+              <span class="status-badge disconnected">Desconectado</span>
+              <a href="{% url 'integraciones:dropbox_connect' %}" class="btn btn-small btn-primary">Conectar</a>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Configuración general -->
-      <div class="settings-card">
-        <h3>Configuración General</h3>
+      {# Columna DERECHA: Configuración General #}
+      <div class="general-column">
+        <div class="settings-card">
+          <h3>Configuración General</h3>
 
-        <form id="generalSettingsForm"
-          onsubmit="event.preventDefault(); showNotification('Configuración guardada', 'success');">
-          <div class="form-group">
-            <label for="companyRut">RUT de la Empresa</label>
-            <input type="text" id="companyRut" class="form-input" placeholder="76.123.456-7" value="76.123.456-7" />
-          </div>
+          <form id="generalSettingsForm"
+            onsubmit="event.preventDefault(); showNotification('Configuración guardada', 'success');">
+            <div class="form-group">
+              <label for="companyRut">RUT de la Empresa</label>
+              <input type="text" id="companyRut" class="form-input" placeholder="76.123.456-7" value="76.123.456-7" />
+            </div>
 
-          <div class="form-group">
-            <label for="companyName">Razón Social</label>
-            <input type="text" id="companyName" class="form-input" placeholder="Mi Empresa SpA"
-              value="Mi Empresa SpA" />
-          </div>
+            <div class="form-group">
+              <label for="companyName">Razón Social</label>
+              <input type="text" id="companyName" class="form-input" placeholder="Mi Empresa SpA"
+                value="Mi Empresa SpA" />
+            </div>
 
-          <div class="form-group">
-            <label for="autoBackup">Respaldo Automático</label>
-            <select id="autoBackup" class="form-select">
-              <option value="daily">Diario</option>
-              <option value="weekly" selected>Semanal</option>
-              <option value="monthly">Mensual</option>
-            </select>
-          </div>
+            <div class="form-group">
+              <label for="autoBackup">Respaldo Automático</label>
+              <select id="autoBackup" class="form-select">
+                <option value="daily">Diario</option>
+                <option value="weekly" selected>Semanal</option>
+                <option value="monthly">Mensual</option>
+              </select>
+            </div>
 
-          <button class="btn btn-primary" type="submit">
-            <i class="fas fa-save"></i> Guardar Configuración
-          </button>
-        </form>
+            <button class="btn btn-primary" type="submit">
+              <i class="fas fa-save"></i> Guardar Configuración
+            </button>
+          </form>
+        </div>
       </div>
+
     </div>
   </div>
 </section>

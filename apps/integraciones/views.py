@@ -7,15 +7,18 @@ from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.errors import HttpError
-
 from .models import GoogleDriveCredential
 from .google_service import build_drive_service, to_json, credentials_from_json
 from django.shortcuts import render
+from .models import DropboxCredential
+from dropbox import Dropbox, DropboxOAuth2Flow
+import time
+
 
 # A dónde volver siempre (ajusta si usas namespace: p.ej. "panel:configuraciones")
 REDIRECT_NAME = "panel:configuraciones"
 
-
+# ----- Google Integration -------#
 def _flow():
     """Crea el flow OAuth con los valores del settings."""
     return Flow.from_client_config(
@@ -169,3 +172,73 @@ def google_files(request):
         error = str(e)
 
     return render(request, "integraciones/google_files.html", {"files": files, "error": error})
+
+
+
+# ----- Dropbox Integration -------#
+def _flow_dropbox(request):
+    scopes = getattr(settings, "DROPBOX_SCOPES", [
+        "files.metadata.read", "files.content.read", "files.content.write"
+    ])
+
+    return DropboxOAuth2Flow(
+        consumer_key=settings.DROPBOX_APP_KEY,
+        consumer_secret=settings.DROPBOX_APP_SECRET,
+        redirect_uri=settings.DROPBOX_REDIRECT_URI,
+        session=request.session,
+        csrf_token_session_key="dropbox_auth_csrf",
+        token_access_type="offline",
+        scope=scopes, 
+    )
+
+@login_required
+def dropbox_connect(request):
+    return redirect(_flow_dropbox(request).start())
+
+@login_required
+def dropbox_callback(request):
+    try:
+        result = _flow_dropbox(request).finish(request.GET)
+        data = {
+            "refresh_token": getattr(result, "refresh_token", None),
+            "access_token":  getattr(result, "access_token", None),
+            "expires_at":    int(time.time()) + 4*60*60,
+            "account_id":    getattr(result, "account_id", None),
+        }
+        if not data["refresh_token"]:
+            messages.error(request, "Dropbox no entregó refresh_token. Revisa permisos/offline access.")
+            return redirect(REDIRECT_NAME)
+
+        DropboxCredential.objects.update_or_create(
+            user=request.user, defaults={"credentials": data}
+        )
+        messages.success(request, "Dropbox conectado correctamente.")
+    except Exception as e:
+        messages.error(request, f"Error al conectar Dropbox: {e}")
+    return redirect(REDIRECT_NAME)
+
+@login_required
+def dropbox_disconnect(request):
+    DropboxCredential.objects.filter(user=request.user).delete()
+    messages.info(request, "Dropbox desconectado.")
+    return redirect(REDIRECT_NAME)
+
+@login_required
+def dropbox_files(request):
+    cred = DropboxCredential.objects.filter(user=request.user).first()
+    if not cred:
+        messages.error(request, "Conecta Dropbox primero.")
+        return redirect(REDIRECT_NAME)
+
+    dbx = Dropbox(
+        app_key=settings.DROPBOX_APP_KEY,
+        app_secret=settings.DROPBOX_APP_SECRET,
+        oauth2_refresh_token=cred.credentials.get("refresh_token"),
+    )
+    try:
+        res = dbx.files_list_folder(path="")
+        files = [{"name": e.name, "id": getattr(e, "id", None)} for e in res.entries]
+        return render(request, "integraciones/dropbox_files.html", {"files": files})
+    except Exception as e:
+        messages.error(request, f"Error listando archivos: {e}")
+        return redirect(REDIRECT_NAME)

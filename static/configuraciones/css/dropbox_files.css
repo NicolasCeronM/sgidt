@@ -1,0 +1,218 @@
+/* ===== Vars (alineado al look de Configuración) ===== */
+:root {
+  --top: #111827;
+  --bottom: #1e293b;
+  --text: #0f172a;
+  --muted: #64748b;
+  --card: #ffffff;
+  --b-100: #f1f5f9;
+  --b-200: #e5e7eb;
+  --b-300: #cbd5e1;
+  --shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  --radius: 16px;
+}
+
+/* ===== Card contenedor ===== */
+.gd-card {
+  background: var(--card);
+  border: 1px solid var(--b-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.gd-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, var(--top), var(--bottom));
+  color: #fff;
+  border-bottom: 3px solid rgba(255, 255, 255, 0.08);
+}
+
+.gd-card__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.gd-card__title h3 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+.gd-card__title small {
+  display: block;
+  color: #dbeafe;
+}
+
+/* acciones (search + botones) */
+.gd-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ===== Buscador ===== */
+.gd-search {
+  position: relative;
+}
+.gd-search input {
+  width: 260px;
+  max-width: 60vw;
+  padding: 10px 36px 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--b-300);
+  background: #fff;
+  color: var(--text);
+}
+.gd-search i {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* ===== Botones en header ===== */
+.gd-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--b-300);
+  background: #fff;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.05s ease, box-shadow 0.2s ease;
+}
+.btn:hover {
+  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-light {
+  background: #fff;
+}
+.btn-secondary {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--b-300);
+}
+
+/* ===== Body ===== */
+.gd-card__body {
+  padding: 12px 16px 18px;
+}
+
+/* ===== Tabla ===== */
+.gd-table-wrap {
+  width: 100%;
+  overflow: auto; /* scroll horizontal en mobile */
+}
+.gd-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+  background: #fff;
+}
+.gd-table th,
+.gd-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--b-200);
+  text-align: left;
+  vertical-align: middle;
+  color: var(--text);
+}
+.gd-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  font-size: 13px;
+  color: #475569;
+  border-bottom: 2px solid var(--b-200);
+  z-index: 1;
+}
+.gd-table tbody tr:hover {
+  background: #f8fafc;
+}
+.gd-table td[data-col="name"] i {
+  margin-right: 8px;
+  color: #334155;
+}
+
+/* Etiquetas */
+.mime-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  background: #e2e8f0;
+  border: 1px solid var(--b-300);
+}
+.date-chip {
+  font-variant-numeric: tabular-nums;
+  color: #475569;
+  background: #eef2f7;
+  border: 1px solid var(--b-300);
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+/* Link externo */
+.link-open {
+  font-weight: 700;
+  text-decoration: none;
+  color: #0b5ed7;
+}
+.link-open i {
+  margin-left: 6px;
+}
+
+/* ===== Estado vacío ===== */
+.gd-empty {
+  padding: 28px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: var(--muted);
+}
+.gd-empty i {
+  font-size: 36px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+.gd-empty h4 {
+  margin: 6px 0 4px 0;
+  color: var(--text);
+}
+.gd-empty__actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== Responsive tweaks ===== */
+@media (max-width: 640px) {
+  .gd-card__header {
+    gap: 10px;
+  }
+  .gd-search input {
+    width: 200px;
+  }
+}

@@ -15,7 +15,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from apps.integraciones.models import GoogleDriveCredential
+from apps.integraciones.models import GoogleDriveCredential, DropboxCredential
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "panel/dashboard.html"
@@ -91,12 +91,22 @@ def help_contact(request):
 
 
 
+#class SettingsView(LoginRequiredMixin, TemplateView):
+#    template_name = "panel/configuraciones.html"
+
+#    def get_context_data(self, **kwargs):
+#        ctx = super().get_context_data(**kwargs)
+#        ctx["drive_connected"] = GoogleDriveCredential.objects.filter(
+#            user=self.request.user
+#        ).exists()
+#        return ctx
+    
+
 class SettingsView(LoginRequiredMixin, TemplateView):
     template_name = "panel/configuraciones.html"
-
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["drive_connected"] = GoogleDriveCredential.objects.filter(
-            user=self.request.user
-        ).exists()
+        u = self.request.user
+        ctx["drive_connected"]   = GoogleDriveCredential.objects.filter(user=u).exists()
+        ctx["dropbox_connected"] = DropboxCredential.objects.filter(user=u).exists()
         return ctx

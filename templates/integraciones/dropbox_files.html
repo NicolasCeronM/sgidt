@@ -1,0 +1,107 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% block title %}Dropbox · Archivos{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'configuraciones/css/dropbox_files.css' %}?v=1" />
+
+<section class="section">
+    <div class="container">
+        <h1 class="page-title">Dropbox</h1>
+
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="gd-card">
+            <div class="gd-card__header">
+                <div class="gd-card__title">
+                    <img src="https://cfl.dropboxstatic.com/static/images/logo_catalog/glyph_m1%402x.png" alt="Dropbox"
+                        style="width:48px;height:48px" />
+                    <div>
+                        <h3>Archivos recientes</h3>
+                        <small>Mostrando hasta 50 ítems ordenados por fecha/modificación (si aplica).</small>
+                    </div>
+                </div>
+
+                <div class="gd-actions">
+                    <div class="gd-search">
+                        <input id="dbxSearch" type="text" placeholder="Buscar por nombre..." />
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="gd-buttons">
+                        {% if files %}
+                        <button class="btn btn-light" type="button" id="dbxRefreshBtn">
+                            <i class="fas fa-rotate-right"></i> Refrescar
+                        </button>
+                        {% endif %}
+                        <a class="btn btn-secondary" href="{% url 'panel:configuraciones' %}">
+                            <i class="fas fa-arrow-left"></i> Volver a Configuración
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gd-card__body">
+                {% if files %}
+                <div class="gd-table-wrap">
+                    <table class="gd-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 48%">Nombre</th>
+                                <th style="width: 20%">Tipo</th>
+                                <th style="width: 20%">Modificado</th>
+                                <th style="width: 12%">Link</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dbxTableBody">
+                            {% for f in files %}
+                            <tr>
+                                <td data-col="name">
+                                    <i class="far fa-file" aria-hidden="true"></i>
+                                    {{ f.name }}
+                                </td>
+                                <td>
+                                    {# En Dropbox, file/folder: mostramos una etiqueta simple #}
+                                    <span class="mime-tag">{{ f.tag|default:"file" }}</span>
+                                </td>
+                                <td>
+                                    <span class="date-chip">
+                                        {{ f.client_modified|default:f.server_modified|default:"—" }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if f.link %}
+                                    <a href="{{ f.link }}" class="link-open" target="_blank" rel="noopener">
+                                        Abrir <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                    {% else %}
+                                    <span class="muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="gd-empty">
+                    <i class="far fa-folder-open"></i>
+                    <h4>No hay archivos para mostrar</h4>
+                    <p>Cuando tengas archivos en Dropbox, aparecerán aquí.</p>
+                    <div class="gd-empty__actions">
+                        <a class="btn btn-secondary" href="{% url 'panel:configuraciones' %}">
+                            <i class="fas fa-arrow-left"></i> Volver a Configuración
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="{% static 'configuraciones/js/dropbox_files.js' %}?v=1"></script>
+{% endblock %}

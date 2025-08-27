@@ -1,12 +1,13 @@
-/* ===== Paleta consistente (sin verdes) ===== */
+/* ===== Paleta consistente ===== */
 :root {
-  --top: #111827; /* gradiente superior */
-  --bottom: #1e293b; /* gradiente inferior */
-  --accent: #374151; /* gris oscuro para detalles */
+  --top: #111827;
+  --bottom: #1e293b;
+  --accent: #374151;
   --card: #ffffff;
   --bg: #f5f7fb;
   --text: #0f172a;
   --muted: #64748b;
+  --b-100: #f1f5f9;
   --b-200: #e5e7eb;
   --b-300: #cbd5e1;
   --shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
@@ -28,15 +29,22 @@
   color: var(--text);
 }
 
-/* ===== Grid principal (dos columnas en desktop) ===== */
+/* ===== Grid principal ===== */
 .settings-grid {
   display: grid;
   gap: 16px;
   grid-template-columns: 1fr;
+  align-items: start;
 }
 @media (min-width: 980px) {
   .settings-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1.6fr;
+  } /* derecha un poco más ancha */
+}
+@media (min-width: 1280px) {
+  .settings-grid {
+    gap: 20px;
+    grid-template-columns: 1.1fr 1.9fr;
   }
 }
 
@@ -56,13 +64,20 @@
   background: linear-gradient(135deg, var(--top), var(--bottom));
   border-bottom: 3px solid rgba(255, 255, 255, 0.08);
 }
+.settings-card .card-body {
+  padding: 16px;
+}
+/* fallback para contenido directo (como el listado de integraciones) */
+.settings-card > :not(h3) {
+  padding: 0 16px 16px 16px;
+}
 
 /* ===== Integraciones ===== */
 .integration-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
+  padding: 14px 0;
   border-bottom: 1px solid var(--b-200);
   background: #fff;
 }
@@ -84,9 +99,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
-/* Badges de estado */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -96,6 +111,7 @@
   font-size: 12px;
   font-weight: 800;
   border: 1px solid var(--b-300);
+  line-height: 1;
 }
 .status-badge.connected {
   background: #e0f2fe;
@@ -130,13 +146,19 @@
   border-radius: 12px;
   background: #fff;
   color: var(--text);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.02s ease;
 }
 .form-input:focus,
 .form-select:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(55, 65, 81, 0.12);
+}
+.form-input:disabled,
+.form-select:disabled {
+  background: var(--b-100);
+  color: var(--muted);
+  cursor: not-allowed;
 }
 
 /* ===== Botones ===== */
@@ -151,14 +173,20 @@
   color: var(--text);
   text-decoration: none;
   font-weight: 700;
-  transition: transform 0.05s ease, box-shadow 0.2s ease;
+  transition: transform 0.05s ease, box-shadow 0.2s ease, opacity 0.2s ease;
   cursor: pointer;
+  user-select: none;
 }
 .btn:hover {
   box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
 }
 .btn:active {
   transform: translateY(1px);
+}
+.btn[aria-disabled="true"],
+.btn:disabled {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .btn-primary {
@@ -170,8 +198,14 @@
   background: #fff;
   color: var(--text);
 }
-
-/* Tamaños */
+.btn-danger {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+.btn-danger:hover {
+  box-shadow: 0 0 0 4px rgba(153, 27, 27, 0.12);
+}
 .btn-small {
   padding: 8px 12px;
   border-radius: 10px;
@@ -179,7 +213,30 @@
   font-size: 13px;
 }
 
-/* ===== Toast / Notificación ===== */
+/* ===== Mensajes / alerts ===== */
+.messages-stack {
+  margin-bottom: 12px;
+}
+.alert {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--b-300);
+  background: #fff;
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+.alert-error {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #991b1b;
+}
+.alert-warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+/* ===== Toast ===== */
 .toast {
   position: fixed;
   right: 16px;
@@ -209,4 +266,18 @@
 }
 .toast.error {
   background: #7f1d1d;
+}
+
+/* ===== Accesibilidad ===== */
+:where(.btn, .form-input, .form-select):focus-visible {
+  outline: 3px solid rgba(55, 65, 81, 0.35);
+  outline-offset: 2px;
+}
+
+/* ===== Reduce motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

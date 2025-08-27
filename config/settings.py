@@ -62,6 +62,11 @@ GOOGLE_SCOPES = [
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive.metadata.readonly",
 ]
+# --- Dropbox OAuth (DEV) ---
+DROPBOX_APP_KEY = "uz0n2oqo1e2vwcw"
+DROPBOX_APP_SECRET = "bywi3h7axhxtwm6"
+DROPBOX_REDIRECT_URI = "http://localhost:8000/integraciones/dropbox/callback/"
+DROPBOX_SCOPES = ["files.metadata.read","files.content.read","files.content.write"]
 
 
 # Apps del proyecto
