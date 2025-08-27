@@ -91,9 +91,12 @@ def help_contact(request):
 
 
 
-@login_required
-def configuraciones(request):
-    drive_connected = GoogleDriveCredential.objects.filter(user=request.user).exists()
-    return render(request, "panel/configuraciones.html", {
-        "drive_connected": drive_connected
-    })
+class SettingsView(LoginRequiredMixin, TemplateView):
+    template_name = "panel/configuraciones.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["drive_connected"] = GoogleDriveCredential.objects.filter(
+            user=self.request.user
+        ).exists()
+        return ctx

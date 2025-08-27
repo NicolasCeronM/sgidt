@@ -13,7 +13,7 @@ from .google_service import build_drive_service, to_json, credentials_from_json
 from django.shortcuts import render
 
 # A dónde volver siempre (ajusta si usas namespace: p.ej. "panel:configuraciones")
-REDIRECT_NAME = "configuraciones"
+REDIRECT_NAME = "panel:configuraciones"
 
 
 def _flow():

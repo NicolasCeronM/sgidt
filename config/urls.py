@@ -35,7 +35,7 @@ urlpatterns = [
     # App privada
     path("app/", include("apps.panel.urls", namespace="panel")),         # /app/
     path("proveedor/", include(("apps.proveedores.urls"))),
-    path("configuracion/", panel_views.configuraciones, name="configuraciones"),
+    path("configuracion/", panel_views.SettingsView.as_view(), name="configuraciones"),
 
     #correo
     path("correo/", include("apps.correo.urls", namespace="correo")),
