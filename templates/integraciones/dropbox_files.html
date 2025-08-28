@@ -64,12 +64,11 @@
                                     {{ f.name }}
                                 </td>
                                 <td>
-                                    {# En Dropbox, file/folder: mostramos una etiqueta simple #}
                                     <span class="mime-tag">{{ f.tag|default:"file" }}</span>
                                 </td>
                                 <td>
                                     <span class="date-chip">
-                                        {{ f.client_modified|default:f.server_modified|default:"—" }}
+                                        {{ f.client_modified|default_if_none:f.server_modified|default_if_none:"—" }}
                                     </span>
                                 </td>
                                 <td>
