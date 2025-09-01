@@ -52,23 +52,6 @@ THIRD_PARTY_APPS = [
     # "storages",
 ]
 
-
-
-# --- Google OAuth (DEV) ---
-GOOGLE_CLIENT_ID = "823310417562-k5gtt54p653j47tjidrnq3utt7gdjvmr.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET = "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"
-GOOGLE_REDIRECT_URI = "http://localhost:8000/integraciones/google/callback/"
-GOOGLE_SCOPES = [
-    "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive.metadata.readonly",
-]
-# --- Dropbox OAuth (DEV) ---
-DROPBOX_APP_KEY = "uz0n2oqo1e2vwcw"
-DROPBOX_APP_SECRET = "bywi3h7axhxtwm6"
-DROPBOX_REDIRECT_URI = "http://localhost:8000/integraciones/dropbox/callback/"
-DROPBOX_SCOPES = ["files.metadata.read", "files.content.read", "files.content.write","sharing.read", "sharing.write",]
-
-
 # Apps del proyecto
 LOCAL_APPS = [
     "apps.documentos",
@@ -216,6 +199,20 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 # -------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Integraciones
+# --- Google OAuth (DEV) ---
+GOOGLE_CLIENT_ID = "823310417562-k5gtt54p653j47tjidrnq3utt7gdjvmr.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "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"
+GOOGLE_REDIRECT_URI = "http://localhost:8000/integraciones/google/callback/"
+GOOGLE_SCOPES = [
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive.metadata.readonly",
+]
+# --- Dropbox OAuth (DEV) ---
+DROPBOX_APP_KEY = "uz0n2oqo1e2vwcw"
+DROPBOX_APP_SECRET = "bywi3h7axhxtwm6"
+DROPBOX_REDIRECT_URI = "http://localhost:8000/integraciones/dropbox/callback/"
+DROPBOX_SCOPES = ["files.metadata.read", "files.content.read", "files.content.write","sharing.read", "sharing.write",]
 # -------------------------------------------------------------------
 # EMAIL (usar variables de entorno en prod)
 # -------------------------------------------------------------------
