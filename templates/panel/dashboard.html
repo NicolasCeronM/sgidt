@@ -1,21 +1,18 @@
-{% extends 'base_app.html' %}
-{% load static %}
-{% block title %}Inicio · SGIDT{% endblock %}
-
-{% block content %}
-<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=2">
+{% extends 'base_app.html' %} {% load static %} {% block title %}Inicio ·
+SGIDT{% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=2" />
 
 <section class="db-page" aria-labelledby="db-title">
   <div class="db-container">
-
     <!-- HERO / ENCABEZADO -->
     <header class="db-head">
       <div class="db-head-left">
         <h1 id="db-title" class="db-title">
-          Bienvenido {{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}
+          {{ empresa.nombre }}
         </h1>
         <p class="db-subtitle">
-          Centraliza tus DTE, valida con SII y controla gastos en minutos. Plataforma minimalista y segura para tu PyME.
+          Centraliza tus DTE, valida con SII y controla gastos en minutos.
+          Plataforma minimalista y segura para tu PyME.
         </p>
       </div>
 
@@ -89,14 +86,18 @@
 
         <!-- Skeleton (se oculta cuando hay datos) -->
         <ul class="list-compact skeleton" aria-hidden="true">
-          <li></li><li></li><li></li>
+          <li></li>
+          <li></li>
+          <li></li>
         </ul>
 
         <!-- Timeline compacto -->
         <ul class="list-compact timeline" aria-live="polite">
           <li class="item">
             <div class="left">
-              <span class="dot dot-success" aria-hidden="true"><i class="fas fa-receipt"></i></span>
+              <span class="dot dot-success" aria-hidden="true"
+                ><i class="fas fa-receipt"></i
+              ></span>
               <div class="info">
                 <span class="title">Factura #12345 procesada</span>
                 <small class="meta">ID: 12345</small>
@@ -115,7 +116,9 @@
 
           <li class="item">
             <div class="left">
-              <span class="dot dot-warning" aria-hidden="true"><i class="fas fa-circle-check"></i></span>
+              <span class="dot dot-warning" aria-hidden="true"
+                ><i class="fas fa-circle-check"></i
+              ></span>
               <div class="info">
                 <span class="title">Validación SII boleta #67890</span>
                 <small class="meta">Boleta: 67890</small>
@@ -133,7 +136,9 @@
 
           <li class="item">
             <div class="left">
-              <span class="dot dot-info" aria-hidden="true"><i class="fas fa-file-export"></i></span>
+              <span class="dot dot-info" aria-hidden="true"
+                ><i class="fas fa-file-export"></i
+              ></span>
               <div class="info">
                 <span class="title">Exportación reporte mensual</span>
                 <small class="meta">CSV · 1.2MB</small>
@@ -167,10 +172,17 @@
         <div class="shortcuts-group">
           <p class="shortcuts-title">Documentos</p>
           <div class="shortcuts-grid">
-            <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost btn-fill">
-              <i class="fas fa-folder-open" aria-hidden="true"></i> Ver documentos
+            <a
+              href="{% url 'panel:documentos_page' %}"
+              class="btn btn-ghost btn-fill"
+            >
+              <i class="fas fa-folder-open" aria-hidden="true"></i> Ver
+              documentos
             </a>
-            <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost btn-fill">
+            <a
+              href="{% url 'panel:documentos_page' %}"
+              class="btn btn-ghost btn-fill"
+            >
               <i class="fas fa-upload" aria-hidden="true"></i> Subir documento
             </a>
           </div>
@@ -181,11 +193,18 @@
         <div class="shortcuts-group">
           <p class="shortcuts-title">Administración</p>
           <div class="shortcuts-grid">
-            <a href="{% url 'panel:configuraciones' %}" class="btn btn-ghost btn-fill">
+            <a
+              href="{% url 'panel:configuraciones' %}"
+              class="btn btn-ghost btn-fill"
+            >
               <i class="fas fa-sliders-h" aria-hidden="true"></i> Configuración
             </a>
-            <a href="{% url 'panel:validaciones' %}" class="btn btn-ghost btn-fill">
-              <i class="fas fa-circle-check" aria-hidden="true"></i> Validación SII
+            <a
+              href="{% url 'panel:validaciones' %}"
+              class="btn btn-ghost btn-fill"
+            >
+              <i class="fas fa-circle-check" aria-hidden="true"></i> Validación
+              SII
             </a>
           </div>
         </div>
@@ -197,12 +216,12 @@
 <!-- JS: animación KPIs + demo de skeleton -->
 <script>
   // Animación numérica para KPIs (formato es-CL)
-  document.querySelectorAll('.kpi-number').forEach(el => {
+  document.querySelectorAll(".kpi-number").forEach((el) => {
     const target = +el.dataset.target || 0;
-    const prefix = el.dataset.prefix || '';
+    const prefix = el.dataset.prefix || "";
     const duration = 900;
     const start = performance.now();
-    const fmt = new Intl.NumberFormat('es-CL');
+    const fmt = new Intl.NumberFormat("es-CL");
 
     function tick(now) {
       const p = Math.min((now - start) / duration, 1);
@@ -214,10 +233,12 @@
   });
 
   // Demo: quitar skeleton si hay datos (puedes reemplazar por tu fetch real)
-  const cards = document.querySelector('.cards-grid');
+  const cards = document.querySelector(".cards-grid");
   setTimeout(() => {
-    cards?.setAttribute('data-state', 'ready');
-    document.querySelector('.list-compact.skeleton')?.setAttribute('hidden','');
+    cards?.setAttribute("data-state", "ready");
+    document
+      .querySelector(".list-compact.skeleton")
+      ?.setAttribute("hidden", "");
   }, 400);
 </script>
 {% endblock %}

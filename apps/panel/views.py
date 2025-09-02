@@ -17,8 +17,30 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from apps.integraciones.models import GoogleDriveCredential, DropboxCredential
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+from apps.empresas.models import EmpresaUsuario
+
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "panel/dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # Si manejas empresa “activa” en sesión, respétala
+        empresa_id = self.request.session.get("empresa_id")
+
+        qs = (EmpresaUsuario.objects
+              .select_related("empresa")
+              .filter(usuario=self.request.user))  # Ojo: campo es `usuario`
+
+        if empresa_id:
+            eu = qs.filter(empresa_id=empresa_id).first()
+        else:
+            eu = qs.order_by("creado_en").first()
+
+        ctx["empresa"] = eu.empresa if eu else None
+        return ctx
 
 
 class DocsView(TemplateView): 
