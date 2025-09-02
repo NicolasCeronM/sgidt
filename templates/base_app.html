@@ -1,46 +1,40 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}SGIDT{% endblock %}</title>
 
   <!-- CSS -->
-  <link rel="stylesheet" href="{% static 'panel/css/styles.css' %}" />
+  <link rel="stylesheet" href="{% static 'panel/css/base.css' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  {% block css %}
-  {% endblock %}
+  {% block css %}{% endblock %}
 </head>
-
 <body>
-  <!-- Navbar -->
+  <!-- Navbar / Sidebar -->
   {% include "includes/navbar_app.html" %}
 
   <!-- Contenido principal -->
   <main class="main-content">{% block content %}{% endblock %}</main>
 
-  <!-- Footer -->
-  {% include "includes/footer_app.html" %}
-
-  <!-- JS 
-  <script src="{% static 'panel/js/script.js' %}"></script>-->
+  <!-- JS -->
   <script src="{% static 'configuraciones/js/configuraciones.js' %}?v=1"></script>
   <script>
-    // Marcar link activo
+    // Marcar link activo (sidebar y posibles nav-links)
     (function () {
       const here = location.pathname.replace(/\/+$/, "");
-      document.querySelectorAll(".nav-link").forEach((a) => {
+      const all = document.querySelectorAll(".sidebar-link, .nav-link");
+      all.forEach((a) => {
         const href = a.getAttribute("href")?.replace(/\/+$/, "");
-        if (href && (here === href || (href === "" && href === "/"))) {
-          a.classList.add("active");
+        if (href && (here === href || (href === "" && here === "/"))) {
+          a.classList.add("is-active");
+          a.setAttribute("aria-current", "page");
         }
       });
     })();
   </script>
   {% block js %}{% endblock %}
 </body>
-
 </html>

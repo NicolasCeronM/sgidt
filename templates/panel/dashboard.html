@@ -3,119 +3,221 @@
 {% block title %}Inicio · SGIDT{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=2">
 
-<section class="db-page">
+<section class="db-page" aria-labelledby="db-title">
   <div class="db-container">
-    <!-- Encabezado -->
+
+    <!-- HERO / ENCABEZADO -->
     <header class="db-head">
-      <div>
-        <h1 class="db-title">Bienvenido {{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}</h1>
+      <div class="db-head-left">
+        <h1 id="db-title" class="db-title">
+          Bienvenido {{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}
+        </h1>
         <p class="db-subtitle">
-          Plataforma minimalista para subir, organizar y validar documentos tributarios de tu PYME.
+          Centraliza tus DTE, valida con SII y controla gastos en minutos. Plataforma minimalista y segura para tu PyME.
         </p>
       </div>
 
-      <div class="db-quick">
+      <!-- <div class="db-quick" role="group" aria-label="Acciones rápidas">
+        
         <a href="{% url 'panel:documentos_page' %}" class="btn btn-primary">
-          <i class="fas fa-upload"></i> Subir documento
+          <i class="fas fa-upload" aria-hidden="true"></i> Subir documento
         </a>
         <a href="{% url 'panel:reportes' %}" class="btn btn-ghost">
-          <i class="fas fa-chart-line"></i> Ver reportes
+          <i class="fas fa-chart-line" aria-hidden="true"></i> Ver reportes
         </a>
         <a href="{% url 'panel:validaciones' %}" class="btn btn-ghost">
-          <i class="fas fa-shield-alt"></i> Validar en SII
+          <i class="fas fa-shield-alt" aria-hidden="true"></i> Validar en SII
         </a>
-      </div>
+      </div> -->
     </header>
 
     <!-- KPIs -->
     <div class="kpi-grid">
-      <article class="kpi-card">
+      <!-- KPI 1 -->
+      <article class="kpi-card" aria-live="polite">
         <div class="kpi-row">
-          <div>
+          <div class="kpi-meta">
             <p class="kpi-title">Documentos este mes</p>
             <p class="kpi-number" data-target="247">0</p>
+            <span class="kpi-delta kpi-up" title="Variación vs. mes anterior">
+              <i class="fas fa-arrow-up" aria-hidden="true"></i> +4.8%
+            </span>
           </div>
-          <i class="fas fa-file-invoice kpi-icon"></i>
+          <i class="fas fa-file-invoice kpi-icon" aria-hidden="true"></i>
         </div>
       </article>
 
-      <article class="kpi-card">
+      <!-- KPI 2 -->
+      <article class="kpi-card" aria-live="polite">
         <div class="kpi-row">
-          <div>
-            <p class="kpi-title">IVA total</p>
+          <div class="kpi-meta">
+            <p class="kpi-title">IVA total (mes)</p>
             <p class="kpi-number" data-target="2847320" data-prefix="$">0</p>
+            <span class="kpi-delta kpi-down" title="Variación vs. mes anterior">
+              <i class="fas fa-arrow-down" aria-hidden="true"></i> −2.1%
+            </span>
           </div>
-          <i class="fas fa-dollar-sign kpi-icon"></i>
+          <i class="fas fa-dollar-sign kpi-icon" aria-hidden="true"></i>
         </div>
       </article>
 
-      <article class="kpi-card">
+      <!-- KPI 3 -->
+      <article class="kpi-card" aria-live="polite">
         <div class="kpi-row">
-          <div>
-            <p class="kpi-title">Gastos totales</p>
+          <div class="kpi-meta">
+            <p class="kpi-title">Gasto acumulado (mes)</p>
             <p class="kpi-number" data-target="15234890" data-prefix="$">0</p>
+            <span class="kpi-period">Periodo: Mes actual</span>
           </div>
-          <i class="fas fa-wallet kpi-icon"></i>
+          <i class="fas fa-wallet kpi-icon" aria-hidden="true"></i>
         </div>
       </article>
     </div>
 
-    <!-- Paneles -->
-    <div class="cards-grid">
-      <section class="card">
-        <h3 class="card-title">Últimos movimientos</h3>
-        <ul class="list-compact">
-          <li>
-            <span>Factura #12345 procesada</span>
-            <small>hace 15 min</small>
+    <!-- GRID: TIMELINE + ATAJOS -->
+    <div class="cards-grid" data-state="ready">
+      <!-- Últimos movimientos -->
+      <section class="card" aria-labelledby="ult-movs">
+        <div class="card-head">
+          <h3 id="ult-movs" class="card-title">Últimos movimientos</h3>
+          <a class="card-action" href="{% url 'panel:documentos_page' %}">
+            Ver todo <i class="fas fa-arrow-right" aria-hidden="true"></i>
+          </a>
+        </div>
+
+        <!-- Skeleton (se oculta cuando hay datos) -->
+        <ul class="list-compact skeleton" aria-hidden="true">
+          <li></li><li></li><li></li>
+        </ul>
+
+        <!-- Timeline compacto -->
+        <ul class="list-compact timeline" aria-live="polite">
+          <li class="item">
+            <div class="left">
+              <span class="dot dot-success" aria-hidden="true"><i class="fas fa-receipt"></i></span>
+              <div class="info">
+                <span class="title">Factura #12345 procesada</span>
+                <small class="meta">ID: 12345</small>
+              </div>
+            </div>
+            <div class="right">
+              <span class="tag tag-success">Procesada</span>
+              <small class="when">hace 15 min</small>
+              <div class="actions">
+                <a href="#" class="act">Ver</a>
+                <a href="#" class="act">Descargar</a>
+                <a href="#" class="act">Detalle</a>
+              </div>
+            </div>
           </li>
-          <li>
-            <span>Validación SII boleta #67890</span>
-            <small>hace 1 h</small>
+
+          <li class="item">
+            <div class="left">
+              <span class="dot dot-warning" aria-hidden="true"><i class="fas fa-circle-check"></i></span>
+              <div class="info">
+                <span class="title">Validación SII boleta #67890</span>
+                <small class="meta">Boleta: 67890</small>
+              </div>
+            </div>
+            <div class="right">
+              <span class="tag tag-warning">En cola</span>
+              <small class="when">hace 1 h</small>
+              <div class="actions">
+                <a href="#" class="act">Ver</a>
+                <a href="#" class="act">Detalle</a>
+              </div>
+            </div>
           </li>
-          <li>
-            <span>Exportación reporte mensual</span>
-            <small>hace 2 h</small>
+
+          <li class="item">
+            <div class="left">
+              <span class="dot dot-info" aria-hidden="true"><i class="fas fa-file-export"></i></span>
+              <div class="info">
+                <span class="title">Exportación reporte mensual</span>
+                <small class="meta">CSV · 1.2MB</small>
+              </div>
+            </div>
+            <div class="right">
+              <span class="tag tag-info">Completado</span>
+              <small class="when">hace 2 h</small>
+              <div class="actions">
+                <a href="#" class="act">Descargar</a>
+                <a href="#" class="act">Detalle</a>
+              </div>
+            </div>
           </li>
         </ul>
+
+        <!-- Empty state (por si no hay movimientos) -->
+        <div class="empty" hidden>
+          <div class="empty-illu" aria-hidden="true">📄</div>
+          <p class="empty-text">Aún no hay movimientos.</p>
+          <a href="{% url 'panel:documentos_page' %}" class="btn btn-primary">
+            <i class="fas fa-upload" aria-hidden="true"></i> Subir documento
+          </a>
+        </div>
       </section>
 
-      <section class="card">
-        <h3 class="card-title">Atajos</h3>
-        <div class="shortcuts-grid">
-          <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost btn-fill">
-            <i class="fas fa-folder-open"></i> Ver documentos
-          </a>
-          <a href="{% url 'panel:configuraciones' %}" class="btn btn-ghost btn-fill">
-            <i class="fas fa-sliders-h"></i> Configuración
-          </a>
-          <a href="{% url 'panel:ayuda' %}" class="btn btn-ghost btn-fill">
-            <i class="fas fa-question-circle"></i> Ayuda
-          </a>
+      <!-- Atajos -->
+      <section class="card" aria-labelledby="atajos">
+        <h3 id="atajos" class="card-title">Atajos</h3>
+
+        <div class="shortcuts-group">
+          <p class="shortcuts-title">Documentos</p>
+          <div class="shortcuts-grid">
+            <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost btn-fill">
+              <i class="fas fa-folder-open" aria-hidden="true"></i> Ver documentos
+            </a>
+            <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost btn-fill">
+              <i class="fas fa-upload" aria-hidden="true"></i> Subir documento
+            </a>
+          </div>
+        </div>
+
+        <div class="shortcuts-sep"></div>
+
+        <div class="shortcuts-group">
+          <p class="shortcuts-title">Administración</p>
+          <div class="shortcuts-grid">
+            <a href="{% url 'panel:configuraciones' %}" class="btn btn-ghost btn-fill">
+              <i class="fas fa-sliders-h" aria-hidden="true"></i> Configuración
+            </a>
+            <a href="{% url 'panel:validaciones' %}" class="btn btn-ghost btn-fill">
+              <i class="fas fa-circle-check" aria-hidden="true"></i> Validación SII
+            </a>
+          </div>
         </div>
       </section>
     </div>
   </div>
 </section>
 
+<!-- JS: animación KPIs + demo de skeleton -->
 <script>
-  // Animación simple para KPIs
+  // Animación numérica para KPIs (formato es-CL)
   document.querySelectorAll('.kpi-number').forEach(el => {
     const target = +el.dataset.target || 0;
     const prefix = el.dataset.prefix || '';
     const duration = 900;
     const start = performance.now();
-    const formatter = new Intl.NumberFormat('es-CL');
+    const fmt = new Intl.NumberFormat('es-CL');
 
     function tick(now) {
       const p = Math.min((now - start) / duration, 1);
-      const val = Math.round(target * (0.15 + 0.85 * p));
-      el.textContent = prefix + formatter.format(val);
+      const val = Math.round(target * (0.2 + 0.8 * p));
+      el.textContent = prefix + fmt.format(val);
       if (p < 1) requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
   });
+
+  // Demo: quitar skeleton si hay datos (puedes reemplazar por tu fetch real)
+  const cards = document.querySelector('.cards-grid');
+  setTimeout(() => {
+    cards?.setAttribute('data-state', 'ready');
+    document.querySelector('.list-compact.skeleton')?.setAttribute('hidden','');
+  }, 400);
 </script>
 {% endblock %}

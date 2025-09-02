@@ -1,112 +1,150 @@
-{% extends 'base_app.html' %} {% load static %} {% block title %}Documentos ·
-SGIDT{% endblock %} {% block content %}
-{% block css %} 
-<link rel="stylesheet" href="{% static 'panel/css/toasts.css' %}">
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}Documentos · SGIDT{% endblock %}
+
+{% block content %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'documentos/css/documentos.css' %}?v=3">
 {% endblock %}
+
+<!-- Línea de carga superior -->
+<div id="pageProgress" class="page-progress" aria-hidden="true"></div>
+
 <!-- Contenedor para notificaciones -->
 <div id="toastContainer" class="toast-container"></div>
-<section class="section">
-  <div class="container">
-    <h1 class="page-title">Gestión de Documentos</h1>
 
-    <!-- Subida de archivos -->
-    <div class="upload-section">
-      <div class="upload-card">
-        <h3>Subir Nuevo Documento</h3>
+<section class="docs-page" aria-labelledby="docs-title">
+  <div class="docs-container">
+    <h1 id="docs-title" class="docs-title">Gestión de Documentos</h1>
 
-        <!-- form invisible para CSRF + input -->
-        <form
-          id="uploadForm"
-          method="post"
-          enctype="multipart/form-data"
-          style="display: none"
-        >
-          {% csrf_token %}
-          <input
-            type="file"
-            id="fileInput"
-            name="files[]"
-            accept=".pdf,.jpg,.jpeg,.png"
-            multiple
-          />
-        </form>
+    <!-- SUBIDA / DROPZONE -->
+    <section class="card upload-card" aria-labelledby="up-title">
+      <h2 id="up-title" class="card-title">Subir Nuevo Documento</h2>
 
-        <div class="upload-area" id="uploadArea">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Arrastra archivos aquí o haz clic para seleccionar</p>
-          <p class="upload-hint">
-            Formatos soportados: PDF, JPG, PNG (máx. 10MB)
-          </p>
-          <input
-            type="file"
-            id="fileInputShadow"
-            accept=".pdf,.jpg,.jpeg,.png"
-            multiple
-            hidden
-          />
-        </div>
+      <div id="uploadArea" class="upload-area" role="group" tabindex="0" aria-describedby="drop-hint">
+        <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+        <p class="dz-title">Arrastra archivos aquí o haz clic para seleccionar</p>
+        <p id="drop-hint" class="upload-hint">PDF, JPG, PNG (máx. 10MB por archivo)</p>
+      </div>
+
+      <!-- form invisible para CSRF + file input -->
+      <form id="uploadForm" method="post" enctype="multipart/form-data" style="display:none">
+        {% csrf_token %}
+        <input type="file" id="fileInput" name="files[]" accept=".pdf,.jpg,.jpeg,.png" multiple />
+      </form>
+
+      <div class="upload-actions">
         <button class="btn btn-primary" id="btnSelect">
-          <i class="fas fa-plus"></i> Seleccionar Archivos
+          <i class="fas fa-plus"></i> Seleccionar archivos
+        </button>
+        <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost">
+          <i class="fas fa-folder-open"></i> Ver documentos
+        </a>
+      </div>
+
+      <!-- Cola de subida -->
+      <ul id="queue" class="upload-queue" hidden></ul>
+    </section>
+
+    <!-- FILTROS -->
+    <section class="card filters" role="search" aria-label="Filtros de documentos">
+      <form id="filter-form" class="filters-grid">
+        <div class="f-item">
+          <label for="dateFrom">Fecha desde</label>
+          <div class="f-input">
+            <i class="far fa-calendar-alt" aria-hidden="true"></i>
+            <input type="date" id="dateFrom">
+          </div>
+        </div>
+
+        <div class="f-item">
+          <label for="dateTo">Fecha hasta</label>
+          <div class="f-input">
+            <i class="far fa-calendar-alt" aria-hidden="true"></i>
+            <input type="date" id="dateTo">
+          </div>
+        </div>
+
+        <div class="f-item">
+          <label for="docType">Tipo</label>
+          <div class="f-input">
+            <i class="fas fa-file-invoice" aria-hidden="true"></i>
+            <select id="docType">
+              <option value="">Todos</option>
+              <option value="factura">Factura</option>
+              <option value="boleta">Boleta</option>
+              <option value="nc">Nota de crédito</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="f-item">
+          <label for="docStatus">Estado</label>
+          <div class="f-input">
+            <i class="fas fa-circle-notch" aria-hidden="true"></i>
+            <select id="docStatus">
+              <option value="">Todos</option>
+              <option value="procesado">Procesado</option>
+              <option value="cola">En cola</option>
+              <option value="error">Error</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="f-actions">
+          <button type="button" class="btn btn-primary" id="btnFilter">
+            <i class="fas fa-filter"></i> Filtrar
+          </button>
+          <button type="reset" class="btn btn-ghost" id="btn-clear">Limpiar</button>
+        </div>
+      </form>
+      <div id="result-info" class="result-info" aria-live="polite"></div>
+    </section>
+
+    <!-- TABLA -->
+    <section class="card table-card" aria-labelledby="tbl-title">
+      <h2 id="tbl-title" class="sr-only">Listado de documentos</h2>
+
+      <!-- Skeleton -->
+      <div class="table-skeleton" id="tbl-skeleton">
+        <div></div><div></div><div></div><div></div><div></div>
+      </div>
+
+      <div class="table-wrap" aria-busy="false">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Folio</th>
+              <th>RUT Emisor</th>
+              <th class="num">Monto</th>
+              <th>Estado</th>
+              <th class="actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="documentsTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Empty -->
+
+      <div class="empty" id="tbl-empty" hidden>
+        <div class="empty-illu" aria-hidden="true">📄</div>
+        <p class="empty-text">Aún no hay documentos.</p>
+        <button class="btn btn-primary" id="empty-upload">
+          <i class="fas fa-upload" aria-hidden="true"></i> Subir documento
         </button>
       </div>
-    </div>
-
-    <!-- Filtros -->
-    <div class="filters-section">
-      <div class="filters-grid">
-        <div class="filter-group">
-          <label for="dateFrom">Fecha desde:</label>
-          <input type="date" id="dateFrom" class="form-input" />
-        </div>
-        <div class="filter-group">
-          <label for="dateTo">Fecha hasta:</label>
-          <input type="date" id="dateTo" class="form-input" />
-        </div>
-        <div class="filter-group">
-          <label for="docType">Tipo:</label>
-          <select id="docType" class="form-select">
-            <option value="">Todos</option>
-            <option value="factura">Factura</option>
-            <option value="boleta">Boleta</option>
-            <option value="nota-credito">Nota de Crédito</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="docStatus">Estado:</label>
-          <select id="docStatus" class="form-select">
-            <option value="">Todos</option>
-            <option value="validado">Validado</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="error">Error</option>
-          </select>
-        </div>
-        <button class="btn btn-secondary" id="btnFilter">
-          <i class="fas fa-filter"></i> Filtrar
-        </button>
-      </div>
-    </div>
-
-    <!-- Tabla de documentos -->
-    <div class="table-container">
-      <table class="documents-table">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Folio</th>
-            <th>RUT Emisor</th>
-            <th>Monto</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="documentsTableBody">
-          <!-- Se completa por script -->
-        </tbody>
-      </table>
-    </div>
+    </section>
   </div>
 </section>
 
-<script src="{% static 'panel/js/panel_documentos.js' %}"></script>
+<script src="{% static 'panel/js/panel_documentos.js' %}?v=3"></script>
+<script>
+  // que el botón del empty dispare el selector de archivos
+  document.getElementById('empty-upload')?.addEventListener('click', () => {
+    document.getElementById('fileInput')?.click();
+  });
+</script>
 {% endblock %}
