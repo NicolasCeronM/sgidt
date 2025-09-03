@@ -140,11 +140,7 @@
   </div>
 </section>
 
-<script src="{% static 'panel/js/panel_documentos.js' %}?v=3"></script>
-<script>
-  // que el botón del empty dispare el selector de archivos
-  document.getElementById('empty-upload')?.addEventListener('click', () => {
-    document.getElementById('fileInput')?.click();
-  });
-</script>
+<script type="module" src="{% static 'panel/js/documentos/main.js' %}?v=1"></script>
+
+
 {% endblock %}

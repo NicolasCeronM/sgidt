@@ -98,6 +98,7 @@ class Documento(models.Model):
             models.Index(fields=["empresa", "rut_proveedor", "folio"]),
             models.Index(fields=["empresa", "fecha_emision"]),
             models.Index(fields=["empresa", "tipo_documento"]),
+            models.Index(fields=["estado"]),
             models.Index(fields=["creado_en"]),
         ]
 
