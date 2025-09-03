@@ -126,9 +126,32 @@ def help_contact(request):
 
 class SettingsView(LoginRequiredMixin, TemplateView):
     template_name = "panel/configuraciones.html"
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         u = self.request.user
         ctx["drive_connected"]   = GoogleDriveCredential.objects.filter(user=u).exists()
         ctx["dropbox_connected"] = DropboxCredential.objects.filter(user=u).exists()
         return ctx
+
+    def post(self, request, *args, **kwargs):
+        """
+        Maneja el submit de 'Ajustes de la Empresa'.
+        Por ahora solo muestra feedback y redirige (PRG pattern).
+        Si luego agregamos persistencia, aquí haremos form.is_valid() -> form.save().
+        """
+        company_rut   = request.POST.get("company_rut", "").strip()
+        company_name  = request.POST.get("company_name", "").strip()
+        company_email = request.POST.get("company_email", "").strip()
+        company_phone = request.POST.get("company_phone", "").strip()
+        company_addr  = request.POST.get("company_address", "").strip()
+        auto_backup   = request.POST.get("auto_backup", "").strip()  # si lo usas
+
+        # Validación mínima (opcional, puedes ajustar)
+        if not company_rut or not company_name:
+            messages.error(request, "RUT y Razón Social son obligatorios.")
+            return redirect("panel:configuraciones")
+
+        # TODO: persistir en BD (CompanySettings / Empresa). Por ahora, solo feedback.
+        messages.success(request, "Configuración guardada con éxito.")
+        return redirect("panel:configuraciones")

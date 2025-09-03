@@ -1,6 +1,6 @@
 (function () {
-  let el = null,
-    timer = null;
+  let el = null, 
+  timer = null;
 
   function ensureToast() {
     if (!el) {
@@ -21,4 +21,23 @@
       t.classList.remove("show");
     }, 2200);
   };
+
+  // === Tabs ===
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const target = document.getElementById(btn.dataset.tab);
+      if (target) target.classList.add('active');
+    });
+  });
+
+  // === Feedback inmediato al guardar ajustes ===
+  const form = document.getElementById('generalSettingsForm');
+  if (form) {
+    form.addEventListener('submit', function () {
+      showNotification("Guardando configuración…", "success");
+    });
+  }
 })();

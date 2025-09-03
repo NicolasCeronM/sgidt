@@ -3,30 +3,35 @@
 {% block title %}Configuración · SGIDT{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'configuraciones/css/configuraciones.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'configuraciones/css/configuraciones.css' %}?v=2">
 
 <section class="section">
   <div class="container">
     <h1 class="page-title">Configuración</h1>
 
-    {# Mostrar solo errores/avisos, NO los success #}
+    {# Mostrar todos los mensajes, incluidos success #}
     {% if messages %}
     <div class="messages-stack">
       {% for message in messages %}
-      {% if 'error' in message.tags or 'warning' in message.tags %}
-      <div class="alert alert-{{ message.tags|default:'info' }}">
-        {{ message }}
-      </div>
-      {% endif %}
+        <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
       {% endfor %}
     </div>
     {% endif %}
 
-    {# GRID en 2 columnas: izquierda Integraciones / derecha Configuración General #}
-    <div class="settings-grid">
+    {# --- PESTAÑAS --- #}
+    <div class="settings-tabs">
+      <button class="tab-btn active" data-tab="tab-integraciones">
+        <i class="fas fa-cloud"></i> Integraciones
+      </button>
+      <button class="tab-btn" data-tab="tab-empresa">
+        <i class="fas fa-building"></i> Ajustes de la Empresa
+      </button>
+    </div>
 
-      {# Columna IZQUIERDA: Integraciones en la Nube #}
-      <div class="integrations-column">
+    <div class="tab-panels">
+
+      {# ====== TAB: INTEGRACIONES ====== #}
+      <div id="tab-integraciones" class="tab-panel active">
         <div class="settings-card">
           <h3>Integraciones en la Nube</h3>
 
@@ -36,18 +41,19 @@
               <i class="fab fa-google-drive"></i>
               <span>Google Drive</span>
             </div>
-
             <div class="integration-status">
               {% if drive_connected %}
-              <span class="status-badge connected">Conectado</span>
-              <a href="{% url 'integraciones:google_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
-              <a href="{% url 'integraciones:google_files' %}" class="btn btn-small btn-secondary">Ver</a>
+                <span class="status-badge connected">Conectado</span>
+                <a href="{% url 'integraciones:google_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
+                <a href="{% url 'integraciones:google_files' %}" class="btn btn-small btn-secondary">Ver</a>
               {% else %}
-              <span class="status-badge disconnected">Desconectado</span>
-              <a href="{% url 'integraciones:google_connect' %}" class="btn btn-small btn-primary">Conectar</a>
+                <span class="status-badge disconnected">Desconectado</span>
+                <a href="{% url 'integraciones:google_connect' %}" class="btn btn-small btn-primary">Conectar</a>
               {% endif %}
             </div>
           </div>
+
+          <hr class="divider">
 
           <!-- Dropbox -->
           <div class="integration-item">
@@ -55,58 +61,73 @@
               <i class="fab fa-dropbox"></i>
               <span>Dropbox</span>
             </div>
-
             <div class="integration-status">
               {% if dropbox_connected %}
-              <span class="status-badge connected">Conectado</span>
-              <a href="{% url 'integraciones:dropbox_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
-              <a href="{% url 'integraciones:dropbox_files' %}" class="btn btn-small btn-secondary">Ver</a>
+                <span class="status-badge connected">Conectado</span>
+                <a href="{% url 'integraciones:dropbox_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
+                <a href="{% url 'integraciones:dropbox_files' %}" class="btn btn-small btn-secondary">Ver</a>
               {% else %}
-              <span class="status-badge disconnected">Desconectado</span>
-              <a href="{% url 'integraciones:dropbox_connect' %}" class="btn btn-small btn-primary">Conectar</a>
+                <span class="status-badge disconnected">Desconectado</span>
+                <a href="{% url 'integraciones:dropbox_connect' %}" class="btn btn-small btn-primary">Conectar</a>
               {% endif %}
             </div>
           </div>
         </div>
       </div>
 
-      {# Columna DERECHA: Configuración General #}
-      <div class="general-column">
+      {# ====== TAB: AJUSTES DE LA EMPRESA ====== #}
+      <div id="tab-empresa" class="tab-panel">
         <div class="settings-card">
-          <h3>Configuración General</h3>
+          <h3>Datos de la Empresa</h3>
 
+          {# Mantengo tu submit con toast de éxito. Si luego persistes en servidor, cambia action/method. #}
           <form id="generalSettingsForm"
-            onsubmit="event.preventDefault(); showNotification('Configuración guardada', 'success');">
-            <div class="form-group">
-              <label for="companyRut">RUT de la Empresa</label>
-              <input type="text" id="companyRut" class="form-input" placeholder="76.123.456-7" value="76.123.456-7" />
+                onsubmit="event.preventDefault(); showNotification('Configuración guardada con éxito', 'success');">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="companyRut">RUT de la Empresa</label>
+                <input type="text" id="companyRut" class="form-input" placeholder="76.123.456-7" value="76.123.456-7" />
+              </div>
+
+              <div class="form-group">
+                <label for="companyName">Razón Social</label>
+                <input type="text" id="companyName" class="form-input" placeholder="Mi Empresa SpA" value="Mi Empresa SpA" />
+              </div>
+
+              <div class="form-group">
+                <label for="autoBackup">Respaldo Automático</label>
+                <select id="autoBackup" class="form-select">
+                  <option value="daily">Diario</option>
+                  <option value="weekly" selected>Semanal</option>
+                  <option value="monthly">Mensual</option>
+                </select>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label for="companyName">Razón Social</label>
-              <input type="text" id="companyName" class="form-input" placeholder="Mi Empresa SpA"
-                value="Mi Empresa SpA" />
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">
+                <i class="fas fa-save"></i> Guardar Configuración
+              </button>
             </div>
-
-            <div class="form-group">
-              <label for="autoBackup">Respaldo Automático</label>
-              <select id="autoBackup" class="form-select">
-                <option value="daily">Diario</option>
-                <option value="weekly" selected>Semanal</option>
-                <option value="monthly">Mensual</option>
-              </select>
-            </div>
-
-            <button class="btn btn-primary" type="submit">
-              <i class="fas fa-save"></i> Guardar Configuración
-            </button>
           </form>
         </div>
       </div>
 
-    </div>
+    </div> {# /.tab-panels #}
   </div>
 </section>
 
-<script src="{% static 'configuraciones/js/configuraciones.js' %}?v=1"></script>
+<script src="{% static 'configuraciones/js/configuraciones.js' %}?v=2"></script>
+<script>
+  // Tabs simples (sin dependencias)
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const target = document.getElementById(btn.dataset.tab);
+      if (target) target.classList.add('active');
+    });
+  });
+</script>
 {% endblock %}

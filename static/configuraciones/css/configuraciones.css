@@ -281,3 +281,59 @@
     animation: none !important;
   }
 }
+/* === Tabs === */
+.settings-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 20px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  border: 1px solid var(--b-300);
+  background: #fff;
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 800;
+}
+.tab-btn:hover {
+  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
+}
+.tab-btn.active {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* === Ajustes de la Empresa === */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 900px) {
+  .form-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Botonera alineada y con respiro */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* === Alertas extra para mensajes Django === */
+.alert-success {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #065f46;
+}
+.alert-info {
+  border-color: var(--b-300);
+  background: #f8fafc;
+  color: #0f172a;
+}
