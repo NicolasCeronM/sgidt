@@ -87,7 +87,7 @@ def google_callback(request):
             defaults={"credentials": data},
         )
 
-        messages.success(request, "Google Drive conectado correctamente.")
+        #messages.success(request, "Google Drive conectado correctamente.")
         return redirect(REDIRECT_NAME)
 
     except HttpError as e:
@@ -104,7 +104,7 @@ def google_callback(request):
 @login_required
 def google_disconnect(request):
     GoogleDriveCredential.objects.filter(user=request.user).delete()
-    messages.info(request, "Google Drive desconectado.")
+    #messages.info(request, "Google Drive desconectado.")
     return redirect(REDIRECT_NAME)
 
 
@@ -213,7 +213,7 @@ def dropbox_callback(request):
         DropboxCredential.objects.update_or_create(
             user=request.user, defaults={"credentials": data}
         )
-        messages.success(request, "Dropbox conectado correctamente.")
+        #messages.success(request, "Dropbox conectado correctamente.")
     except Exception as e:
         messages.error(request, f"Error al conectar Dropbox: {e}")
     return redirect(REDIRECT_NAME)
@@ -221,7 +221,7 @@ def dropbox_callback(request):
 @login_required
 def dropbox_disconnect(request):
     DropboxCredential.objects.filter(user=request.user).delete()
-    messages.info(request, "Dropbox desconectado.")
+    #messages.info(request, "Dropbox desconectado.")
     return redirect(REDIRECT_NAME)
 
 @login_required
