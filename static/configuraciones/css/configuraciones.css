@@ -337,3 +337,90 @@
   background: #f8fafc;
   color: #0f172a;
 }
+
+/* Ayuda y soporte */
+.help-grid {
+  display: grid;                     
+  grid-template-columns: 1fr;        
+  gap: 12px;                         
+}
+
+@media (min-width: 900px) {
+  .help-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Tarjetas individuales de ayuda */
+.help-card {
+  display: grid;                     
+  grid-template-columns: auto 1fr auto; 
+  gap: 12px;                         
+  align-items: center;               
+  border: 1px solid var(--b-200);    
+  border-radius: 12px;               
+  padding: 12px;                     
+  background: #fff;                  
+}
+
+/* Página del Centro de Estado  */
+.status-list {
+  list-style: none;                  
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;                         
+}
+
+/* Fila de servicio */
+.status-row {
+  display: grid;
+  grid-template-columns: 1.2fr auto 1.6fr; 
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--b-200);    
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+
+/* Nombre del servicio */
+.status-name {
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* Nota o detalle del estado */
+.status-note {
+  color: var(--muted);
+}
+
+/* Chip de estado */
+.status-chip {
+  border: 1px solid var(--b-300);    
+  border-radius: 999px;              
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* Servicio operativo */
+.status-chip.operational {
+  background: #ecfdf5;               
+  border-color: #a7f3d0;
+  color: #065f46;                    
+}
+
+/* Servicio degradado */
+.status-chip.degraded {
+  background: #fffbeb;               
+  border-color: #fde68a;
+  color: #92400e;                    
+}
+
+/* Servicio en mantenimiento */
+.status-chip.maintenance {
+  background: #eff6ff;               
+  border-color: #bfdbfe;
+  color: #1e3a8a;                    
+}

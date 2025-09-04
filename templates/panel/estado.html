@@ -1,0 +1,68 @@
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}Centro de Estado · SGIDT{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=3">
+
+<section class="section">
+  <div class="container">
+    <h1 class="page-title">Centro de Estado</h1>
+
+    <div class="settings-card">
+      <h3>Servicios</h3>
+      <div class="card-body">
+
+        {# Última actualización como live region para lectores de pantalla #}
+        <p class="muted mb-12" aria-live="polite">{{ last_updated }}</p>
+
+        {# Leyenda opcional de estados (coherente con los chips) #}
+        <div class="status-legend" aria-hidden="true">
+          <span class="status-chip operational">Operativo</span>
+          <span class="status-chip degraded">Degradado</span>
+          <span class="status-chip maintenance">Mantenimiento</span>
+        </div>
+
+        {# Roles ARIA para mejorar navegación #}
+        <ul class="status-list" role="list">
+          {% for s in services %}
+          <li class="status-row" role="listitem">
+            <span class="status-name">
+              {% if s.status == 'operational' %}<i class="fas fa-check-circle" aria-hidden="true"></i>{% endif %}
+              {% if s.status == 'degraded' %}<i class="fas fa-exclamation-triangle" aria-hidden="true"></i>{% endif %}
+              {% if s.status == 'maintenance' %}<i class="fas fa-tools" aria-hidden="true"></i>{% endif %}
+              {{ s.name }}
+            </span>
+
+            <span class="status-chip {{ s.status }}">
+              {% if s.status == 'operational' %}Operativo{% endif %}
+              {% if s.status == 'degraded' %}Degradado{% endif %}
+              {% if s.status == 'maintenance' %}Mantenimiento{% endif %}
+            </span>
+
+            <span class="status-note">{{ s.note }}</span>
+          </li>
+          {% empty %}
+          <li class="status-row">
+            <span class="status-name"><i class="fas fa-info-circle" aria-hidden="true"></i> Sin servicios</span>
+            <span class="status-chip">—</span>
+            <span class="status-note">No hay datos para mostrar por ahora.</span>
+          </li>
+          {% endfor %}
+        </ul>
+
+        <div class="estado-back">
+          <a class="btn" href="{% url 'panel:ayuda' %}">← Volver a Ayuda</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Opcional: auto-actualizar si expones un endpoint JSON en /ayuda/estado/api/ #}
+<script>
+  (function(){
+    const ENDPOINT = "{% url 'panel:estado' %}"; 
+  })();
+</script>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import DashboardView, DocsView, ReportsView, ValidationsView, SettingsView, HelpView, help_contact
+from .views import DashboardView, DocsView, ReportsView, ValidationsView, SettingsView, HelpView, help_contact, FAQView, StatusView
 from apps.documentos import views as doc_views
 
 
@@ -12,10 +12,13 @@ urlpatterns = [
     path("reportes/", ReportsView.as_view(), name="reportes"),
     path("validaciones/", ValidationsView.as_view(), name="validaciones"),
     path("configuraciones/", SettingsView.as_view(), name="configuraciones"),
-    path("ayuda/", HelpView.as_view(), name="ayuda"),
 
-    # === NUEVO: endpoint del formulario de contacto ===
+    # === Ayuda y Soporte ===
+    path("ayuda/", HelpView.as_view(), name="ayuda"),
     path("ayuda/contacto/", help_contact, name="ayuda_contacto"),
+    path("ayuda/faq/", FAQView.as_view(), name="faq"),
+    path("ayuda/estado/", StatusView.as_view(), name="estado"),
+
 
     # Documentos
     path("documentos/", DocsView.as_view(), name="documentos_page"),

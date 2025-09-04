@@ -1,0 +1,46 @@
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}FAQ · SGIDT{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=4">
+
+<section class="section">
+  <div class="container">
+    <h1 class="page-title">Preguntas Frecuentes</h1>
+
+    <div class="settings-card">
+      <h3>FAQ</h3>
+      <div class="card-body">
+
+        <!-- Acordeones accesibles (nativo <details>) -->
+        <details class="faq-item" open>
+          <summary>
+            <i class="fas fa-question-circle" aria-hidden="true"></i>
+            ¿Cómo conecto Google Drive?
+          </summary>
+          <div class="faq-content">
+            Ir a <strong>Configuración → Integraciones</strong> y presionar <em>Conectar</em>.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-building" aria-hidden="true"></i>
+            ¿Dónde cambio los datos de la empresa?
+          </summary>
+          <div class="faq-content">
+            En <strong>Configuración → Ajustes de la Empresa</strong> y luego <em>Guardar</em>.
+          </div>
+        </details>
+
+        <!-- Agrega más items replicando el bloque de arriba -->
+
+        <div class="faq-actions">
+          <a class="btn" href="{% url 'panel:ayuda' %}">← Volver a Ayuda</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

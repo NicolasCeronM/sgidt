@@ -62,6 +62,24 @@ class HelpView(TemplateView):
 
     template_name = "panel/ayuda.html"
 
+class FAQView(LoginRequiredMixin, TemplateView):
+    template_name = "panel/faq.html"
+
+
+class StatusView(LoginRequiredMixin, TemplateView):
+    template_name = "panel/estado.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        # Placeholder: lista de servicios con estados simulados
+        ctx["services"] = [
+            {"name": "API SGIDT", "status": "operational", "note": "Sin incidentes"},
+            {"name": "Google Drive", "status": "degraded", "note": "Latencias intermitentes"},
+            {"name": "Dropbox", "status": "operational", "note": "OK"},
+            {"name": "Correo saliente", "status": "maintenance", "note": "Ventana 00:30–01:00"},
+        ]
+        ctx["last_updated"] = "Actualizado hace 2 min (placeholder)"
+        return ctx
 
 
 @require_POST

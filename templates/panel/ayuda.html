@@ -18,7 +18,7 @@
         <i class="fas fa-question-circle help-icon"></i>
         <h3>Preguntas Frecuentes</h3>
         <p>Respuestas a las dudas más comunes sobre el uso de SGIDT.</p>
-        <a href="#" class="btn btn-secondary">
+        <a href="{% url 'panel:faq' %}" class="btn btn-secondary">
           <i class="fas fa-book-open"></i> Ver FAQ
         </a>
       </div>
@@ -27,7 +27,7 @@
         <i class="fas fa-book help-icon"></i>
         <h3>Manual de Usuario</h3>
         <p>Guía completa con ejemplos para aprovechar todas las funciones.</p>
-        <a href="#" class="btn btn-secondary">
+        <a href="{% static 'manuales/sgidt-manual-v0.pdf' %}" download class="btn btn-secondary">
           <i class="fas fa-file-download"></i> Descargar Manual (PDF)
         </a>
       </div>
@@ -36,7 +36,7 @@
         <i class="fas fa-headset help-icon"></i>
         <h3>Soporte Técnico</h3>
         <p>¿Problemas técnicos? Nuestro equipo está para ayudarte.</p>
-        <a href="mailto:soporte@sgidt.cl" class="btn btn-primary">
+        <a href="#contacto-rapido" class="btn btn-secondary">
           <i class="fas fa-envelope"></i> Contactar Soporte
         </a>
       </div>
@@ -45,7 +45,7 @@
         <i class="fas fa-life-ring help-icon"></i>
         <h3>Centro de Estado</h3>
         <p>Revisa el estado de los servicios, integraciones y disponibilidad.</p>
-        <a href="#" class="btn btn-secondary">
+        <a href="{% url 'panel:estado' %}" class="btn btn-secondary">
           <i class="fas fa-signal"></i> Ver Estado
         </a>
       </div>

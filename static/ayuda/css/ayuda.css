@@ -204,3 +204,184 @@ textarea.form-input:focus {
 i {
   opacity: 0.95;
 }
+
+/* Card base para centro de Estado */
+.settings-card {
+  background: var(--card);
+  border: 1px solid var(--b-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.settings-card > h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+.settings-card .card-body {
+  padding: 0; 
+}
+
+/* Lista de servicios */
+.status-list {
+  list-style: none;         
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;                
+}
+
+/* Fila individual del servicio */
+.status-row {
+  display: grid;
+  grid-template-columns: 1.2fr auto 1.6fr; 
+  gap: 10px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--b-200);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+/* Nombre del servicio */
+.status-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* detalle del estado */
+.status-note {
+  color: var(--muted);
+}
+
+/* Chips de estado */
+.status-chip {
+  border: 1px solid var(--b-300);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* Operativo: azul claro */
+.status-chip.operational {
+  background: #e0f2fe;   
+  border-color: #bae6fd;
+  color: #075985;       
+}
+
+/* Degradado: amarillo */
+.status-chip.degraded {
+  background: #fffbeb;   
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+/* Mantenimiento: azul */
+.status-chip.maintenance {
+  background: #eff6ff;   
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+
+/* Botón "Volver a Ayuda */
+.estado-back {
+  margin-top: 14px;
+}
+
+/*  Utilidades pequeñas */
+.mb-12 { margin-bottom: 12px; }
+.estado-back { margin-top: 14px; }
+
+/*  Leyenda de estados  */
+.status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* Microinteracciones sutiles  */
+.status-row {
+  transition: box-shadow 0.15s ease, transform 0.05s ease;
+}
+.status-row:hover {
+  box-shadow: 0 8px 18px rgba(15,23,42,0.06);
+  transform: translateY(-1px);
+}
+
+/* Responsive fino para la tabla visual */
+@media (max-width: 720px) {
+  .status-row {
+    grid-template-columns: 1fr; 
+    gap: 6px;
+    align-items: start;
+  }
+  .status-chip { width: max-content; }
+}
+
+/* Item del acordeón */
+.faq-item {
+  border: 1px solid var(--b-200);   
+  border-radius: 12px;               
+  background: #fff;
+  margin-bottom: 10px;               
+  overflow: hidden;                 
+}
+
+/* Cabecera del acordeón */
+.faq-item > summary {
+  list-style: none;                  
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  font-weight: 800;
+  color: var(--text);
+  position: relative;
+}
+
+/* Icono al inicio */
+.faq-item > summary i {
+  color: #334155;
+  font-size: 16px;
+  opacity: 0.95;
+}
+
+/* Indicador de expandir*/
+.faq-item > summary::after {
+  content: "\f078";                  
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  margin-left: auto;
+  color: var(--muted);
+  transition: transform .2s ease;
+}
+
+/* Rotación del chevron al abrir */
+.faq-item[open] > summary::after {
+  transform: rotate(-180deg);
+}
+
+/* Contenido de la respuesta*/
+.faq-content {
+  padding: 12px 14px 14px 40px;      
+  color: var(--text);
+  line-height: 1.55;
+}
+
+/* Micro-interacciones y accesibilidad */
+.faq-item:hover { box-shadow: var(--shadow); }
+.faq-item > summary:focus-visible {
+  outline: 3px solid rgba(55,65,81,.35);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* Botón de volver con respiro (si lo usas) */
+.faq-actions { margin-top: 12px; }
