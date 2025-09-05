@@ -1,77 +1,96 @@
-# apps/panel/views.py
-from typing import Any, Dict
-from django.conf import settings
-from django.contrib import messages
+from urllib import request
+from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse, HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.views.generic import TemplateView
+from django.conf import settings
+from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
-from django.urls import reverse, reverse_lazy
-from django.views import View
-from django.views.generic import TemplateView, FormView
-
-from apps.empresas.models import EmpresaUsuario
 from apps.integraciones.models import GoogleDriveCredential, DropboxCredential
+from apps.empresas.models import EmpresaUsuario
+
+# PDF
+from weasyprint import HTML, CSS
+import os
+
 from .forms import HelpContactForm
 
 
-# ---------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------
-def _is_ajax(request: HttpRequest) -> bool:
-    return request.headers.get("x-requested-with") == "XMLHttpRequest"
-
-
-def _empresa_activa_para(request: HttpRequest):
-    """
-    Devuelve la Empresa activa del usuario, respetando la sesión.
-    Unifica el uso a 'empresa_activa_id' en todo el proyecto.
-    """
-    empresa_id = request.session.get("empresa_activa_id")
-    qs = (EmpresaUsuario.objects
-          .select_related("empresa")
-          .filter(usuario=request.user))
-
-    if empresa_id:
-        eu = qs.filter(empresa_id=empresa_id).first()
-        if eu:
-            return eu.empresa
-    # fallback primera empresa del usuario
-    eu = qs.order_by("creado_en").first()
-    return eu.empresa if eu else None
-
-
-# ---------------------------------------------------------------------
-# Dashboard
-# ---------------------------------------------------------------------
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "panel/dashboard.html"
 
-    def get_context_data(self, **kwargs) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["empresa"] = _empresa_activa_para(self.request)
+
+        # Si manejas empresa “activa” en sesión, respétala
+        empresa_id = self.request.session.get("empresa_id")
+
+        qs = (
+            EmpresaUsuario.objects
+            .select_related("empresa")
+            .filter(usuario=self.request.user)  # Ojo: campo es `usuario`
+        )
+
+        if empresa_id:
+            eu = qs.filter(empresa_id=empresa_id).first()
+        else:
+            eu = qs.order_by("creado_en").first()
+
+        ctx["empresa"] = eu.empresa if eu else None
         return ctx
 
 
-# ---------------------------------------------------------------------
-# Documentos (Front: sólo renderiza template; el JS llama a /api/documentos/..)
-# ---------------------------------------------------------------------
-class DocumentosPageView(LoginRequiredMixin, TemplateView):
+class DocsView(TemplateView):
     template_name = "panel/documentos.html"
 
 
-# ---------------------------------------------------------------------
-# Reportes / Validaciones / Ayuda / FAQ / Estado
-# ---------------------------------------------------------------------
-class ReportsView(LoginRequiredMixin, TemplateView):
+class ReportsView(TemplateView):
     template_name = "panel/reportes.html"
 
 
-class ValidationsView(LoginRequiredMixin, TemplateView):
+class ValidationsView(TemplateView):
     template_name = "panel/validaciones.html"
 
 
-class HelpView(LoginRequiredMixin, TemplateView):
+class SettingsView(LoginRequiredMixin, TemplateView):
+    template_name = "panel/configuraciones.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        u = self.request.user
+        ctx["drive_connected"] = GoogleDriveCredential.objects.filter(user=u).exists()
+        ctx["dropbox_connected"] = DropboxCredential.objects.filter(user=u).exists()
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        """
+        Maneja el submit de 'Ajustes de la Empresa'.
+        Por ahora solo muestra feedback y redirige (PRG pattern).
+        Si luego agregamos persistencia, aquí haremos form.is_valid() -> form.save().
+        """
+        company_rut = request.POST.get("company_rut", "").strip()
+        company_name = request.POST.get("company_name", "").strip()
+        company_email = request.POST.get("company_email", "").strip()
+        company_phone = request.POST.get("company_phone", "").strip()
+        company_addr = request.POST.get("company_address", "").strip()
+        auto_backup = request.POST.get("auto_backup", "").strip()  # si lo usas
+
+        # Validación mínima (opcional, puedes ajustar)
+        if not company_rut or not company_name:
+            messages.error(request, "RUT y Razón Social son obligatorios.")
+            return redirect("panel:configuraciones")
+
+        # TODO: persistir en BD (CompanySettings / Empresa). Por ahora, solo feedback.
+        messages.success(request, "Configuración guardada con éxito.")
+        return redirect("panel:configuraciones")
+
+
+class HelpView(TemplateView):
     template_name = "panel/ayuda.html"
 
 
@@ -82,9 +101,9 @@ class FAQView(LoginRequiredMixin, TemplateView):
 class StatusView(LoginRequiredMixin, TemplateView):
     template_name = "panel/estado.html"
 
-    def get_context_data(self, **kwargs) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        # Placeholder: puedes reemplazar por un healthcheck real
+        # Placeholder: lista de servicios con estados simulados
         ctx["services"] = [
             {"name": "API SGIDT", "status": "operational", "note": "Sin incidentes"},
             {"name": "Google Drive", "status": "degraded", "note": "Latencias intermitentes"},
@@ -95,86 +114,129 @@ class StatusView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
-# ---------------------------------------------------------------------
-# Help Contact (Form + JSON si es AJAX)  —> ideal para delegar a Celery luego
-# ---------------------------------------------------------------------
-class HelpContactView(LoginRequiredMixin, FormView):
-    template_name = "panel/ayuda.html"
-    form_class = HelpContactForm
-    success_url = reverse_lazy("panel:ayuda")
+@require_POST
+@csrf_protect
+def help_contact(request):
+    form = HelpContactForm(request.POST)
 
-    def form_invalid(self, form):
-        if _is_ajax(self.request):
+    # ¿Es una petición AJAX?
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+    # Validación
+    if not form.is_valid():
+        if is_ajax:
+            # Devolvemos errores de forma segura para el fetch()
             return JsonResponse({"ok": False, "errors": form.errors}, status=400)
-        messages.error(self.request, "Revisa los campos del formulario.")
-        return super().form_invalid(form)
+        messages.error(request, "Revisa los campos del formulario.")
+        return redirect(reverse("panel:ayuda"))
 
-    def form_valid(self, form):
-        name = form.cleaned_data["name"]
-        email = form.cleaned_data["email"]
-        message = form.cleaned_data["message"]
+    # Datos
+    name = form.cleaned_data["name"]
+    email = form.cleaned_data["email"]
+    message = form.cleaned_data["message"]
 
-        context = {"name": name, "email": email, "message": message}
-        text_content = render_to_string("correo/ayuda_contacto.txt", context)
-        html_content = render_to_string("correo/ayuda_contacto.html", context)
+    # Render de plantillas de correo
+    context = {"name": name, "email": email, "message": message}
+    text_content = render_to_string("correo/ayuda_contacto.txt", context)
+    html_content = render_to_string("correo/ayuda_contacto.html", context)
 
-        subject = f"[SGIDT] Contacto de ayuda - {name}"
-        to = [getattr(settings, "SUPPORT_EMAIL", "sgidtchile@gmail.com")]
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None)
+    # Envío
+    subject = f"[SGIDT] Contacto de ayuda - {name}"
+    to = [getattr(settings, "SUPPORT_EMAIL", "sgidtchile@gmail.com")]
 
-        # Envío sin Celery (por ahora). Luego puedes delegar a tasks.email_send.delay(...)
-        from django.core.mail import EmailMultiAlternatives
-        email_msg = EmailMultiAlternatives(
-            subject=subject,
-            body=text_content,
-            from_email=from_email,
-            to=to,
-            reply_to=[email],
-        )
-        email_msg.attach_alternative(html_content, "text/html")
-        email_msg.send()
+    email_msg = EmailMultiAlternatives(
+        subject=subject,
+        body=text_content,
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+        to=to,
+        reply_to=[email],
+    )
+    email_msg.attach_alternative(html_content, "text/html")
+    email_msg.send()
 
-        if _is_ajax(self.request):
-            return JsonResponse({"ok": True})
+    # Éxito → si es AJAX devolvemos JSON, si no usamos messages + redirect
+    if is_ajax:
+        return JsonResponse({"ok": True})
 
-        messages.success(self.request, "Tu mensaje fue enviado. Te contactaremos pronto.")
-        return super().form_valid(form)
+    messages.success(request, "Tu mensaje fue enviado. Te contactaremos pronto.")
+    return redirect(reverse("panel:ayuda"))
 
 
-# ---------------------------------------------------------------------
-# Configuraciones
-# ---------------------------------------------------------------------
-class SettingsView(LoginRequiredMixin, TemplateView):
+# ===========================
+#   PDF: Manual de Usuario
+# ===========================
+def manual_usuario_pdf(request):
     """
-    Vista de configuración del panel. Muestra estado de integraciones y
-    recibe datos básicos de la empresa (PRG pattern).
+    Genera y descarga el Manual de Usuario en PDF
+    a partir de la plantilla templates/manual/manual_usuario.html
+    y el CSS de impresión en static/manual/css/manual_print.css
     """
-    template_name = "panel/configuraciones.html"
+    secciones = [
+        {
+            "id": "introduccion",
+            "titulo": "Introducción",
+            "html": """
+                <p><strong>SGIDT</strong> es un sistema de gestión inteligente tributario para pymes chilenas.
+                Este manual explica la navegación, los módulos y ejemplos de uso paso a paso.</p>
+            """,
+        },
+        {
+            "id": "cuentas",
+            "titulo": "Cuentas de Usuario y Acceso",
+            "html": """
+                <ul>
+                    <li>Registro, inicio de sesión y recuperación de contraseña.</li>
+                    <li>Gestión de perfil y permisos.</li>
+                </ul>
+            """,
+        },
+        {
+            "id": "validaciones",
+            "titulo": "Validaciones con SII (SimpleAPI)",
+            "html": """
+                <p>Cómo subir XML/JSON de DTE, lanzar la validación y leer los resultados.
+                Recomendaciones para errores frecuentes.</p>
+            """,
+        },
+        {
+            "id": "integraciones",
+            "titulo": "Integraciones: Google Drive y Dropbox",
+            "html": """
+                <p>Conectar cuentas, otorgar permisos, persistencia de tokens y explorar/descargar archivos.</p>
+            """,
+        },
+        {
+            "id": "panel_estado",
+            "titulo": "Centro de Estado",
+            "html": """
+                <p>Monitoreo de servicios, integraciones y disponibilidad del sistema.</p>
+            """,
+        },
+        {
+            "id": "soporte",
+            "titulo": "Soporte y Contacto",
+            "html": """
+                <p>Flujo para reportar incidencias desde Ayuda → Contacto Rápido y buenas prácticas.</p>
+            """,
+        },
+    ]
 
-    def get_context_data(self, **kwargs) -> Dict[str, Any]:
-        ctx = super().get_context_data(**kwargs)
-        u = self.request.user
-        ctx["drive_connected"] = GoogleDriveCredential.objects.filter(user=u).exists()
-        ctx["dropbox_connected"] = DropboxCredential.objects.filter(user=u).exists()
-        ctx["empresa"] = _empresa_activa_para(self.request)
-        return ctx
+    context = {
+        "titulo": "SGIDT · Manual de Usuario",
+        "version": "v1.0",
+        "empresa": "SGIDT",
+        "secciones": secciones,
+    }
 
-    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        """
-        Maneja el submit de 'Ajustes de la Empresa'.
-        Mantiene PRG y validación mínima. A futuro, persistir en Empresa/CompanySettings.
-        """
-        company_rut   = (request.POST.get("company_rut") or "").strip()
-        company_name  = (request.POST.get("company_name") or "").strip()
-        company_email = (request.POST.get("company_email") or "").strip()
-        company_phone = (request.POST.get("company_phone") or "").strip()
-        company_addr  = (request.POST.get("company_address") or "").strip()
-        auto_backup   = (request.POST.get("auto_backup") or "").strip()
+    html_string = render_to_string("manual/manual_usuario.html", context)
 
-        if not company_rut or not company_name:
-            messages.error(request, "RUT y Razón Social son obligatorios.")
-            return redirect("panel:configuraciones")
+    css_fs = os.path.join(settings.BASE_DIR, "static", "manual", "css", "manual_print.css")
+    stylesheets = [CSS(filename=css_fs)] if os.path.exists(css_fs) else []
 
-        # TODO: persistir datos en la empresa activa o en un modelo de settings.
-        messages.success(request, "Configuración guardada con éxito.")
-        return redirect("panel:configuraciones")
+    pdf = HTML(string=html_string, base_url=request.build_absolute_uri("/")).write_pdf(
+        stylesheets=stylesheets
+    )
+
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="sgidt-manual.pdf"'
+    return response
