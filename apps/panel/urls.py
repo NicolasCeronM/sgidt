@@ -1,8 +1,10 @@
 from django.urls import path
-from .views import DashboardView, DocsView, ReportsView, ValidationsView, SettingsView, HelpView, help_contact, FAQView, StatusView
+from .views import (
+    DashboardView, DocsView, ReportsView, ValidationsView, SettingsView,
+    HelpView, help_contact, FAQView, StatusView,
+    manual_usuario_pdf,   
+)
 from apps.documentos import views as doc_views
-
-
 
 app_name = "panel"
 
@@ -19,6 +21,8 @@ urlpatterns = [
     path("ayuda/faq/", FAQView.as_view(), name="faq"),
     path("ayuda/estado/", StatusView.as_view(), name="estado"),
 
+    # PDF Manual
+    path("manual.pdf", manual_usuario_pdf, name="manual_pdf"),
 
     # Documentos
     path("documentos/", DocsView.as_view(), name="documentos_page"),
