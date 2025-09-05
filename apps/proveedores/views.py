@@ -37,7 +37,7 @@ def proveedores_create(request):
             if formset.is_valid():
                 formset.save()
             messages.success(request, "Proveedor creado correctamente.")
-            return redirect("proveedor:proveedores_list")
+            return redirect("proveedores:proveedores_list")
         messages.error(request, "Revisa los campos marcados.")
         formset = ProveedorContactoFormSet(request.POST)
     else:
@@ -55,7 +55,7 @@ def proveedores_update(request, pk):
             form.save()     # owner no cambia
             formset.save()
             messages.success(request, "Proveedor actualizado correctamente.")
-            return redirect("proveedor:proveedores_list")
+            return redirect("proveedores:proveedores_list")
         messages.error(request, "Revisa los campos marcados.")
     else:
         form = ProveedorForm(instance=proveedor)
@@ -69,7 +69,7 @@ def proveedores_delete(request, pk):
     if request.method == "POST":
         proveedor.delete()
         messages.success(request, "Proveedor eliminado correctamente.")
-        return redirect("proveedor:proveedores_list")
+        return redirect("proveedores:proveedores_list")
     messages.error(request, "Acción no permitida.")
     return redirect("proveedor:proveedores_list")
 

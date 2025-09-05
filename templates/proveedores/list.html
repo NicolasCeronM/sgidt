@@ -9,7 +9,7 @@
   <!-- Header -->
   <div class="modern-card-header">
     <h2> Proveedores</h2>
-    <a href="{% url 'proveedor:proveedores_create' %}" class="modern-btn modern-btn-primary">
+    <a href="{% url 'proveedores:proveedores_create' %}" class="modern-btn modern-btn-primary">
       Nuevo Proveedor
     </a>
   </div>
@@ -22,7 +22,7 @@
           class="search-input" />
         <button type="submit" class="modern-btn modern-btn-secondary">Buscar</button>
         {% if q %}
-        <a href="{% url 'proveedor:proveedores_list' %}" class="modern-btn modern-btn-light">✕ Limpiar</a>
+        <a href="{% url 'proveedores:proveedores_list' %}" class="modern-btn modern-btn-light">✕ Limpiar</a>
         {% endif %}
       </form>
     </div>
@@ -45,7 +45,7 @@
           {% for p in page_obj %}
           <tr>
             <td>
-              <a href="{% url 'proveedor:proveedores_detail' p.id %}" class="provider-link">
+              <a href="{% url 'proveedores:proveedores_detail' p.id %}" class="provider-link">
                 {{ p.razon_social }}
               </a>
             </td>
@@ -61,7 +61,7 @@
               {% endif %}
             </td>
             <td>
-              <a href="{% url 'proveedor:proveedores_update' p.id %}" class="action-link"> Editar</a>
+              <a href="{% url 'proveedores:proveedores_update' p.id %}" class="action-link"> Editar</a>
             </td>
           </tr>
           {% empty %}
@@ -71,7 +71,7 @@
               <div>No se encontraron proveedores.</div>
               <div style="margin-top: .5rem; font-size: .9rem;">
                 Intenta ajustar los criterios de búsqueda o
-                <a href="{% url 'proveedor:proveedores_create' %}" class="provider-link">crear un nuevo proveedor</a>.
+                <a href="{% url 'proveedores:proveedores_create' %}" class="provider-link">crear un nuevo proveedor</a>.
               </div>
             </td>
           </tr>

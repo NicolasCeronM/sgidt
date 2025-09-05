@@ -1,66 +1,79 @@
-from django.shortcuts import render
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
-
-
+# apps/panel/views.py
+from typing import Any, Dict
 from django.conf import settings
-from django.core.mail import EmailMessage
-from django.http import JsonResponse
-from django.shortcuts import redirect
-from django.urls import reverse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_protect
-from .forms import HelpContactForm   
-from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from apps.integraciones.models import GoogleDriveCredential, DropboxCredential
-
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
-from apps.empresas.models import EmpresaUsuario
+from django.http import JsonResponse, HttpRequest, HttpResponse
+from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse, reverse_lazy
+from django.views import View
+from django.views.generic import TemplateView, FormView
 
+from apps.empresas.models import EmpresaUsuario
+from apps.integraciones.models import GoogleDriveCredential, DropboxCredential
+from .forms import HelpContactForm
+
+
+# ---------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------
+def _is_ajax(request: HttpRequest) -> bool:
+    return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+def _empresa_activa_para(request: HttpRequest):
+    """
+    Devuelve la Empresa activa del usuario, respetando la sesión.
+    Unifica el uso a 'empresa_activa_id' en todo el proyecto.
+    """
+    empresa_id = request.session.get("empresa_activa_id")
+    qs = (EmpresaUsuario.objects
+          .select_related("empresa")
+          .filter(usuario=request.user))
+
+    if empresa_id:
+        eu = qs.filter(empresa_id=empresa_id).first()
+        if eu:
+            return eu.empresa
+    # fallback primera empresa del usuario
+    eu = qs.order_by("creado_en").first()
+    return eu.empresa if eu else None
+
+
+# ---------------------------------------------------------------------
+# Dashboard
+# ---------------------------------------------------------------------
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "panel/dashboard.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> Dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
-
-        # Si manejas empresa “activa” en sesión, respétala
-        empresa_id = self.request.session.get("empresa_id")
-
-        qs = (EmpresaUsuario.objects
-              .select_related("empresa")
-              .filter(usuario=self.request.user))  # Ojo: campo es `usuario`
-
-        if empresa_id:
-            eu = qs.filter(empresa_id=empresa_id).first()
-        else:
-            eu = qs.order_by("creado_en").first()
-
-        ctx["empresa"] = eu.empresa if eu else None
+        ctx["empresa"] = _empresa_activa_para(self.request)
         return ctx
 
 
-class DocsView(TemplateView): 
-
+# ---------------------------------------------------------------------
+# Documentos (Front: sólo renderiza template; el JS llama a /api/documentos/..)
+# ---------------------------------------------------------------------
+class DocumentosPageView(LoginRequiredMixin, TemplateView):
     template_name = "panel/documentos.html"
 
-class ReportsView(TemplateView): 
 
+# ---------------------------------------------------------------------
+# Reportes / Validaciones / Ayuda / FAQ / Estado
+# ---------------------------------------------------------------------
+class ReportsView(LoginRequiredMixin, TemplateView):
     template_name = "panel/reportes.html"
 
-class ValidationsView(TemplateView):
 
+class ValidationsView(LoginRequiredMixin, TemplateView):
     template_name = "panel/validaciones.html"
 
-class SettingsView(TemplateView):
-    template_name = "panel/configuraciones.html"
 
-class HelpView(TemplateView): 
-
+class HelpView(LoginRequiredMixin, TemplateView):
     template_name = "panel/ayuda.html"
+
 
 class FAQView(LoginRequiredMixin, TemplateView):
     template_name = "panel/faq.html"
@@ -69,9 +82,9 @@ class FAQView(LoginRequiredMixin, TemplateView):
 class StatusView(LoginRequiredMixin, TemplateView):
     template_name = "panel/estado.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> Dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
-        # Placeholder: lista de servicios con estados simulados
+        # Placeholder: puedes reemplazar por un healthcheck real
         ctx["services"] = [
             {"name": "API SGIDT", "status": "operational", "note": "Sin incidentes"},
             {"name": "Google Drive", "status": "degraded", "note": "Latencias intermitentes"},
@@ -82,94 +95,86 @@ class StatusView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
-@require_POST
-@csrf_protect
-def help_contact(request):
-    form = HelpContactForm(request.POST)
+# ---------------------------------------------------------------------
+# Help Contact (Form + JSON si es AJAX)  —> ideal para delegar a Celery luego
+# ---------------------------------------------------------------------
+class HelpContactView(LoginRequiredMixin, FormView):
+    template_name = "panel/ayuda.html"
+    form_class = HelpContactForm
+    success_url = reverse_lazy("panel:ayuda")
 
-    # Helper: ¿es una petición AJAX?
-    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
-
-    # Validación
-    if not form.is_valid():
-        if is_ajax:
-            # Devolvemos errores de forma segura para el fetch()
+    def form_invalid(self, form):
+        if _is_ajax(self.request):
             return JsonResponse({"ok": False, "errors": form.errors}, status=400)
-        messages.error(request, "Revisa los campos del formulario.")
-        return redirect(reverse("panel:ayuda"))
+        messages.error(self.request, "Revisa los campos del formulario.")
+        return super().form_invalid(form)
 
-    # Datos
-    name = form.cleaned_data["name"]
-    email = form.cleaned_data["email"]
-    message = form.cleaned_data["message"]
+    def form_valid(self, form):
+        name = form.cleaned_data["name"]
+        email = form.cleaned_data["email"]
+        message = form.cleaned_data["message"]
 
-    # Render de plantillas de correo
-    context = {"name": name, "email": email, "message": message}
-    text_content = render_to_string("correo/ayuda_contacto.txt", context)
-    html_content = render_to_string("correo/ayuda_contacto.html", context)
+        context = {"name": name, "email": email, "message": message}
+        text_content = render_to_string("correo/ayuda_contacto.txt", context)
+        html_content = render_to_string("correo/ayuda_contacto.html", context)
 
-    # Envío
-    subject = f"[SGIDT] Contacto de ayuda - {name}"
-    to = [getattr(settings, "SUPPORT_EMAIL", "sgidtchile@gmail.com")]
+        subject = f"[SGIDT] Contacto de ayuda - {name}"
+        to = [getattr(settings, "SUPPORT_EMAIL", "sgidtchile@gmail.com")]
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None)
 
-    email_msg = EmailMultiAlternatives(
-        subject=subject,
-        body=text_content,
-        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-        to=to,
-        reply_to=[email],
-    )
-    email_msg.attach_alternative(html_content, "text/html")
-    email_msg.send()
+        # Envío sin Celery (por ahora). Luego puedes delegar a tasks.email_send.delay(...)
+        from django.core.mail import EmailMultiAlternatives
+        email_msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=from_email,
+            to=to,
+            reply_to=[email],
+        )
+        email_msg.attach_alternative(html_content, "text/html")
+        email_msg.send()
 
-    # Éxito → si es AJAX devolvemos JSON, si no usamos messages + redirect
-    if is_ajax:
-        return JsonResponse({"ok": True})
+        if _is_ajax(self.request):
+            return JsonResponse({"ok": True})
 
-    messages.success(request, "Tu mensaje fue enviado. Te contactaremos pronto.")
-    return redirect(reverse("panel:ayuda"))
-
+        messages.success(self.request, "Tu mensaje fue enviado. Te contactaremos pronto.")
+        return super().form_valid(form)
 
 
-#class SettingsView(LoginRequiredMixin, TemplateView):
-#    template_name = "panel/configuraciones.html"
-
-#    def get_context_data(self, **kwargs):
-#        ctx = super().get_context_data(**kwargs)
-#        ctx["drive_connected"] = GoogleDriveCredential.objects.filter(
-#            user=self.request.user
-#        ).exists()
-#        return ctx
-    
-
+# ---------------------------------------------------------------------
+# Configuraciones
+# ---------------------------------------------------------------------
 class SettingsView(LoginRequiredMixin, TemplateView):
+    """
+    Vista de configuración del panel. Muestra estado de integraciones y
+    recibe datos básicos de la empresa (PRG pattern).
+    """
     template_name = "panel/configuraciones.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> Dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         u = self.request.user
-        ctx["drive_connected"]   = GoogleDriveCredential.objects.filter(user=u).exists()
+        ctx["drive_connected"] = GoogleDriveCredential.objects.filter(user=u).exists()
         ctx["dropbox_connected"] = DropboxCredential.objects.filter(user=u).exists()
+        ctx["empresa"] = _empresa_activa_para(self.request)
         return ctx
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """
         Maneja el submit de 'Ajustes de la Empresa'.
-        Por ahora solo muestra feedback y redirige (PRG pattern).
-        Si luego agregamos persistencia, aquí haremos form.is_valid() -> form.save().
+        Mantiene PRG y validación mínima. A futuro, persistir en Empresa/CompanySettings.
         """
-        company_rut   = request.POST.get("company_rut", "").strip()
-        company_name  = request.POST.get("company_name", "").strip()
-        company_email = request.POST.get("company_email", "").strip()
-        company_phone = request.POST.get("company_phone", "").strip()
-        company_addr  = request.POST.get("company_address", "").strip()
-        auto_backup   = request.POST.get("auto_backup", "").strip()  # si lo usas
+        company_rut   = (request.POST.get("company_rut") or "").strip()
+        company_name  = (request.POST.get("company_name") or "").strip()
+        company_email = (request.POST.get("company_email") or "").strip()
+        company_phone = (request.POST.get("company_phone") or "").strip()
+        company_addr  = (request.POST.get("company_address") or "").strip()
+        auto_backup   = (request.POST.get("auto_backup") or "").strip()
 
-        # Validación mínima (opcional, puedes ajustar)
         if not company_rut or not company_name:
             messages.error(request, "RUT y Razón Social son obligatorios.")
             return redirect("panel:configuraciones")
 
-        # TODO: persistir en BD (CompanySettings / Empresa). Por ahora, solo feedback.
+        # TODO: persistir datos en la empresa activa o en un modelo de settings.
         messages.success(request, "Configuración guardada con éxito.")
         return redirect("panel:configuraciones")

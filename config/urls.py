@@ -16,36 +16,45 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
 from apps.panel import views as panel_views
 
 urlpatterns = [
+    # --- Administración ---
     path("admin/", admin.site.urls),
 
-    # Público
-    path("", include("apps.sitio.urls", namespace="sitio")),             # /
+    # --- Sitio público ---
+    path("", include("apps.sitio.urls", namespace="sitio")),
 
-    # Autenticación
+    # --- Autenticación / Usuarios ---
     path("usuarios/", include("apps.usuarios.urls", namespace="usuarios")),
     path("empresas/", include(("apps.empresas.urls", "empresas"), namespace="empresas")),
 
-    # App privada
-    path("app/", include("apps.panel.urls", namespace="panel")),         # /app/
-    path("proveedor/", include(("apps.proveedores.urls"))),
+    # --- Aplicación interna (solo páginas / templates) ---
+    path("app/", include("apps.panel.urls", namespace="panel")),
     path("configuracion/", panel_views.SettingsView.as_view(), name="configuraciones"),
 
-    #correo
-    path("correo/", include("apps.correo.urls", namespace="correo")),
+    # --- APIs (solo lógica / JSON) ---
+    path("api/documentos/", include(("apps.documentos.api_urls", "documentos"), namespace="documentos")),
+    # Si más adelante migras proveedores a API:
+    # path("api/proveedores/", include(("apps.proveedores.api_urls", "proveedores"), namespace="proveedores")),
 
-    # Integraciones
-    path("integraciones/", include("apps.integraciones.urls", namespace="integraciones")),
+    # --- Rutas de apps que hoy son vistas (si aún las usas como páginas) ---
+    path("proveedores/", include(("apps.proveedores.urls", "proveedores"), namespace="proveedores")),
 
+    # --- Correo & Integraciones ---
+    path("correo/", include(("apps.correo.urls", "correo"), namespace="correo")),
+    path("integraciones/", include(("apps.integraciones.urls", "integraciones"), namespace="integraciones")),
+
+    # --- Compatibilidad con rutas antiguas (redirecciones 301) ---
+    path("app/documentos/api/list/",   RedirectView.as_view(url="/api/documentos/list/",   permanent=True)),
+    path("app/documentos/api/upload/", RedirectView.as_view(url="/api/documentos/upload/", permanent=True)),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 

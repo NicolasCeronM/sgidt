@@ -1,6 +1,6 @@
 // static/panel/js/documentos/api.js
-export const listUrl = "/app/documentos/api/list/";
-export const uploadUrl = "/app/documentos/api/upload/";
+export const listUrl   = "/api/documentos/list/";    // antes: /app/documentos/api/list/
+export const uploadUrl = "/api/documentos/upload/";  // antes: /app/documentos/api/upload/
 
 export function getCookie(name){
   const v = `; ${document.cookie}`.split(`; ${name}=`);
