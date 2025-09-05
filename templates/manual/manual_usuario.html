@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>{{ titulo }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}manual/css/manual_print.css">
+</head>
+
+<body class="doc">
+
+    <!-- Portada -->
+    <section class="cover">
+        <h1>{{ titulo }}</h1>
+        <p class="subtitle">Versión {{ version }} · {{ empresa }}</p>
+        <p class="muted">Guía práctica para usar SGIDT: flujos, pantallas y mejores prácticas.</p>
+    </section>
+
+    <!-- Índice -->
+    <nav class="toc">
+        <h2>Contenido</h2>
+        <ol>
+            <li><a href="#intro">Qué es SGIDT</a></li>
+            <li><a href="#acceso">Acceso y Recuperación de Cuenta</a></li>
+            <li><a href="#navegacion">Navegación del Panel</a></li>
+            <li><a href="#empresas">Gestión de Empresas</a></li>
+            <li><a href="#proveedores">Gestión de Proveedores</a></li>
+            <li><a href="#documentos">Subida y Gestión de Documentos</a></li>
+            <li><a href="#validaciones">Validaciones con SII (SimpleAPI)</a></li>
+            <li><a href="#integraciones">Integraciones: Google Drive y Dropbox</a></li>
+            <li><a href="#estado">Centro de Estado</a></li>
+            <li><a href="#ayuda">Ayuda, Soporte y FAQ</a></li>
+            <li><a href="#buenas">Buenas Prácticas y Errores Comunes</a></li>
+            <li><a href="#glosario">Glosario</a></li>
+        </ol>
+    </nav>
+
+    <!-- 1. Qué es SGIDT -->
+    <section id="intro" class="section">
+        <h2>1. Qué es SGIDT</h2>
+        <p><strong>SGIDT</strong> es un sistema de gestión tributaria para pymes chilenas. Permite
+            organizar empresas/proveedores, subir documentos y validarlos, y conectarte con
+            servicios en la nube para almacenamiento.</p>
+        <ul>
+            <li>Interfaz web simple y consistente.</li>
+            <li>Validación de DTE y otros documentos.</li>
+            <li>Integraciones con Google Drive y Dropbox.</li>
+        </ul>
+    </section>
+
+    <!-- 2. Acceso -->
+    <section id="acceso" class="section">
+        <h2>2. Acceso y Recuperación de Cuenta</h2>
+        <ol>
+            <li>Ingresa tu <em>email</em> y <em>contraseña</em> en la página de login.</li>
+            <li>Si olvidaste la contraseña, usa <em>“Recuperar contraseña”</em> y revisa tu correo.</li>
+            <li>Tras iniciar sesión verás el <strong>Panel</strong> con accesos a módulos.</li>
+        </ol>
+        <p class="note">Si tu organización usa varios usuarios, solicita al administrador que te asigne
+            el rol correcto (Administrador/Operador/Lectura).</p>
+    </section>
+
+    <!-- 3. Navegación -->
+    <section id="navegacion" class="section">
+        <h2>3. Navegación del Panel</h2>
+        <p>El menú principal te lleva a: <em>Documentos</em>, <em>Validaciones</em>, <em>Configuración</em>,
+            <em>Ayuda</em> y <em>Centro de Estado</em>. En la parte superior podrás ver tu empresa activa.
+        </p>
+        <ul>
+            <li><strong>Documentos:</strong> subir/gestionar archivos.</li>
+            <li><strong>Validaciones:</strong> ejecutar validaciones y revisar resultados.</li>
+            <li><strong>Configuración:</strong> datos de empresa e integraciones.</li>
+            <li><strong>Ayuda:</strong> manual, FAQ y contacto rápido.</li>
+            <li><strong>Estado:</strong> salud de servicios propios y de terceros.</li>
+        </ul>
+    </section>
+
+    <!-- 4. Empresas -->
+    <section id="empresas" class="section">
+        <h2>4. Gestión de Empresas</h2>
+        <ol>
+            <li>Ve a <em>Configuración</em>.</li>
+            <li>Completa RUT, Razón Social, email, teléfono y dirección.</li>
+            <li>Guarda los cambios. Estos datos se muestran en varias vistas y reportes.</li>
+        </ol>
+        <p class="tip">Si trabajas con varias empresas, confirma cuál está activa antes de subir o validar documentos.
+        </p>
+    </section>
+
+    <!-- 5. Proveedores -->
+    <section id="proveedores" class="section">
+        <h2>5. Gestión de Proveedores</h2>
+        <ol>
+            <li>Accede al módulo de <em>Proveedores</em> (si aplica en tu menú).</li>
+            <li>Agrega los datos básicos (RUT, razón social, contacto).</li>
+            <li>Adjunta documentación (certificados/contratos) si tu flujo lo requiere.</li>
+        </ol>
+        <p class="note">Valida RUT y correos antes de guardar. Mantén la información actualizada.</p>
+    </section>
+
+    <!-- 6. Documentos -->
+    <section id="documentos" class="section">
+        <h2>6. Subida y Gestión de Documentos</h2>
+        <ol>
+            <li>Entra a <em>Documentos</em> y presiona <strong>Subir</strong>.</li>
+            <li>Selecciona el archivo (XML/JSON/PDF, según el flujo) y confirma.</li>
+            <li>Espera a que finalice la carga. Verás el archivo en la lista.</li>
+            <li>Opcional: agrega etiquetas o notas para identificarlo fácilmente.</li>
+        </ol>
+        <p class="tip">Usa nombres descriptivos: <code>RUT_TipoDTE_Folio_Fecha.xml</code>. Evita caracteres raros.</p>
+    </section>
+
+    <!-- 7. Validaciones -->
+    <section id="validaciones" class="section">
+        <h2>7. Validaciones con SII (SimpleAPI)</h2>
+        <ol>
+            <li>Ve a <em>Validaciones</em> y elige el tipo de validación.</li>
+            <li>Selecciona o sube el DTE (XML/JSON) y completa campos requeridos.</li>
+            <li>Presiona <strong>Validar</strong> y espera el resultado (aceptada/observada/rechazada).</li>
+            <li>Revisa el detalle de errores (si los hay) y corrige el documento si corresponde.</li>
+        </ol>
+        <h3>Consejos</h3>
+        <ul>
+            <li>Verifica el formato del documento antes de validar.</li>
+            <li>Si un servicio externo falla (timeout/5xx), reintenta en unos minutos.</li>
+        </ul>
+    </section>
+
+    <!-- 8. Integraciones -->
+    <section id="integraciones" class="section">
+        <h2>8. Integraciones: Google Drive y Dropbox</h2>
+        <h3>Google Drive</h3>
+        <ol>
+            <li>En <em>Configuración</em> → Conectar Google Drive.</li>
+            <li>Acepta permisos. Verás el estado y el correo conectado.</li>
+            <li>Explora archivos desde la vista de Drive y ábrelos/descárgalos según permisos.</li>
+        </ol>
+        <h3>Dropbox</h3>
+        <ol>
+            <li>En <em>Configuración</em> → Conectar Dropbox.</li>
+            <li>Autoriza la app. Verifica el estado “Conectado”.</li>
+            <li>Navega y descarga archivos desde la vista de Dropbox.</li>
+        </ol>
+        <p class="note">Si revocas permisos desde el proveedor, reconecta la cuenta desde Configuración.</p>
+    </section>
+
+    <!-- 9. Centro de Estado -->
+    <section id="estado" class="section">
+        <h2>9. Centro de Estado</h2>
+        <p>Consulta la salud de servicios internos y de terceros. Los estados típicos son:
+            <em>operational</em>, <em>degraded</em> o <em>maintenance</em>.
+        </p>
+        <ul>
+            <li>Si un servicio está en mantenimiento, consulta el mensaje asociado.</li>
+            <li>Si un servicio está degradado, reintenta la acción luego de unos minutos.</li>
+        </ul>
+    </section>
+
+    <!-- 10. Ayuda/FAQ -->
+    <section id="ayuda" class="section">
+        <h2>10. Ayuda, Soporte y FAQ</h2>
+        <p>Desde <strong>Ayuda</strong> puedes acceder al Manual, FAQ y enviar un mensaje con <em>Contacto Rápido</em>.
+            El botón de descarga del Manual apunta a la ruta de PDF del sistema.</p>
+        <ul>
+            <li><strong>FAQ:</strong> dudas frecuentes sobre funcionalidades y flujos.</li>
+            <li><strong>Contacto:</strong> describe tu problema, adjunta screenshots y el ID del documento si aplica.
+            </li>
+        </ul>
+    </section>
+
+    <!-- 11. Buenas prácticas -->
+    <section id="buenas" class="section">
+        <h2>11. Buenas Prácticas y Errores Comunes</h2>
+        <ul>
+            <li><strong>Nombres de archivo claros:</strong> facilitan búsquedas y validaciones.</li>
+            <li><strong>Evita cerrar la pestaña</strong> durante una subida o validación en curso.</li>
+            <li><strong>Verifica empresa activa</strong> antes de subir/validar si gestionas múltiples empresas.</li>
+            <li><strong>Errores comunes:</strong> formato inválido, credenciales caducas en integraciones, campos
+                vacíos.</li>
+        </ul>
+    </section>
+
+    <!-- 12. Glosario -->
+    <section id="glosario" class="section">
+        <h2>12. Glosario</h2>
+        <dl>
+            <dt>DTE</dt>
+            <dd>Documento Tributario Electrónico.</dd>
+            <dt>OAuth</dt>
+            <dd>Protocolo de autorización usado por Google/Dropbox.</dd>
+            <dt>Token</dt>
+            <dd>Cadena que autoriza el acceso a la API de un proveedor.</dd>
+        </dl>
+    </section>
+
+    <!-- Pie -->
+    <footer class="doc__footer">
+        <p>© {{ empresa }} · Manual de Usuario — Generado automáticamente.</p>
+    </footer>
+</body>
+
+</html>
