@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+*.env
+
+# IDEs / editores
+.vscode/
+.idea/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos temporales
+*.log
+*.pot
+*.pyc
+
+# Django / build
+# *.sqlite3
+# db.sqlite3
+# staticfiles/
+# node_modules/
+# dist/
+# coverage/
+
+# Archivos de usuario
+# media/
