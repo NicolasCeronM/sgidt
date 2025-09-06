@@ -25,12 +25,12 @@ Thumbs.db
 *.pyc
 
 # Django / build
-# *.sqlite3
-# db.sqlite3
-# staticfiles/
-# node_modules/
-# dist/
-# coverage/
+*.sqlite3
+db.sqlite3
+staticfiles/
+node_modules/
+dist/
+coverage/
 
 # Archivos de usuario
 # media/

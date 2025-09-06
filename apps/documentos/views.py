@@ -140,6 +140,8 @@ def documentos_upload_api(request):
 
                 # JSON crudo del OCR (serializable)
                 doc.ocr_json = _to_jsonable(result)
+                # Texto plano para búsqueda
+                doc.texto_plano = (result.get("raw_text") or "").strip()
 
                 # Campos principales
                 doc.tipo_documento = result.get("tipo_documento", "desconocido") or "desconocido"
