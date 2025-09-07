@@ -1,27 +1,31 @@
+# Dockerfile
 FROM python:3.12-slim
 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-WORKDIR /code
+# Paquetes de sistema necesarios para OCR y PDF
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    tesseract-ocr tesseract-ocr-spa \
+    poppler-utils \
+    libglib2.0-0 libsm6 libxext6 libxrender1 \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
+# Directorio de la app
+WORKDIR /app
 
-# Dependencias del SO necesarias para OCR/PDF
-RUN apt-get update && apt-get install -y \
-build-essential \
-tesseract-ocr \
-tesseract-ocr-spa \
-poppler-utils \
-libglib2.0-0 \
-libgl1 \
-&& rm -rf /var/lib/apt/lists/*
-
-
-# Python deps
-COPY requirements.txt ./
+# Reqs antes para cache
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copiar proyecto
+COPY . /app/
 
-# Proyecto
-COPY . .
+# Variables útiles para OCR (opcional)
+ENV TESSERACT_LANG=spa+eng \
+    TESSERACT_PSM=6 \
+    TESSERACT_PSM_IMAGE=4
 
-
-EXPOSE 8000
+# Comando por defecto (lo sobreescribe docker-compose)
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
