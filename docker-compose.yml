@@ -42,6 +42,7 @@ services:
       redis:
         condition: service_healthy
     environment:
+      OAUTHLIB_INSECURE_TRANSPORT: "1"
       # Django
       DJANGO_SETTINGS_MODULE: config.settings
       # Base de datos (tu settings.py ya usa estos valores por defecto)
