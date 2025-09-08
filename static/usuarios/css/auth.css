@@ -1,0 +1,177 @@
+/* Auth pages (recuperar/verificar/nueva) */
+.auth-wrap {
+  max-width: 560px;
+  margin: 56px auto 72px;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+  padding: 28px;
+}
+
+.auth-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: #111827;
+  text-align: center;
+}
+
+.auth-subtitle {
+  margin: 0 0 22px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.form-row {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.form-input {
+  width: 100%;
+  height: 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  font-size: 0.95rem;
+}
+.form-input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.2);
+}
+.form-input[aria-invalid="true"] {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+}
+
+.help-text {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: #22c55e;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.03s ease-in, box-shadow 0.2s;
+}
+.btn-primary:hover {
+  box-shadow: 0 10px 20px rgba(34, 197, 94, 0.25);
+}
+.btn-primary:active {
+  transform: translateY(1px);
+}
+.btn-primary[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.link-row {
+  margin-top: 12px;
+  text-align: center;
+}
+.link-row a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.link-row a:hover {
+  text-decoration: underline;
+}
+
+/* Código de 6 dígitos */
+.code-input {
+  letter-spacing: 0.3em;
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .auth-wrap {
+    margin: 28px auto 48px;
+  }
+  .auth-card {
+    padding: 22px;
+    border-radius: 14px;
+  }
+  .auth-title {
+    font-size: 1.35rem;
+  }
+}
+
+/* Footer sticky */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content,
+.site-main {
+  flex: 1 0 auto;
+}
+
+.footer {
+  background: #2c3e50;
+  color: #fff;
+  padding: 40px 0 20px;
+  flex-shrink: 0; /* evita que el footer se encoja */
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.footer-section h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.footer-section a {
+  color: #bdc3c7;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 8px;
+  transition: color 0.3s;
+}
+
+.footer-section a:hover {
+  color: #3498db;
+}
+
+.footer-bottom {
+  border-top: 1px solid #34495e;
+  padding-top: 20px;
+  text-align: center;
+  color: #bdc3c7;
+}
+
+.footer-desc,
+.footer-line {
+  color: #bdc3c7;
+}

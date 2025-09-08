@@ -63,7 +63,6 @@ def google_callback(request):
 
     # Si no viene el ?code=... (cancelado o flujo incompleto)
     if "code" not in request.GET:
-        messages.error(request, "No se recibió el código de autorización. Intenta conectar nuevamente y acepta los permisos.")
         return redirect(REDIRECT_NAME)
 
     try:
@@ -78,7 +77,6 @@ def google_callback(request):
 
         data = to_json(creds)
         if not data.get("token") and not data.get("refresh_token"):
-            messages.error(request, "No se obtuvieron credenciales válidas desde Google.")
             return redirect(REDIRECT_NAME)
 
         # Guarda/actualiza las credenciales del usuario
@@ -86,8 +84,6 @@ def google_callback(request):
             user=request.user,
             defaults={"credentials": data},
         )
-
-        #messages.success(request, "Google Drive conectado correctamente.")
         return redirect(REDIRECT_NAME)
 
     except HttpError as e:
@@ -104,7 +100,6 @@ def google_callback(request):
 @login_required
 def google_disconnect(request):
     GoogleDriveCredential.objects.filter(user=request.user).delete()
-    #messages.info(request, "Google Drive desconectado.")
     return redirect(REDIRECT_NAME)
 
 
@@ -171,7 +166,6 @@ def google_files(request):
         files = res.get("files", [])
     except Exception as e:
         error = str(e)
-
     return render(request, "integraciones/google_files.html", {"files": files, "error": error})
 
 
@@ -213,7 +207,6 @@ def dropbox_callback(request):
         DropboxCredential.objects.update_or_create(
             user=request.user, defaults={"credentials": data}
         )
-        #messages.success(request, "Dropbox conectado correctamente.")
     except Exception as e:
         messages.error(request, f"Error al conectar Dropbox: {e}")
     return redirect(REDIRECT_NAME)
@@ -221,7 +214,6 @@ def dropbox_callback(request):
 @login_required
 def dropbox_disconnect(request):
     DropboxCredential.objects.filter(user=request.user).delete()
-    #messages.info(request, "Dropbox desconectado.")
     return redirect(REDIRECT_NAME)
 
 @login_required

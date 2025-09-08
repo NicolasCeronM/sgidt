@@ -1,8 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.conf import settings
+from django.utils import timezone
 
-# Create your models here.
 
+# Modelo personalizado de usuario
 class Usuario(AbstractUser):
     TIPO_CONTRIBUYENTE = (
         ("empresa", "Empresa"),
@@ -18,3 +20,27 @@ class Usuario(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.rut})"
+
+
+# Modelo para manejar códigos de restablecimiento de contraseña
+class PasswordResetCode(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reset_codes")
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveIntegerField(default=0)
+    is_used = models.BooleanField(default=False)
+    requester_ip = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "code"]),
+            models.Index(fields=["expires_at"]),
+            models.Index(fields=["is_used"]),
+        ]
+
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+
+    def __str__(self):
+        return f"Reset {self.user} - {self.code}"
