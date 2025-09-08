@@ -6,11 +6,11 @@ from django.utils.dateparse import parse_date
 from django.db import IntegrityError, transaction
 from datetime import date, datetime
 from decimal import Decimal
-
 from .models import Documento
 from apps.empresas.models import Empresa, EmpresaUsuario
 from apps.documentos import ocr
 import os
+from apps.documentos.tasks.extract import extract_document
 
 # -------------------------------------------------------------------
 # Helpers
@@ -131,57 +131,60 @@ def documentos_upload_api(request):
                     empresa=empresa,
                     subido_por=request.user,
                     archivo=f,
-                    estado="procesando",
+                    estado="pendiente",  # <- ahora parte pendiente
                 )
                 doc.save()  # calcula hash/mime/size/extension
 
-                local_path = doc.archivo.path
-                result = ocr.parse_file(local_path, doc.mime_type)
+                # Encolar tarea asíncrona
+                extract_document.delay(doc.id)
 
-                # JSON crudo del OCR (serializable)
-                doc.ocr_json = _to_jsonable(result)
-
-                # Campos principales
-                doc.tipo_documento = result.get("tipo_documento", "desconocido") or "desconocido"
-                doc.folio = (result.get("folio") or "").strip()
-
-                # fecha_emision ya viene date si es desde parse_text; si viene iso string, parsea
-                fe = result.get("fecha_emision")
-                if isinstance(fe, str):
-                    fe = parse_date(fe)
-                doc.fecha_emision = fe
-
-                doc.rut_proveedor = (result.get("rut_proveedor") or "").replace(".", "").upper()
-                doc.razon_social_proveedor = (result.get("proveedor_nombre") or "").strip()
-
-                doc.iva_tasa = _to_decimal(result.get("iva_tasa"))
-                doc.monto_neto = _to_decimal(result.get("monto_neto"))
-                doc.monto_exento = _to_decimal(result.get("monto_exento"))
-                doc.iva = _to_decimal(result.get("iva"))
-                doc.total = _to_decimal(result.get("total"))
-
-                # Metadatos OCR
-                doc.ocr_fuente = result.get("fuente_texto") or ""
-                doc.ocr_lang = os.getenv("TESSERACT_LANG", "spa+eng")
-                doc.ocr_engine = "tesseract"
-                doc.ocr_version = os.getenv("TESSERACT_VERSION", "")
-
-                doc.estado = "procesado"
-                doc.save()
                 created += 1
 
         except IntegrityError:
-            # Duplicado por hash (o por folio/rut/tipo). Lo damos por omitido.
             skipped += 1
 
         except Exception as e:
-            # Marca error si el doc existe
-            try:
-                if 'doc' in locals() and doc.pk:
-                    doc.estado = "error"
-                    doc.save(update_fields=["estado"])
-            except Exception:
-                pass
             errors.append(f"{getattr(f, 'name', 'archivo')}: {str(e)}")
 
     return JsonResponse({"created": created, "skipped": skipped, "errors": errors})
+
+@login_required
+@require_GET
+def documentos_progreso_api(request, doc_id: int):
+    try:
+        d = Documento.objects.get(pk=doc_id, empresa=request.user.empresa_activa)  # ajusta si usas otra m2m
+        data = {
+            "id": d.id,
+            "estado": d.estado,
+            "tipo_documento": d.tipo_documento,
+            "folio": d.folio or "",
+            "rut_proveedor": d.rut_proveedor or "",
+            "total": float(d.total) if d.total is not None else None,
+            "fecha_emision": d.fecha_emision.isoformat() if d.fecha_emision else "",
+        }
+        return JsonResponse({"ok": True, "documento": data})
+    except Documento.DoesNotExist:
+        return JsonResponse({"ok": False, "error": "Documento no encontrado"}, status=404)
+
+
+@login_required
+@require_GET
+def documentos_progreso_batch_api(request):
+    ids = request.GET.get("ids", "")
+    try:
+        id_list = [int(x) for x in ids.split(",") if x.strip().isdigit()]
+    except Exception:
+        id_list = []
+    qs = Documento.objects.filter(id__in=id_list)  # agrega filtro por empresa si corresponde
+    docs = []
+    for d in qs:
+        docs.append({
+            "id": d.id,
+            "estado": d.estado,
+            "tipo_documento": d.tipo_documento,
+            "folio": d.folio or "",
+            "rut_proveedor": d.rut_proveedor or "",
+            "total": float(d.total) if d.total is not None else None,
+            "fecha_emision": d.fecha_emision.isoformat() if d.fecha_emision else "",
+        })
+    return JsonResponse({"ok": True, "documentos": docs})

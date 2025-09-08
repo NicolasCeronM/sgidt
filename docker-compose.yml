@@ -1,52 +1,120 @@
+version: "3.9"
+
 services:
   db:
-    image: postgres:16
+    image: postgres:16-alpine
+    container_name: sgidt_db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: sgidt
       POSTGRES_USER: sgidt_user
       POSTGRES_PASSWORD: admin123
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sgidt_user -d sgidt -h localhost"]
-      interval: 3s
+      test: ["CMD-SHELL", "pg_isready -U sgidt_user -d sgidt -h 127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: sgidt_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 20
+    ports:
+      - "6379:6379"
 
   web:
-    environment:
-      # --- Google ---
-      OAUTHLIB_INSECURE_TRANSPORT: "1"
-      GOOGLE_CLIENT_ID: "823310417562-k5gtt54p653j47tjidrnq3utt7gdjvmr.apps.googleusercontent.com"
-      GOOGLE_CLIENT_SECRET: "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"
-      GOOGLE_REDIRECT_URI: "http://localhost:8000/integraciones/google/callback/"
-      GOOGLE_SCOPES: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.metadata.readonly"
-
-      # --- Dropbox ---
-      DROPBOX_APP_KEY: "uz0n2oqo1e2vwcw"
-      DROPBOX_APP_SECRET: "bywi3h7axhxtwm6"
-      DROPBOX_REDIRECT_URI: "http://localhost:8000/integraciones/dropbox/callback/"
-      DROPBOX_SCOPES: "files.metadata.read files.content.read files.content.write"
-
     build: .
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    volumes:
-      - .:/code
-    ports:
-      - "8000:8000"
+    container_name: sgidt_web
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
-
-  adminer:
-    image: adminer
-    restart: always
+      redis:
+        condition: service_healthy
+    environment:
+      OAUTHLIB_INSECURE_TRANSPORT: "1"
+      # Django
+      DJANGO_SETTINGS_MODULE: config.settings
+      # Base de datos (tu settings.py ya usa estos valores por defecto)
+      DB_NAME: sgidt
+      DB_USER: sgidt_user
+      DB_PASSWORD: admin123
+      DB_HOST: db
+      DB_PORT: "5432"
+      # Celery/Redis (por si en algún punto usas desde Django)
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      # OCR (opcional)
+      TESSERACT_LANG: spa+eng
+      # DEBUG en dev
+      DEBUG: "1"
+    volumes:
+      - .:/app
+      - media:/app/media
+      - staticfiles:/app/staticfiles
     ports:
-      - "8080:8080"
+      - "8000:8000"
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      python manage.py runserver 0.0.0.0:8000
+      "
+
+  celery:
+    build: .
+    container_name: sgidt_celery
+    restart: unless-stopped
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      # Broker/Backend
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      # OCR (opcional)
+      TESSERACT_LANG: spa+eng
+      # Concurrency ajustable (1-2 para dev)
+      CELERY_WORKER_CONCURRENCY: "1"
+    volumes:
+      - .:/app
+      - media:/app/media
+    command: celery -A config worker -l info
+
+  # (Opcional) Celery Beat para tareas periódicas (descomenta cuando lo necesites)
+  # celery_beat:
+  #   build: .
+  #   container_name: sgidt_celery_beat
+  #   restart: unless-stopped
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #     db:
+  #       condition: service_healthy
+  #   environment:
+  #     DJANGO_SETTINGS_MODULE: config.settings
+  #     CELERY_BROKER_URL: redis://redis:6379/0
+  #     CELERY_RESULT_BACKEND: redis://redis:6379/1
+  #   volumes:
+  #     - .:/app
+  #   command: celery -A config beat -l info
 
 volumes:
   pgdata:
+  media:
+  staticfiles:

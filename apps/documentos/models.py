@@ -45,6 +45,7 @@ class Documento(models.Model):
     hash_sha256 = models.CharField(max_length=64, editable=False)
 
     paginas = models.PositiveIntegerField(null=True, blank=True)  # para PDFs
+    texto_plano = models.TextField(blank=True, default="")
 
     # --- Extracción (OCR/parse) ---
     estado = models.CharField(max_length=20, choices=ESTADOS, default="pendiente")

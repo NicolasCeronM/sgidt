@@ -15,7 +15,7 @@ class DocumentoAdmin(admin.ModelAdmin):
         "empresa", "tipo_documento", "estado",  
         "fecha_emision", "creado_en",
     )
-    search_fields = ("folio", "rut_proveedor", "razon_social_proveedor", "archivo")
+    search_fields = ("folio", "rut_proveedor", "razon_social_proveedor", "archivo","texto_plano",)
     readonly_fields = ("hash_sha256", "mime_type", "tamano_bytes", "creado_en", "ocr_json")
     date_hierarchy = "fecha_emision"
     ordering = ("-creado_en",)

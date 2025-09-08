@@ -8,5 +8,8 @@ urlpatterns = [
     path("list/",   views.documentos_list_api,   name="list"),
     path("upload/", views.documentos_upload_api, name="upload"),
     # Si ya tienes progreso (cuando integres Celery/Redis):
-    # path("progreso/<int:doc_id>/", views.documentos_progreso_api, name="progreso"),
+    path("progreso/<int:doc_id>/", views.documentos_progreso_api, name="progreso"),
+    path("progreso_batch/", views.documentos_progreso_batch_api, name="progreso_batch"),
+
+
 ]
