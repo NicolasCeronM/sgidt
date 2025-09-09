@@ -95,8 +95,14 @@ def documentos_list_api(request):
             "tipo": d.tipo_documento,
             "folio": d.folio,
             "rut_emisor": d.rut_proveedor,
+            "razon_social": d.razon_social_proveedor,
+            "monto_neto": float(d.monto_neto) if d.monto_neto is not None else None,
+            "monto_exento": float(d.monto_exento) if d.monto_exento is not None else None,
+            "iva": float(d.iva) if d.iva is not None else None,
             "total": float(d.total) if d.total is not None else None,
             "estado": d.estado,
+            "validado_sii": d.validado_sii,
+            "sii_estado": d.sii_estado,
             "archivo": d.archivo.url if d.archivo else "",
         })
     return JsonResponse({"results": data})
@@ -184,7 +190,13 @@ def documentos_progreso_batch_api(request):
             "tipo_documento": d.tipo_documento,
             "folio": d.folio or "",
             "rut_proveedor": d.rut_proveedor or "",
+            "razon_social_proveedor": d.razon_social_proveedor or "",
+            "monto_neto": float(d.monto_neto) if d.monto_neto is not None else None,
+            "monto_exento": float(d.monto_exento) if d.monto_exento is not None else None,
+            "iva": float(d.iva) if d.iva is not None else None,
             "total": float(d.total) if d.total is not None else None,
             "fecha_emision": d.fecha_emision.isoformat() if d.fecha_emision else "",
+            "validado_sii": d.validado_sii,
+            "sii_estado": d.sii_estado,
         })
     return JsonResponse({"ok": True, "documentos": docs})

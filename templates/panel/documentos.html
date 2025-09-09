@@ -1,10 +1,9 @@
-{% extends 'base_app.html' %}
-{% load static %}
-{% block title %}Documentos · SGIDT{% endblock %}
-
-{% block content %}
-{% block css %}
-<link rel="stylesheet" href="{% static 'documentos/css/documentos.css' %}?v=3">
+{% extends 'base_app.html' %} {% load static %} {% block title %}Documentos ·
+SGIDT{% endblock %} {% block content %} {% block css %}
+<link
+  rel="stylesheet"
+  href="{% static 'documentos/css/documentos.css' %}?v=3"
+/>
 {% endblock %}
 
 <!-- Línea de carga superior -->
@@ -21,16 +20,37 @@
     <section class="card upload-card" aria-labelledby="up-title">
       <h2 id="up-title" class="card-title">Subir Nuevo Documento</h2>
 
-      <div id="uploadArea" class="upload-area" role="group" tabindex="0" aria-describedby="drop-hint">
+      <div
+        id="uploadArea"
+        class="upload-area"
+        role="group"
+        tabindex="0"
+        aria-describedby="drop-hint"
+      >
         <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
-        <p class="dz-title">Arrastra archivos aquí o haz clic para seleccionar</p>
-        <p id="drop-hint" class="upload-hint">PDF, JPG, PNG (máx. 10MB por archivo)</p>
+        <p class="dz-title">
+          Arrastra archivos aquí o haz clic para seleccionar
+        </p>
+        <p id="drop-hint" class="upload-hint">
+          PDF, JPG, PNG (máx. 10MB por archivo)
+        </p>
       </div>
 
       <!-- form invisible para CSRF + file input -->
-      <form id="uploadForm" method="post" enctype="multipart/form-data" style="display:none">
+      <form
+        id="uploadForm"
+        method="post"
+        enctype="multipart/form-data"
+        style="display: none"
+      >
         {% csrf_token %}
-        <input type="file" id="fileInput" name="files[]" accept=".pdf,.jpg,.jpeg,.png" multiple />
+        <input
+          type="file"
+          id="fileInput"
+          name="files[]"
+          accept=".pdf,.jpg,.jpeg,.png"
+          multiple
+        />
       </form>
 
       <div class="upload-actions">
@@ -47,13 +67,17 @@
     </section>
 
     <!-- FILTROS -->
-    <section class="card filters" role="search" aria-label="Filtros de documentos">
+    <section
+      class="card filters"
+      role="search"
+      aria-label="Filtros de documentos"
+    >
       <form id="filter-form" class="filters-grid">
         <div class="f-item">
           <label for="dateFrom">Fecha desde</label>
           <div class="f-input">
             <i class="far fa-calendar-alt" aria-hidden="true"></i>
-            <input type="date" id="dateFrom">
+            <input type="date" id="dateFrom" />
           </div>
         </div>
 
@@ -61,7 +85,7 @@
           <label for="dateTo">Fecha hasta</label>
           <div class="f-input">
             <i class="far fa-calendar-alt" aria-hidden="true"></i>
-            <input type="date" id="dateTo">
+            <input type="date" id="dateTo" />
           </div>
         </div>
 
@@ -95,7 +119,9 @@
           <button type="button" class="btn btn-primary" id="btnFilter">
             <i class="fas fa-filter"></i> Filtrar
           </button>
-          <button type="reset" class="btn btn-ghost" id="btn-clear">Limpiar</button>
+          <button type="reset" class="btn btn-ghost" id="btn-clear">
+            Limpiar
+          </button>
         </div>
       </form>
       <div id="result-info" class="result-info" aria-live="polite"></div>
@@ -107,7 +133,11 @@
 
       <!-- Skeleton -->
       <div class="table-skeleton" id="tbl-skeleton">
-        <div></div><div></div><div></div><div></div><div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
       </div>
 
       <div class="table-wrap" aria-busy="false">
@@ -118,8 +148,13 @@
               <th>Tipo</th>
               <th>Folio</th>
               <th>RUT Emisor</th>
-              <th class="num">Monto</th>
+              <th>Razón Social</th>
+              <th class="num">Neto</th>
+              <th class="num">Exento</th>
+              <th class="num">IVA</th>
+              <th class="num">Total</th>
               <th>Estado</th>
+              <th>Validación SII</th>
               <th class="actions">Acciones</th>
             </tr>
           </thead>
@@ -139,8 +174,9 @@
     </section>
   </div>
 </section>
-
+<!-- progreso en tiempo real (IIFE no-module) -->
+<script src="{% static 'documentos/js/progreso.js' %}?v=2"></script>
+<!-- módulo principal -->
 <script type="module" src="{% static 'documentos/js/main.js' %}?v=1"></script>
-
 
 {% endblock %}

@@ -53,17 +53,29 @@ export async function loadDocuments(){
 }
 
 function renderRows(rows){
-  const fmtCLP = v => new Intl.NumberFormat("es-CL",{style:"currency",currency:"CLP",maximumFractionDigits:0}).format(v);
+  const fmtCLP = v => v==null ? "—" : new Intl.NumberFormat("es-CL",{style:"currency",currency:"CLP",maximumFractionDigits:0}).format(v);
   tbody().innerHTML = rows.map(r=>`
-    <tr>
-      <td>${r.fecha || "—"}</td>
-      <td>${r.tipo || "—"}</td>
-      <td>${r.folio || "—"}</td>
-      <td>${r.rut_emisor || "—"}</td>
-      <td class="num">${r.total==null? "—" : fmtCLP(r.total)}</td>
-      <td><span class="badge ${
-        r.estado==="procesado"||r.estado==="validado"?"badge-success":(r.estado==="cola"||r.estado==="pendiente"||r.estado==="procesando")?"badge-warning":"badge-error"
+    <tr id="doc-row-${r.id}" data-doc-id="${r.id}" data-estado="${r.estado}">
+      <td class="col-fecha">${r.fecha || "—"}</td>
+      <td class="col-tipo">${r.tipo || "—"}</td>
+      <td class="col-folio">${r.folio || "—"}</td>
+      <td class="col-rut">${r.rut_emisor || "—"}</td>
+      <td class="col-razon">${r.razon_social || "—"}</td>
+      <td class="col-neto num">${fmtCLP(r.monto_neto)}</td>
+      <td class="col-exento num">${fmtCLP(r.monto_exento)}</td>
+      <td class="col-iva num">${fmtCLP(r.iva)}</td>
+      <td class="col-total num">${fmtCLP(r.total)}</td>
+      <td class="col-estado"><span class="badge ${
+        r.estado==="procesado"||r.estado==="validado"?"badge-success":
+        (r.estado==="cola"||r.estado==="pendiente"||r.estado==="procesando")?"badge-warning":"badge-error"
       }">${r.estado || "—"}</span></td>
-      <td class="actions">${r.archivo?`<a class="act" href="${r.archivo}" target="_blank" rel="noopener">Ver</a>`:""} <a class="act" href="#">Detalle</a></td>
+      <td class="col-sii">${r.validado_sii ? (r.sii_estado || "OK") : "—"}</td>
+      <td class="actions">
+        ${r.archivo?`<a class="act" href="${r.archivo}" target="_blank" rel="noopener">Ver</a>`:""}
+        <a class="act" href="#">Detalle</a>
+      </td>
     </tr>`).join("");
+
+  // notificar a progreso.js que hay nueva renderización
+  document.dispatchEvent(new Event("docs:rendered"));
 }
