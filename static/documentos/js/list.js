@@ -61,9 +61,6 @@ function renderRows(rows){
       <td class="col-folio">${r.folio || "—"}</td>
       <td class="col-rut">${r.rut_emisor || "—"}</td>
       <td class="col-razon">${r.razon_social || "—"}</td>
-      <td class="col-neto num">${fmtCLP(r.monto_neto)}</td>
-      <td class="col-exento num">${fmtCLP(r.monto_exento)}</td>
-      <td class="col-iva num">${fmtCLP(r.iva)}</td>
       <td class="col-total num">${fmtCLP(r.total)}</td>
       <td class="col-estado"><span class="badge ${
         r.estado==="procesado"||r.estado==="validado"?"badge-success":
@@ -71,8 +68,8 @@ function renderRows(rows){
       }">${r.estado || "—"}</span></td>
       <td class="col-sii">${r.validado_sii ? (r.sii_estado || "OK") : "—"}</td>
       <td class="actions">
-        ${r.archivo?`<a class="act" href="${r.archivo}" target="_blank" rel="noopener">Ver</a>`:""}
-        <a class="act" href="#">Detalle</a>
+        ${r.archivo?`<a class="act" href="${r.archivo}" target="_blank" rel="noopener" style="color: black;"><i class="fa-solid fa-eye fa-xl"></i></a>`:""}
+        <a class="act" href="#" style="color: black;"><i class="fa-solid fa-download fa-xl"></i></a>
       </td>
     </tr>`).join("");
 
