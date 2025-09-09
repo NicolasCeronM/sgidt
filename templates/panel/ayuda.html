@@ -19,7 +19,7 @@
         <h3>Preguntas Frecuentes</h3>
         <p>Respuestas a las dudas más comunes sobre el uso de SGIDT.</p>
         <a href="{% url 'panel:faq' %}" class="btn btn-secondary">
-          <i class="fas fa-book-open"></i> Ver FAQ
+          <i class="fas fa-book-open"></i> Ver preguntas frecuentes
         </a>
       </div>
 
@@ -36,8 +36,8 @@
         <i class="fas fa-headset help-icon"></i>
         <h3>Soporte Técnico</h3>
         <p>¿Problemas técnicos? Nuestro equipo está para ayudarte.</p>
-        <a href="#contacto-rapido" class="btn btn-secondary">
-          <i class="fas fa-envelope"></i> Contactar Soporte
+        <a href="#contactar-soporte" id="btnContactarSoporte" class="btn btn-secondary">
+          <i class="fas fa-comments"></i> Contactar Soporte
         </a>
       </div>
 
@@ -79,7 +79,41 @@
       </form>
     </div>
   </div>
+   
 </section>
 
+<!-- Chatbot -->
+<div class="chatbot-modal" id="chatbotModal" aria-hidden="true">
+  <div class="chatbot-backdrop" data-close="true"></div>
+
+  <div class="chatbot-window" role="dialog" aria-modal="true" aria-labelledby="chatbotTitle">
+    <div class="chatbot-header">
+      <div class="agent">
+        <span class="avatar">🤖</span>
+        <div class="titles">
+          <h3 id="chatbotTitle">Asistente de Soporte</h3>
+        </div>
+      </div>
+      <button class="chatbot-close" type="button" aria-label="Cerrar" data-close="true">x</button>
+    </div>
+
+    <div class="chatbot-body">
+      <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
+        <div class="msg bot">¡Hola! 👋 Soy tu asistente de SGIDT. ¿En qué puedo ayudarte?</div>
+      </div>
+
+      <form class="chatbot-input" id="chatbotForm" data-endpoint="{% url 'panel:chatbot_ask' %}">
+        {% csrf_token %}
+        <input type="text" id="chatbotText" class="form-input" placeholder="Escribe tu mensaje…" autocomplete="off" required>
+        <button class="btn btn-primary" type="submit" aria-label="Enviar"><i class="fas fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 <script src="{% static 'ayuda/js/ayuda_contacto.js' %}?v=3"></script>
+<link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=9">
+<script src="{% static 'ayuda/js/chatbot.js' %}?v=5"></script>
+
 {% endblock %}

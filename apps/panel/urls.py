@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     DashboardView, DocsView, ReportsView, ValidationsView, SettingsView,
     HelpView, help_contact, FAQView, StatusView,
-    manual_usuario_pdf,
+    manual_usuario_pdf, chatbot_ask,
 )
 from apps.documentos import views as doc_views
 
@@ -28,4 +28,8 @@ urlpatterns = [
     path("documentos/", DocsView.as_view(), name="documentos_page"),
     path("documentos/api/list/", doc_views.documentos_list_api, name="documentos_list_api"),
     path("documentos/api/upload/", doc_views.documentos_upload_api, name="documentos_upload_api"),
+
+    #Chatbot Soporte
+    path("ayuda/chatbot/ask/", chatbot_ask, name="chatbot_ask"),
+
 ]

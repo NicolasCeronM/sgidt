@@ -13,6 +13,9 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from apps.integraciones.models import GoogleDriveCredential, DropboxCredential
 from apps.empresas.models import EmpresaUsuario
+from difflib import SequenceMatcher
+import json, os, re
+
 
 # PDF
 from weasyprint import HTML, CSS
@@ -240,3 +243,173 @@ def manual_usuario_pdf(request):
     response = HttpResponse(pdf, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="sgidt-manual.pdf"'
     return response
+
+# ===========================
+#   Chatbot soporte
+# ===========================
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
+from django.http import JsonResponse
+import json, os, re
+from difflib import SequenceMatcher
+from django.utils import timezone
+
+# --- Carga KB en memoria ---
+_KB = []
+_KB_PATH = os.path.join(settings.BASE_DIR, "static", "ayuda", "kb", "faq_kb.json")
+if os.path.exists(_KB_PATH):
+    try:
+        with open(_KB_PATH, "r", encoding="utf-8") as f:
+            _KB = json.load(f)
+    except Exception:
+        _KB = []
+
+# --- Utilidades de texto ---
+_ACCENTS = str.maketrans("áéíóúñüÁÉÍÓÚÑÜ", "aeiounuAEIOUNU")
+def _norm(s: str) -> str:
+    s = (s or "").strip()
+    s = s.translate(_ACCENTS).lower()
+    s = re.sub(r"[^a-z0-9 ]+", " ", s)
+    s = re.sub(r"\s{2,}", " ", s)
+    return s
+
+def _tokens(s: str):
+    return set(t for t in _norm(s).split() if len(t) > 2)
+
+def _jaccard(a: str, b: str) -> float:
+    ta, tb = _tokens(a), _tokens(b)
+    if not ta or not tb:
+        return 0.0
+    inter = len(ta & tb)
+    uni = len(ta | tb)
+    return inter / uni
+
+def _ratio(a: str, b: str) -> float:
+    return SequenceMatcher(None, _norm(a), _norm(b)).ratio()
+
+def _score(a: str, b: str) -> float:
+    return 0.6 * _jaccard(a, b) + 0.4 * _ratio(a, b)
+
+# --- Sinónimos / palabras clave por intención ---
+SYN = {
+    "drive": {"google drive", "gdrive", "drive", "google"},
+    "dropbox": {"dropbox"},
+    "empresa": {"empresa", "razon social", "rut", "datos empresa", "correo empresa", "ajustes"},
+    "backup": {"respaldo", "backup", "copia", "frecuencia"},
+    "subir": {"subir", "cargar", "upload", "pdf", "archivo"},
+    "sii": {"sii", "validacion", "simpleapi"},
+    "roles": {"roles", "permisos", "accesos", "usuarios"},
+    "seguridad": {"seguridad", "contrasena", "clave", "password"},
+    "manual": {"manual", "documentacion", "ayuda pdf"},
+    "contacto": {"contacto", "soporte", "correo"},
+    "nav": {"navegacion", "menu", "donde encuentro", "no encuentro"}
+}
+
+RULES = [
+    ("drive", "Ve a **Configuración → Integraciones** y presiona **Conectar Google Drive**. Autoriza y vuelve a SGIDT."),
+    ("dropbox", "En **Configuración → Integraciones**, elige **Dropbox → Conectar** y completa la autorización."),
+    ("empresa", "Ve a **Configuración → Ajustes de la Empresa**. Completa los campos y presiona **Guardar**."),
+    ("backup", "En **Ajustes de la Empresa**, define **Respaldo Automático** (Diario/Semanal/Mensual) y guarda."),
+    ("subir", "En **Documentos**, pulsa **Subir** y elige tu PDF (ideal < **10MB**). Evita caracteres especiales en el nombre."),
+    ("sii", "En **Validación SII**, carga el XML/JSON del DTE, ejecuta la validación y revisa resultados."),
+    ("roles", "La gestión de usuarios y permisos está en **Configuración** del administrador."),
+    ("seguridad", "Usa **¿Olvidaste tu contraseña?** en el login o cámbiala desde tu perfil si estás autenticado."),
+    ("manual", "Descarga el **Manual de Usuario** desde **Ayuda → Manual de Usuario**."),
+    ("contacto", "Puedes escribir en este chat, usar **Contacto Rápido** o enviar un correo a **soporte@sgidt.cl**."),
+    ("nav", "Los módulos están en la barra lateral: **Dashboard**, **Documentos**, **Proveedores**, **Reportes**, **Validación SII** y **Configuración**.")
+]
+
+SMALL_TALK = [
+    (r"^(hola|buenas|que tal|holi)\b", "¡Hola! 👋 ¿En qué puedo ayudarte?"),
+    (r"(gracias|muchas gracias|te agradezco)$", "¡Con gusto! ¿Necesitas algo más?"),
+    (r"(adios|hasta luego|nos vemos)$", "¡Hasta luego! Si surge algo, aquí estaré.")
+]
+
+SUGGEST_BASE = [
+    "Conectar Google Drive", "Conectar Dropbox", "Cambiar datos de la empresa",
+    "Respaldo Automático", "Subir un PDF", "Validación con SII", "Descargar Manual"
+]
+
+def _suggest_from_query(qn: str, k: int = 4):
+    toks = _tokens(qn)
+    scored = []
+    for s in SUGGEST_BASE:
+        sc = _score(qn, s)
+        if any(t in _norm(s) for t in toks): sc += 0.1
+        scored.append((sc, s))
+    scored.sort(reverse=True)
+    return [s for _, s in scored[:k]]
+
+def _best_from_kb(q: str):
+    best = (0.0, None)
+    for item in _KB:
+        for cand in item.get("q", []):
+            s = _score(q, cand)
+            if s > best[0]:
+                best = (s, item.get("a"))
+    return best
+
+def _match_intent(q: str):
+    qn = _norm(q)
+    for key, ans in RULES:
+        if any(word in qn for word in SYN.get(key, [])):
+            return key, ans
+    return None, None
+
+def _match_small_talk(q: str):
+    qn = _norm(q)
+    for pat, ans in SMALL_TALK:
+        if re.search(pat, qn):
+            return ans
+    return None
+
+@require_POST
+@csrf_protect
+def chatbot_ask(request):
+    """
+    Entrada: {"message": "..."}
+    Salida:  {"reply": "...", "suggest": ["...", ...], "time": "..."}
+    Guarda contexto simple en session (último tema).
+    """
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"reply": "No entendí tu mensaje. ¿Puedes reformularlo?"}, status=400)
+
+    q = (payload.get("message") or "").strip()
+    if not q:
+        return JsonResponse({
+            "reply": "¿En qué puedo ayudarte? Ejemplos: **Conectar Google Drive**, **Subir un PDF**, **Cambiar datos de la empresa**.",
+            "suggest": _suggest_from_query("")
+        })
+
+    # 1) preguntas cortas
+    st = _match_small_talk(q)
+    if st:
+        return JsonResponse({"reply": st, "suggest": _suggest_from_query(q)})
+
+    # 2) reglas por intención
+    key, ans = _match_intent(q)
+    if ans:
+        request.session["chat_ctx"] = {"last_topic": key, "ts": timezone.now().isoformat()}
+        return JsonResponse({"reply": ans, "suggest": _suggest_from_query(q)})
+
+    # 3) búsqueda semántica en KB
+    score, kb_ans = _best_from_kb(q)
+    if kb_ans and score >= 0.28:
+        request.session["chat_ctx"] = {"last_topic": "kb", "ts": timezone.now().isoformat()}
+        return JsonResponse({"reply": kb_ans, "suggest": _suggest_from_query(q)})
+
+    # 4) contexto 
+    ctx = request.session.get("chat_ctx") or {}
+    if ctx.get("last_topic") in {"drive","dropbox","empresa","subir","sii"}:
+        follow = "Si te refieres a lo anterior, puedo detallar pasos o soluciones frecuentes. ¿Qué parte te complica exactamente?"
+        return JsonResponse({"reply": follow, "suggest": _suggest_from_query(q)})
+
+    # 5) fallback amable
+    reply = (
+        "No tengo una respuesta exacta todavía, pero puedo ayudarte con **integraciones**, "
+        "**ajustes de la empresa**, **carga de documentos** y **validación SII**. "
+        "¿Puedes darme un poco más de contexto?"
+    )
+    return JsonResponse({"reply": reply, "suggest": _suggest_from_query(q)})
