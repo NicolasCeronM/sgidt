@@ -92,10 +92,14 @@ def documentos_list_api(request):
         data.append({
             "id": d.id,
             "fecha": d.fecha_emision.isoformat() if d.fecha_emision else "",
+            "fecha_emision": d.fecha_emision.isoformat() if d.fecha_emision else "",   # <- alias
             "tipo": d.tipo_documento,
-            "folio": d.folio,
-            "rut_emisor": d.rut_proveedor,
-            "razon_social": d.razon_social_proveedor,
+            "tipo_documento": d.tipo_documento,                                        # <- alias
+            "folio": d.folio or "",
+            "rut_emisor": d.rut_proveedor or "",
+            "rut_proveedor": d.rut_proveedor or "",                                    # <- alias
+            "razon_social": d.razon_social_proveedor or "",
+            "razon_social_proveedor": d.razon_social_proveedor or "",                  # <- alias
             "monto_neto": float(d.monto_neto) if d.monto_neto is not None else None,
             "monto_exento": float(d.monto_exento) if d.monto_exento is not None else None,
             "iva": float(d.iva) if d.iva is not None else None,

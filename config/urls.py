@@ -37,9 +37,9 @@ urlpatterns = [
     path("configuracion/", panel_views.SettingsView.as_view(), name="configuraciones"),
 
     # --- APIs (solo lógica / JSON) ---
-    path("api/documentos/", include(("apps.documentos.api_urls", "documentos"), namespace="documentos")),
-    # Si más adelante migras proveedores a API:
-    # path("api/proveedores/", include(("apps.proveedores.api_urls", "proveedores"), namespace="proveedores")),
+    path("api/v1/documentos/", include("apps.documentos.api.v1.urls")),
+    # Compat (si quieres mantener lo viejo por ahora):
+    path("api/documentos/", include("apps.documentos.api_urls_legacy")),
 
     # --- Rutas de apps que hoy son vistas (si aún las usas como páginas) ---
     path("proveedores/", include(("apps.proveedores.urls", "proveedores"), namespace="proveedores")),

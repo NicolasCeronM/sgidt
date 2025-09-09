@@ -2,7 +2,7 @@
   const POLL_MS = 5000;
   let polling = false;
 
-  const batchUrl = (ids) => `/api/documentos/progreso_batch/?ids=${ids.join(",")}`;
+  const batchUrl = (ids) => `/api/v1/documentos/progress-batch/?ids=${ids.join(",")}`;
 
   function getPendingIds() {
     return Array.from(document.querySelectorAll('tr[data-estado="pendiente"], tr[data-estado="procesando"]'))
