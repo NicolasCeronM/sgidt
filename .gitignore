@@ -4,12 +4,12 @@ __pycache__/
 *.pyo
 *.so
 
-# Entornos virtuales
-.venv/
-venv/
-env/
-ENV/
-*.env
+# Entornos virtuales // Se sube para efectos de este proyecto
+#.venv/  
+# venv/
+# env/
+# ENV/
+# *.env
 
 # IDEs / editores
 .vscode/

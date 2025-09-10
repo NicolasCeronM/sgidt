@@ -1,120 +1,35 @@
 version: "3.9"
-
 services:
   db:
-    image: postgres:16-alpine
-    container_name: sgidt_db
-    restart: unless-stopped
+    image: postgres:16
     environment:
-      POSTGRES_DB: sgidt
-      POSTGRES_USER: sgidt_user
-      POSTGRES_PASSWORD: admin123
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sgidt_user -d sgidt -h 127.0.0.1"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: sgi_dt
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
 
   redis:
-    image: redis:7-alpine
-    container_name: sgidt_redis
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-    ports:
-      - "6379:6379"
+    image: redis:7
+    ports: ["6379:6379"]
 
   web:
     build: .
-    container_name: sgidt_web
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file: .env
+    volumes:
+      - .:/app
+    ports: ["8000:8000"]
+    depends_on: [db, redis]
     environment:
       OAUTHLIB_INSECURE_TRANSPORT: "1"
-      # Django
-      DJANGO_SETTINGS_MODULE: config.settings
-      # Base de datos (tu settings.py ya usa estos valores por defecto)
-      DB_NAME: sgidt
-      DB_USER: sgidt_user
-      DB_PASSWORD: admin123
-      DB_HOST: db
-      DB_PORT: "5432"
-      # Celery/Redis (por si en algún punto usas desde Django)
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/1
-      # OCR (opcional)
-      TESSERACT_LANG: spa+eng
-      # DEBUG en dev
-      DEBUG: "1"
-    volumes:
-      - .:/app
-      - media:/app/media
-      - staticfiles:/app/staticfiles
-    ports:
-      - "8000:8000"
-    command: >
-      sh -c "
-      python manage.py migrate &&
-      python manage.py collectstatic --noinput &&
-      python manage.py runserver 0.0.0.0:8000
-      "
 
-  celery:
+  worker:
     build: .
-    container_name: sgidt_celery
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      web:
-        condition: service_started
-    environment:
-      DJANGO_SETTINGS_MODULE: config.settings
-      # Broker/Backend
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/1
-      # OCR (opcional)
-      TESSERACT_LANG: spa+eng
-      # Concurrency ajustable (1-2 para dev)
-      CELERY_WORKER_CONCURRENCY: "1"
-    volumes:
-      - .:/app
-      - media:/app/media
     command: celery -A config worker -l info
-
-  # (Opcional) Celery Beat para tareas periódicas (descomenta cuando lo necesites)
-  # celery_beat:
-  #   build: .
-  #   container_name: sgidt_celery_beat
-  #   restart: unless-stopped
-  #   depends_on:
-  #     redis:
-  #       condition: service_healthy
-  #     db:
-  #       condition: service_healthy
-  #   environment:
-  #     DJANGO_SETTINGS_MODULE: config.settings
-  #     CELERY_BROKER_URL: redis://redis:6379/0
-  #     CELERY_RESULT_BACKEND: redis://redis:6379/1
-  #   volumes:
-  #     - .:/app
-  #   command: celery -A config beat -l info
+    env_file: .env
+    volumes: [".:/app"]
+    depends_on: [redis, web]
 
 volumes:
   pgdata:
-  media:
-  staticfiles:

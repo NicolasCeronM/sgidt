@@ -1,31 +1,39 @@
-# Dockerfile
-FROM python:3.12-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-# Paquetes de sistema necesarios para OCR y PDF
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    tesseract-ocr tesseract-ocr-spa \
-    poppler-utils \
-    libglib2.0-0 libsm6 libxext6 libxrender1 \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Directorio de la app
+# ---------- Etapa build ----------
+FROM python:3.12-slim AS builder
 WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip wheel --no-cache-dir --no-deps -r requirements.txt -w /wheels
 
-# Reqs antes para cache
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+# ---------- Etapa runtime ----------
+FROM python:3.12-slim
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
-# Copiar proyecto
-COPY . /app/
+# Dependencias nativas requeridas por WeasyPrint (Debian/Bookworm)
+RUN apt-get update && apt-get install -y \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libffi8 \
+    libxml2 \
+    libxslt1.1 \
+    libjpeg62-turbo \
+    libpng16-16 \
+    fontconfig \
+    fonts-dejavu-core \
+    fonts-liberation \
+    fonts-noto-color-emoji \
+ && rm -rf /var/lib/apt/lists/*
 
-# Variables útiles para OCR (opcional)
-ENV TESSERACT_LANG=spa+eng \
-    TESSERACT_PSM=6 \
-    TESSERACT_PSM_IMAGE=4
+# Instala wheels
+COPY --from=builder /wheels /wheels
+RUN pip install --no-cache /wheels/*
 
-# Comando por defecto (lo sobreescribe docker-compose)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Copia proyecto
+COPY . .
+
+# Comando por defecto (prod). En dev el compose lo sobreescribe con runserver
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
