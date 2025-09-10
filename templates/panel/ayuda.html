@@ -101,19 +101,30 @@
       <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
         <div class="msg bot">¡Hola! 👋 Soy tu asistente de SGIDT. ¿En qué puedo ayudarte?</div>
       </div>
+      
+      <div id="chatSuggest"></div>
 
       <form class="chatbot-input" id="chatbotForm" data-endpoint="{% url 'panel:chatbot_ask' %}">
         {% csrf_token %}
-        <input type="text" id="chatbotText" class="form-input" placeholder="Escribe tu mensaje…" autocomplete="off" required>
-        <button class="btn btn-primary" type="submit" aria-label="Enviar"><i class="fas fa-paper-plane"></i></button>
+        <input
+          type="text"
+          id="chatbotText"
+          class="form-input"
+          placeholder="Escribe tu mensaje…"
+          autocomplete="off"
+          required
+        >
+        <button class="btn btn-primary" type="submit" aria-label="Enviar">
+          <i class="fas fa-paper-plane"></i>
+        </button>
       </form>
     </div>
   </div>
 </div>
 
-
 <script src="{% static 'ayuda/js/ayuda_contacto.js' %}?v=3"></script>
 <link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=9">
 <script src="{% static 'ayuda/js/chatbot.js' %}?v=5"></script>
+
 
 {% endblock %}

@@ -264,6 +264,16 @@ if os.path.exists(_KB_PATH):
     except Exception:
         _KB = []
 
+_ERRORS = []
+_ERRORS_PATH = os.path.join(settings.BASE_DIR, "static", "ayuda", "kb", "errors_kb.json")
+if os.path.exists(_ERRORS_PATH):
+    try:
+        with open(_ERRORS_PATH, "r", encoding="utf-8") as f:
+            _ERRORS = json.load(f)
+    except Exception:
+        _ERRORS = []
+
+
 # --- Utilidades de texto ---
 _ACCENTS = str.maketrans("áéíóúñüÁÉÍÓÚÑÜ", "aeiounuAEIOUNU")
 def _norm(s: str) -> str:
@@ -289,6 +299,41 @@ def _ratio(a: str, b: str) -> float:
 
 def _score(a: str, b: str) -> float:
     return 0.6 * _jaccard(a, b) + 0.4 * _ratio(a, b)
+
+# === Busqueda de errores ===
+def _best_from_errors_friendly(q: str):
+    """
+    Busca coincidencias de errores usando patrones.
+    Formato de cada error:
+      {
+        "nombre": "...",
+        "patrones": ["...","..."],
+        "titulo": "Mensaje simple",
+        "pasos": ["Paso 1","Paso 2",...],
+        "nota": "Consejo opcional"
+      }
+    Retorna (score, error_dict) o (0.0, None).
+    """
+    qn = _norm(q)
+
+    # 1) Coincidencia directa por patrón/contiene
+    for e in _ERRORS:
+        for pat in e.get("patrones", []):
+            try:
+                if re.search(pat, q, flags=re.I) or pat.lower() in qn:
+                    return (1.0, e)
+            except re.error:
+                if pat.lower() in qn:
+                    return (1.0, e)
+
+    # 2) Coincidencia difusa 
+    best = (0.0, None)
+    for e in _ERRORS:
+        for pat in e.get("patrones", []):
+            s = _score(q, pat)
+            if s > best[0]:
+                best = (s, e)
+    return best
 
 # --- Sinónimos / palabras clave por intención ---
 SYN = {
@@ -387,26 +432,40 @@ def chatbot_ask(request):
     st = _match_small_talk(q)
     if st:
         return JsonResponse({"reply": st, "suggest": _suggest_from_query(q)})
+    
+    # 2) errores
+    es, err = _best_from_errors_friendly(q)
+    if err and es >= 0.28:
+        pasos_md = "\n".join([f"- {p}" for p in err.get("pasos", [])])
+        titulo   = err.get("titulo", "Ocurrió un inconveniente.")
+        nota     = err.get("nota")
 
-    # 2) reglas por intención
+        reply = f"**{titulo}**\n\n{pasos_md}"
+        if nota:
+            reply += f"\n\n**Nota:** {nota}"
+        reply += "\n\nSi continúa, cuéntanos qué estabas haciendo y te ayudamos."
+        request.session["chat_ctx"] = {"last_topic": f"error:{err.get('nombre','general')}", "ts": timezone.now().isoformat()}
+        return JsonResponse({"reply": reply, "suggest": _suggest_from_query(q)})
+
+    # 3) reglas por intención
     key, ans = _match_intent(q)
     if ans:
         request.session["chat_ctx"] = {"last_topic": key, "ts": timezone.now().isoformat()}
         return JsonResponse({"reply": ans, "suggest": _suggest_from_query(q)})
 
-    # 3) búsqueda semántica en KB
+    # 4) búsqueda semántica en KB
     score, kb_ans = _best_from_kb(q)
     if kb_ans and score >= 0.28:
         request.session["chat_ctx"] = {"last_topic": "kb", "ts": timezone.now().isoformat()}
         return JsonResponse({"reply": kb_ans, "suggest": _suggest_from_query(q)})
 
-    # 4) contexto 
+    # 5) contexto 
     ctx = request.session.get("chat_ctx") or {}
     if ctx.get("last_topic") in {"drive","dropbox","empresa","subir","sii"}:
         follow = "Si te refieres a lo anterior, puedo detallar pasos o soluciones frecuentes. ¿Qué parte te complica exactamente?"
         return JsonResponse({"reply": follow, "suggest": _suggest_from_query(q)})
 
-    # 5) fallback amable
+    # 6) fallback amable
     reply = (
         "No tengo una respuesta exacta todavía, pero puedo ayudarte con **integraciones**, "
         "**ajustes de la empresa**, **carga de documentos** y **validación SII**. "
