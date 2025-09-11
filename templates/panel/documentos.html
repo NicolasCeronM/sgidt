@@ -20,46 +20,21 @@ SGIDT{% endblock %} {% block content %} {% block css %}
     <section class="card upload-card" aria-labelledby="up-title">
       <h2 id="up-title" class="card-title">Subir Nuevo Documento</h2>
 
-      <div
-        id="uploadArea"
-        class="upload-area"
-        role="group"
-        tabindex="0"
-        aria-describedby="drop-hint"
-      >
+      <div id="uploadArea" class="upload-area" role="group" tabindex="0" aria-describedby="drop-hint">
         <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
-        <p class="dz-title">
-          Arrastra archivos aquí o haz clic para seleccionar
-        </p>
-        <p id="drop-hint" class="upload-hint">
-          PDF, JPG, PNG (máx. 10MB por archivo)
-        </p>
+        <p class="dz-title">Arrastra archivos aquí o haz clic para seleccionar</p>
+        <p id="drop-hint" class="upload-hint">PDF, JPG, PNG (máx. 10MB por archivo)</p>
       </div>
 
       <!-- form invisible para CSRF + file input -->
-      <form
-        id="uploadForm"
-        method="post"
-        enctype="multipart/form-data"
-        style="display: none"
-      >
+      <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none">
         {% csrf_token %}
-        <input
-          type="file"
-          id="fileInput"
-          name="files[]"
-          accept=".pdf,.jpg,.jpeg,.png"
-          multiple
-        />
+        <input type="file" id="fileInput" name="files[]" accept=".pdf,.jpg,.jpeg,.png" multiple />
       </form>
 
       <div class="upload-actions">
-        <button class="btn btn-primary" id="btnSelect">
-          <i class="fas fa-plus"></i> Seleccionar archivos
-        </button>
-        <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost">
-          <i class="fas fa-folder-open"></i> Ver documentos
-        </a>
+        <button class="btn btn-primary" id="btnSelect"><i class="fas fa-plus"></i> Seleccionar archivos</button>
+        <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost"><i class="fas fa-folder-open"></i> Ver documentos</a>
       </div>
 
       <!-- Cola de subida -->
@@ -67,28 +42,16 @@ SGIDT{% endblock %} {% block content %} {% block css %}
     </section>
 
     <!-- FILTROS -->
-    <section
-      class="card filters"
-      role="search"
-      aria-label="Filtros de documentos"
-    >
+    <section class="card filters" role="search" aria-label="Filtros de documentos">
       <form id="filter-form" class="filters-grid">
         <div class="f-item">
           <label for="dateFrom">Fecha desde</label>
-          <div class="f-input">
-            <i class="far fa-calendar-alt" aria-hidden="true"></i>
-            <input type="date" id="dateFrom" />
-          </div>
+          <div class="f-input"><i class="far fa-calendar-alt" aria-hidden="true"></i><input type="date" id="dateFrom" /></div>
         </div>
-
         <div class="f-item">
           <label for="dateTo">Fecha hasta</label>
-          <div class="f-input">
-            <i class="far fa-calendar-alt" aria-hidden="true"></i>
-            <input type="date" id="dateTo" />
-          </div>
+          <div class="f-input"><i class="far fa-calendar-alt" aria-hidden="true"></i><input type="date" id="dateTo" /></div>
         </div>
-
         <div class="f-item">
           <label for="docType">Tipo</label>
           <div class="f-input">
@@ -101,7 +64,6 @@ SGIDT{% endblock %} {% block content %} {% block css %}
             </select>
           </div>
         </div>
-
         <div class="f-item">
           <label for="docStatus">Estado</label>
           <div class="f-input">
@@ -114,14 +76,9 @@ SGIDT{% endblock %} {% block content %} {% block css %}
             </select>
           </div>
         </div>
-
         <div class="f-actions">
-          <button type="button" class="btn btn-primary" id="btnFilter">
-            <i class="fas fa-filter"></i> Filtrar
-          </button>
-          <button type="reset" class="btn btn-ghost" id="btn-clear">
-            Limpiar
-          </button>
+          <button type="button" class="btn btn-primary" id="btnFilter"><i class="fas fa-filter"></i> Filtrar</button>
+          <button type="reset" class="btn btn-ghost" id="btn-clear">Limpiar</button>
         </div>
       </form>
       <div id="result-info" class="result-info" aria-live="polite"></div>
@@ -133,15 +90,11 @@ SGIDT{% endblock %} {% block content %} {% block css %}
 
       <!-- Skeleton -->
       <div class="table-skeleton" id="tbl-skeleton">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+        <div></div><div></div><div></div><div></div><div></div>
       </div>
 
       <div class="table-wrap" aria-busy="false">
-        <table class="table">
+        <table class="table" id="documentsTable">
           <thead>
             <tr>
               <th>Fecha</th>
@@ -149,9 +102,6 @@ SGIDT{% endblock %} {% block content %} {% block css %}
               <th>Folio</th>
               <th>RUT Emisor</th>
               <th>Razón Social</th>
-              <!-- <th class="num">Neto</th>
-              <th class="num">Exento</th>
-              <th class="num">IVA</th> -->
               <th class="num">Total</th>
               <th>Estado</th>
               <th>Validación SII</th>
@@ -162,15 +112,39 @@ SGIDT{% endblock %} {% block content %} {% block css %}
         </table>
       </div>
 
-      <!-- Empty -->
-
       <div id="tbl-empty" class="empty-state" hidden>
         <p class="empty-text">Aún no hay documentos.</p>
       </div>
-
     </section>
   </div>
 </section>
+
+<!-- ===== MODAL DETALLE DOCUMENTO ===== -->
+<div id="docDetailOverlay" class="modal-overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="docDetailTitle" tabindex="-1">
+    <div class="modal-header">
+      <h3 id="docDetailTitle" class="modal-title">Detalle del documento</h3>
+      <button class="modal-close" id="docDetailClose" aria-label="Cerrar">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="docDetailContent">
+        <!-- estado inicial esqueleto -->
+        <div class="kv-skel">
+          <div class="skeleton"></div><div class="skeleton"></div>
+          <div class="skeleton"></div><div class="skeleton"></div>
+          <div class="skeleton"></div><div class="skeleton"></div>
+          <div class="skeleton"></div><div class="skeleton"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <a id="docViewBtn" class="btn-min" href="#" target="_blank" rel="noopener" hidden><i class="fa-solid fa-eye"></i> Ver archivo</a>
+      <a id="docDownloadBtn" class="btn-min" href="#" download hidden><i class="fa-solid fa-download"></i> Descargar</a>
+      <span id="docEstadoPill" class="pill" hidden></span>
+      <span id="docSiiPill" class="pill" hidden></span>
+    </div>
+  </div>
+</div>
 <!-- progreso en tiempo real (IIFE no-module) -->
 <script src="{% static 'documentos/js/progreso.js' %}?v=2"></script>
 <!-- módulo principal -->
