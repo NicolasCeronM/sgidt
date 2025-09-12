@@ -7,27 +7,12 @@ SGIDT{% endblock %} {% block content %}
     <!-- HERO / ENCABEZADO -->
     <header class="db-head">
       <div class="db-head-left">
-        <h1 id="db-title" class="db-title">
-          {{ empresa.nombre }}
-        </h1>
+        <h1 id="db-title" class="db-title">{{ empresa.nombre }}</h1>
         <p class="db-subtitle">
           Centraliza tus DTE, valida con SII y controla gastos en minutos.
           Plataforma minimalista y segura para tu PyME.
         </p>
       </div>
-
-      <!-- <div class="db-quick" role="group" aria-label="Acciones rápidas">
-        
-        <a href="{% url 'panel:documentos_page' %}" class="btn btn-primary">
-          <i class="fas fa-upload" aria-hidden="true"></i> Subir documento
-        </a>
-        <a href="{% url 'panel:reportes' %}" class="btn btn-ghost">
-          <i class="fas fa-chart-line" aria-hidden="true"></i> Ver reportes
-        </a>
-        <a href="{% url 'panel:validaciones' %}" class="btn btn-ghost">
-          <i class="fas fa-shield-alt" aria-hidden="true"></i> Validar en SII
-        </a>
-      </div> -->
     </header>
 
     <!-- KPIs -->
@@ -37,10 +22,10 @@ SGIDT{% endblock %} {% block content %}
         <div class="kpi-row">
           <div class="kpi-meta">
             <p class="kpi-title">Documentos este mes</p>
-            <p class="kpi-number" data-target="247">0</p>
-            <span class="kpi-delta kpi-up" title="Variación vs. mes anterior">
+            <p class="kpi-number" data-target="{{ kpi_docs_mes|default:0 }}">0</p>
+            <!-- <span class="kpi-delta kpi-up" title="Variación vs. mes anterior">
               <i class="fas fa-arrow-up" aria-hidden="true"></i> +4.8%
-            </span>
+            </span> -->
           </div>
           <i class="fas fa-file-invoice kpi-icon" aria-hidden="true"></i>
         </div>
@@ -51,10 +36,11 @@ SGIDT{% endblock %} {% block content %}
         <div class="kpi-row">
           <div class="kpi-meta">
             <p class="kpi-title">IVA total (mes)</p>
-            <p class="kpi-number" data-target="2847320" data-prefix="$">0</p>
-            <span class="kpi-delta kpi-down" title="Variación vs. mes anterior">
+            <p class="kpi-number" data-target="{{ kpi_iva_mes|default:0 }}" data-prefix="$">0</p>
+  
+            <!-- <span class="kpi-delta kpi-down" title="Variación vs. mes anterior">
               <i class="fas fa-arrow-down" aria-hidden="true"></i> −2.1%
-            </span>
+            </span> -->
           </div>
           <i class="fas fa-dollar-sign kpi-icon" aria-hidden="true"></i>
         </div>
@@ -65,8 +51,8 @@ SGIDT{% endblock %} {% block content %}
         <div class="kpi-row">
           <div class="kpi-meta">
             <p class="kpi-title">Gasto acumulado (mes)</p>
-            <p class="kpi-number" data-target="15234890" data-prefix="$">0</p>
-            <span class="kpi-period">Periodo: Mes actual</span>
+            <p class="kpi-number" data-target="{{ kpi_gasto_mes|default:0 }}" data-prefix="$">0</p>
+            <!-- <span class="kpi-period">Periodo: Mes actual</span> -->
           </div>
           <i class="fas fa-wallet kpi-icon" aria-hidden="true"></i>
         </div>
@@ -93,66 +79,38 @@ SGIDT{% endblock %} {% block content %}
 
         <!-- Timeline compacto -->
         <ul class="list-compact timeline" aria-live="polite">
+          {% for d in ultimos_docs %}
           <li class="item">
             <div class="left">
-              <span class="dot dot-success" aria-hidden="true"
-                ><i class="fas fa-receipt"></i
-              ></span>
+              <span class="dot dot-success" aria-hidden="true"><i class="fas fa-receipt"></i></span>
               <div class="info">
-                <span class="title">Factura #12345 procesada</span>
-                <small class="meta">ID: 12345</small>
+                <span class="title">
+                  {{ d.get_tipo_documento_display|default:"Documento" }}{% if d.folio %} de {{ d.razon_social_proveedor }}{% endif %}
+                </span>
+                <small class="meta">N° Folio: {{ d.folio }}</small>
               </div>
             </div>
             <div class="right">
-              <span class="tag tag-success">Procesada</span>
-              <small class="when">hace 15 min</small>
+              <span class="tag tag-success">{{ d.estado|default:"Procesado" }}</span>
+              <small class="when">
+                {% if d.fecha_emision %}{{ d.fecha_emision|date:"d/m/Y" }}{% else %}{{ d.creado_en|date:"d/m/Y H:i" }}{% endif %}
+              </small>
               <div class="actions">
-                <a href="#" class="act">Ver</a>
-                <a href="#" class="act">Descargar</a>
-                <a href="#" class="act">Detalle</a>
+                <a href="{% url 'panel:documentos_page' %}" class="act">Ver</a>
+                <a href="{% url 'panel:documentos_page' %}" class="act">Descargar</a>
+                <a href="{% url 'panel:documentos_page' %}" class="act">Detalle</a>
               </div>
             </div>
           </li>
-
-          <li class="item">
-            <div class="left">
-              <span class="dot dot-warning" aria-hidden="true"
-                ><i class="fas fa-circle-check"></i
-              ></span>
-              <div class="info">
-                <span class="title">Validación SII boleta #67890</span>
-                <small class="meta">Boleta: 67890</small>
-              </div>
-            </div>
-            <div class="right">
-              <span class="tag tag-warning">En cola</span>
-              <small class="when">hace 1 h</small>
-              <div class="actions">
-                <a href="#" class="act">Ver</a>
-                <a href="#" class="act">Detalle</a>
-              </div>
-            </div>
-          </li>
-
-          <li class="item">
-            <div class="left">
-              <span class="dot dot-info" aria-hidden="true"
-                ><i class="fas fa-file-export"></i
-              ></span>
-              <div class="info">
-                <span class="title">Exportación reporte mensual</span>
-                <small class="meta">CSV · 1.2MB</small>
-              </div>
-            </div>
-            <div class="right">
-              <span class="tag tag-info">Completado</span>
-              <small class="when">hace 2 h</small>
-              <div class="actions">
-                <a href="#" class="act">Descargar</a>
-                <a href="#" class="act">Detalle</a>
-              </div>
-            </div>
-          </li>
+          {% empty %}
+          <div class="empty">
+            <div class="empty-illu">📄</div>
+            <p class="empty-text">Aún no hay movimientos.</p>
+            <a href="{% url 'panel:documentos_page' %}" class="btn btn-primary">
+              <i class="fas fa-upload"></i> Subir documento
+            </a>
+          </div>
+          {% endfor %}
         </ul>
 
         <!-- Empty state (por si no hay movimientos) -->
