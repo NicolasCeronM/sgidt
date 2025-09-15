@@ -12,15 +12,19 @@
   </div>
 
   <!-- Perfil / empresa -->
-  <div class="sidebar-profile" role="button" tabindex="0" aria-label="Perfil SGIDT">
-    <div class="avatar" aria-hidden="true">
-      <i class="fas fa-user-circle"></i>
+  <a href="{% url 'usuarios:admin_configuracion' %}" class="perfil-card">
+    {% if request.user.profile.avatar %}
+    <img src="{{ request.user.profile.avatar.url }}" alt="Perfil" class="perfil-img">
+    {% else %}
+    <img src="{% static 'img/user.png' %}" alt="Perfil" class="perfil-img">
+    {% endif %}
+    <div class="perfil-info">
+      <strong>{{ request.user.get_full_name }}</strong><br>
+      <span>Administrador</span>
     </div>
-    <div class="profile-meta">
-      <strong>{{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}</strong>
-      <small>Administrador</small>
-    </div>
-  </div>
+  </a>
+
+
 
   <div class="sidebar-sep"></div>
 
@@ -83,7 +87,8 @@
 <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
 
 <!-- Botón hamburguesa (se muestra sólo en <=900px) -->
-<button class="sidebar-hamburger" id="sidebarHamburger" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
+<button class="sidebar-hamburger" id="sidebarHamburger" aria-label="Abrir menú" aria-controls="sidebar"
+  aria-expanded="false">
   <i class="fas fa-bars"></i>
 </button>
 

@@ -1,0 +1,34 @@
+{# templates/widgets/avatar_buttons.html #}
+<div class="avatar-buttons" style="display:flex;flex-direction:column;gap:10px;">
+    {% if widget.value %}
+    <div class="avatar-row" style="display:flex;align-items:center;gap:12px;">
+        <img src="{{ widget.value.url }}" alt="Avatar"
+            style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #e5e7eb;">
+        <div class="avatar-actions" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <!-- checkbox "clear" oculto; lo activamos con el botón -->
+            <input type="checkbox" name="{{ widget.clear_checkbox_name }}" id="{{ widget.clear_checkbox_id }}"
+                style="display:none;">
+            <button type="button" class="btn danger" data-checkbox-id="{{ widget.clear_checkbox_id }}" onclick="
+                  (function(btn){
+                    var id = btn.getAttribute('data-checkbox-id');
+                    var chk = document.getElementById(id);
+                    if(chk){ chk.checked = true; btn.textContent = 'Se eliminará al guardar'; btn.disabled = true; }
+                  })(this);
+                ">
+                Eliminar foto
+            </button>
+
+            <label class="btn secondary" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;">
+                Cambiar foto
+                <input type="file" name="{{ widget.name }}" accept="image/*" style="display:none;">
+            </label>
+        </div>
+    </div>
+    {% else %}
+    <label class="btn primary"
+        style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;align-self:flex-start;">
+        Subir foto
+        <input type="file" name="{{ widget.name }}" accept="image/*" style="display:none;">
+    </label>
+    {% endif %}
+</div>

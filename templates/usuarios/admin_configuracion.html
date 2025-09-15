@@ -1,0 +1,205 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block title %}Configuración del Perfil · SGIDT{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'usuarios/css/admin_configuracion.css' %}?v=2">
+
+<section class="page">
+    <div class="wrap">
+
+        <header class="page-header">
+            <div class="ph-left">
+                <h1 class="page-title">Configuración Cuenta</h1>
+                <p class="page-sub">Actualiza tus datos personales y los de tu empresa (PYME).</p>
+            </div>
+            <div class="ph-right">
+                <a href="{% url 'usuarios:admin_configuracion' %}" class="btn ghost">Recargar</a>
+            </div>
+        </header>
+
+        {% if messages %}
+        <div class="messages">
+            {% for m in messages %}
+            <div class="msg {{ m.tags }}">{{ m }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="form-grid">
+            {% csrf_token %}
+
+            <!-- ============ PERSONA ============ -->
+            <section class="card">
+                <div class="card-h">
+                    <h3>Datos personales</h3>
+                    <p class="sub">Información del administrador</p>
+                </div>
+
+                <div class="card-b grid-12">
+                    <div class="field span-6">
+                        <label>Nombre</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="field span-6">
+                        <label>Apellido</label>
+                        {{ form.last_name }}
+                    </div>
+
+                    <div class="field span-6">
+                        <label>Email</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="field span-6">
+                        <label>Teléfono</label>
+                        {{ form.telefono }}
+                    </div>
+
+                    <div class="field span-6">
+                        <label>Cargo</label>
+                        {{ form.cargo }}
+                    </div>
+                    <div class="field span-3">
+                        <label>Idioma</label>
+                        {{ form.idioma_pref }}
+                    </div>
+                    <div class="field span-3">
+                        <label>Zona horaria</label>
+                        {{ form.time_zone }}
+                    </div>
+
+                    <div class="field span-6">
+                        <label>Avatar</label>
+                        {{ form.avatar }}
+                        <small class="help">PNG/JPG (recomendado 256×256)</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ PYME ============ -->
+            <section class="card">
+                <div class="card-h">
+                    <h3>Datos de la PYME</h3>
+                    <p class="sub">Identificación y contacto</p>
+                </div>
+
+                <div class="card-b grid-12">
+                    <div class="field span-6">
+                        <label>Razón social</label>
+                        {{ form.empresa_nombre }}
+                    </div>
+                    <div class="field span-6">
+                        <label>Nombre de fantasía</label>
+                        {{ form.empresa_fantasia }}
+                    </div>
+
+                    <div class="field span-4">
+                        <label>RUT</label>
+                        {{ form.empresa_rut }}
+                    </div>
+                    <div class="field span-8">
+                        <label>Giro</label>
+                        {{ form.empresa_giro }}
+                    </div>
+
+                    <div class="field span-4">
+                        <label>Teléfono empresa</label>
+                        {{ form.empresa_telefono }}
+                    </div>
+                    <div class="field span-4">
+                        <label>Email empresa</label>
+                        {{ form.empresa_email }}
+                    </div>
+                    <div class="field span-4">
+                        <label>Website</label>
+                        {{ form.empresa_web }}
+                    </div>
+
+                    <div class="field span-4">
+                        <label>Región</label>
+                        {{ form.empresa_region }}
+                    </div>
+                    <div class="field span-4">
+                        <label>Comuna</label>
+                        {{ form.empresa_comuna }}
+                    </div>
+                    <div class="field span-4">
+                        <label>Dirección</label>
+                        {{ form.empresa_direccion }}
+                    </div>
+
+                    <div class="field span-6">
+                        <label>Logo</label>
+                        {{ form.empresa_logo }}
+                        <small class="help">PNG con fondo transparente recomendado</small>
+                    </div>
+
+                    <div class="field span-3">
+                        <label>Color primario</label>
+                        {{ form.color_primario }}
+                    </div>
+                    <div class="field span-3">
+                        <label>Color secundario</label>
+                        {{ form.color_secundario }}
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ PREFERENCIAS ============ -->
+            <section class="card">
+                <div class="card-h">
+                    <h3>Preferencias</h3>
+                    <p class="sub">Notificaciones y boletines</p>
+                </div>
+
+                <div class="card-b grid-12">
+                    <label class="check span-12">
+                        {{ form.notificaciones_email }}
+                        <span>Recibir notificaciones por correo</span>
+                    </label>
+
+                    <label class="check span-12">
+                        {{ form.notificaciones_whatsapp }}
+                        <span>Notificaciones por WhatsApp</span>
+                    </label>
+
+                    <label class="check span-12">
+                        {{ form.recibe_boletin }}
+                        <span>Quiero recibir boletín de novedades</span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- ============ TRIBUTARIO (opcional) ============ -->
+            <section class="card">
+                <div class="card-h">
+                    <h3>Datos tributarios</h3>
+                    <p class="sub">(Opcional, para integraciones futuras)</p>
+                </div>
+
+                <div class="card-b grid-12">
+                    <div class="field span-4">
+                        <label>Régimen</label>
+                        {{ form.sii_regimen }}
+                    </div>
+                    <div class="field span-5">
+                        <label>Actividad</label>
+                        {{ form.sii_actividad }}
+                    </div>
+                    <div class="field span-3">
+                        <label>Cód. SII</label>
+                        {{ form.sii_cod_sii }}
+                    </div>
+                </div>
+            </section>
+
+            <footer class="form-actions">
+                <button type="submit" class="btn primary">Guardar cambios</button>
+                <a href="{% url 'panel:dashboard' %}" class="btn ghost">Cancelar</a>
+            </footer>
+        </form>
+
+    </div>
+</section>
+{% endblock %}

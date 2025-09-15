@@ -100,3 +100,27 @@ body.sidebar-open .sidebar-backdrop {
 .sidebar-close {
   display: none !important;
 }
+
+.perfil-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #fff;
+}
+.perfil-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+.perfil-info strong {
+  font-weight: 600;
+}
+.perfil-info span {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}

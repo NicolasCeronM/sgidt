@@ -1,0 +1,239 @@
+/* ===== Layout base ===== */
+:root {
+  --bg-input: #ffffff; /* fondo de inputs */
+  --card: #f3f4f6; /* plomo claro para cards */
+  --ink: #111827; /* texto principal */
+  --muted: #6b7280; /* texto secundario */
+  --line: #d1d5db; /* borde gris */
+  --ring: 0 0 0 3px rgba(226, 38, 28, 0.35); /* focus ring */
+  --brand: #e2261c;
+}
+
+.page {
+  padding: 24px 0 48px;
+  background: transparent;
+}
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Header */
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.page-title {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.page-sub {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+/* Mensajes */
+.messages {
+  margin: 8px 0 14px;
+}
+.msg {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.msg.success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.msg.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.btn.primary {
+  background: var(--brand);
+  color: #fff;
+  border: 0;
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn:hover {
+  opacity: 0.96;
+}
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+.card + .card {
+  margin-top: 16px;
+}
+.card-h {
+  padding: 16px 16px 0;
+}
+.card-h h3 {
+  margin: 0 0 4px;
+  color: var(--ink);
+}
+.card-h .sub {
+  margin: 0;
+  color: var(--muted);
+}
+.card-b {
+  padding: 16px;
+}
+
+/* Grid de 12 columnas */
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+.span-12 {
+  grid-column: span 12;
+}
+.span-8 {
+  grid-column: span 8;
+}
+.span-6 {
+  grid-column: span 6;
+}
+.span-5 {
+  grid-column: span 5;
+}
+.span-4 {
+  grid-column: span 4;
+}
+.span-3 {
+  grid-column: span 3;
+}
+
+/* Campos */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="url"],
+.field input[type="tel"],
+.field input[type="password"],
+.field input[type="file"],
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg-input);
+  color: var(--ink);
+  outline: none;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.9;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--brand);
+  box-shadow: var(--ring);
+  background: #fff;
+}
+
+.help {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Checks */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.check input {
+  width: 18px;
+  height: 18px;
+}
+
+/* Footer del form */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 16px 2px 0;
+}
+
+/* Form contenedor */
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .span-6,
+  .span-5,
+  .span-4,
+  .span-3 {
+    grid-column: span 12;
+  }
+  .page-title {
+    font-size: 28px;
+  }
+}
+@media (max-width: 640px) {
+  .wrap {
+    padding: 0 12px;
+  }
+  .card-b {
+    padding: 14px;
+  }
+  .page-header {
+    align-items: flex-start;
+  }
+}
