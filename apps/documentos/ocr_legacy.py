@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+OCR robusto para DTE CL (PDF/JPG/PNG)
+- RUT tolerante a espacios tras guion (e.g., "15.608.506- 5")
+- Montos por cercanía a etiquetas con ventana amplia
+- Filtro anti-RUT para valores monetarios
+- Derivación de IVA/NETO con tolerancia y redondeo
+- Fallback OCR con preprocesamiento ligero
+"""
 import os
 import re
 import mimetypes
@@ -12,7 +21,7 @@ from typing import Optional, Dict, Any, List, Tuple
 from pdf2image import convert_from_path
 from pdfminer.high_level import extract_text
 import pytesseract
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageFilter
 
 # -----------------------------------------------------------------------------
 # Logging
@@ -38,7 +47,8 @@ DEFAULT_TESSERACT_PSM_IMAGE = os.getenv("TESSERACT_PSM_IMAGE", "4")
 # -----------------------------------------------------------------------------
 # Regex y constantes
 # -----------------------------------------------------------------------------
-RUT_RE = re.compile(r"(?<!\w)(\d{1,2}\.?(?:\d{3}\.)?\d{3}-[\dkK])(?!\w)")
+# Acepta espacios después del guion del DV
+RUT_RE = re.compile(r"(?<!\w)(\d{1,2}\.?(?:\d{3}\.)?\d{3})-\s*([\dkK])(?!\w)")
 FOLIO_RE = re.compile(r"(?:FOLIO|Nº|N°|No\.?|Nro\.?|FOL\.?)[\s:]*([0-9]{3,})", re.IGNORECASE)
 
 FECHA_RE_NUM = re.compile(r"\b(\d{1,2}[\/\.-]\d{1,2}[\/\.-]\d{2,4}|\d{4}[\/\.-]\d{1,2}[\/\.-]\d{1,2})\b")
@@ -58,7 +68,7 @@ MONEDA_RE = re.compile(r"\$?\s*(-?[0-9]{1,3}(?:\.[0-9]{3})*(?:,[0-9]{2})?)")
 LABELS_MONTOS = {
     "monto_neto":   r"\b(NETO|AFECTO|SUBTOTAL)\b",
     "monto_exento": r"\b(EXENTO)\b",
-    "iva":          r"\b(IVA)\b",
+    "iva":          r"\b(I\.?V\.?A\.?|IVA)\b",
     "total":        r"\b(TOTAL)(?:\s+A\s+PAGAR|\s+PAGO)?\b",
 }
 
@@ -155,7 +165,12 @@ def _find_first_pos(text: str, pattern: re.Pattern) -> Optional[int]:
     m = pattern.search(text); return m.start() if m else None
 
 def _all_ruts_with_pos(text: str) -> List[Tuple[str, int]]:
-    return [(m.group(1), m.start()) for m in RUT_RE.finditer(text)]
+    outs = []
+    for m in RUT_RE.finditer(text):
+        cuerpo, dv = m.group(1), m.group(2)
+        rut = f"{cuerpo}-{dv}".replace(" ", "")
+        outs.append((rut, m.start()))
+    return outs
 
 def _select_proveedor_rut(text: str) -> Optional[str]:
     ruts = _all_ruts_with_pos(text)
@@ -212,43 +227,61 @@ def _extract_proveedor(lines: List[str], rut: Optional[str]) -> Optional[str]:
         if idx_rut is not None:
             for j in range(max(0, idx_rut-3), idx_rut+1):
                 cand = search_range[j].strip()
-                if len(cand) > 3 and not re.search(r"\b(FACTURA|BOLETA|NOTA|RUT|FOLIO|SII|ELECTR[ÓO]NICA)\b", cand, re.IGNORECASE):
+                if len(cand) > 3 and not re.search(r"\b(FACTURA|BOLETA|NOTA|RUT|R\.U\.T|FOLIO|SII|ELECTR[ÓO]NICA)\b", cand, re.IGNORECASE):
                     return _pretty_name(cand)
 
     for cand in search_range[:15]:
         c = cand.strip()
         if len(c) >= 6 and (c.isupper() or " SPA" in c or " LTDA" in c or " S.A" in c):
-            if not re.search(r"\b(FACTURA|BOLETA|NOTA|RUT|FOLIO|SII|ELECTR[ÓO]NICA)\b", c, re.IGNORECASE):
+            if not re.search(r"\b(FACTURA|BOLETA|NOTA|RUT|R\.U\.T|FOLIO|SII|ELECTR[ÓO]NICA)\b", c, re.IGNORECASE):
                 return _pretty_name(c)
     return None
+
+def _line_has_rut(line: str) -> bool:
+    return bool(re.search(r"\bR\.?\s*U\.?\s*T\.?|RUT", line, re.IGNORECASE))
+
+def _collect_amounts_near(lines: List[str], window_ahead: int = 8, window_back: int = 1) -> Dict[str, List[Decimal]]:
+    out: Dict[str, List[Decimal]] = {}
+    U = [ln.upper() for ln in lines]
+    for key, pat in LABELS_MONTOS.items():
+        out[key] = []
+        regex = re.compile(pat, re.IGNORECASE)
+        for idx, up in enumerate(U):
+            if regex.search(up):
+                for j in range(max(0, idx-window_back), min(idx+window_ahead+1, len(lines))):
+                    if _line_has_rut(lines[j]): 
+                        continue
+                    out[key] += _montos_en_linea(lines[j])
+    return out
 
 def _parse_montos(text: str, tipo: str, iva_rate: Decimal) -> Dict[str, Optional[Decimal]]:
     campos: Dict[str, Optional[Decimal]] = {"monto_neto": None, "monto_exento": None, "iva": None, "total": None}
     lines = text.splitlines()
-    U = [ln.upper() for ln in lines]
 
-    for key, pat in LABELS_MONTOS.items():
-        if campos[key] is not None: continue
-        regex = re.compile(pat, re.IGNORECASE)
-        for idx, up in enumerate(U):
-            if regex.search(up):
-                candidatos: List[Decimal] = []
-                for j in range(idx, min(idx+3, len(lines))):
-                    candidatos += _montos_en_linea(lines[j])
-                if candidatos:
-                    campos[key] = max(candidatos, key=lambda z: abs(z))
-                break
+    # 1) Candidatos por cercanía a etiquetas (ventana amplia)
+    nearby = _collect_amounts_near(lines, window_ahead=8, window_back=1)
+    for key in ["monto_neto","monto_exento","iva","total"]:
+        cands = [c for c in nearby.get(key, []) if c is not None]
+        if cands:
+            campos[key] = (cands[-1] if key == "total" else max(cands))
 
-    todos = [n for n in (_normalize_amount(m.group(1)) for m in MONEDA_RE.finditer(text)) if n is not None]
+    # 2) Fallbacks: ignora líneas con RUT
+    todos: List[Decimal] = []
+    for ln in lines:
+        if _line_has_rut(ln):
+            continue
+        todos += _montos_en_linea(ln)
+
     if campos["total"] is None and todos:
         campos["total"] = max(todos, key=lambda z: abs(z))
 
+    # 3) Derivaciones
     if campos["total"] is not None and campos["iva"] is None:
         neto = campos["monto_neto"]
         exento = campos["monto_exento"] or Decimal("0")
         if neto is not None:
             posible_iva = campos["total"] - neto - exento
-            if abs(posible_iva) < Decimal("1"):
+            if abs(posible_iva) < Decimal("2"):
                 posible_iva = (neto * iva_rate / Decimal("100")).quantize(Decimal("1"))
             campos["iva"] = posible_iva if posible_iva != 0 else None
 
@@ -299,7 +332,7 @@ def _text_from_pdf(path: str) -> str:
         images = convert_from_path(path, fmt="png", dpi=300, poppler_path=_POPPLER_PATH)
         ocr_texts = []
         for im in images:
-            im = ImageOps.exif_transpose(im)
+            im = ImageOps.exif_transpose(im).convert("L").filter(ImageFilter.MedianFilter(3))
             ocr_texts.append(
                 pytesseract.image_to_string(
                     im, lang=DEFAULT_TESSERACT_LANG,
@@ -314,7 +347,7 @@ def _text_from_pdf(path: str) -> str:
 def _text_from_imagefile(path: str) -> str:
     try:
         im = Image.open(path)
-        im = ImageOps.exif_transpose(im)
+        im = ImageOps.exif_transpose(im).convert("L").filter(ImageFilter.MedianFilter(3))
         return pytesseract.image_to_string(
             im, lang=DEFAULT_TESSERACT_LANG,
             config=f"--psm {DEFAULT_TESSERACT_PSM_IMAGE} --oem {DEFAULT_TESSERACT_OEM}",
