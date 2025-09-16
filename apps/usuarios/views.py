@@ -21,3 +21,7 @@ class VistaLogin(LoginView):
 def cerrar_sesion(request):
     logout(request)
     return redirect("usuarios:login")
+
+def configuracion_usuario(request):
+    # Lógica para la configuración del usuario
+    pass
