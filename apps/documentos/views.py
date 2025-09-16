@@ -8,7 +8,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from .models import Documento
 from apps.empresas.models import Empresa, EmpresaUsuario
-from apps.documentos import ocr
+#from apps.documentos import ocr_legacy
 import os
 from apps.documentos.tasks.extract import extract_document
 

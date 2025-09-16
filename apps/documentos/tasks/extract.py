@@ -6,7 +6,7 @@ from django.utils.dateparse import parse_date
 from decimal import Decimal
 import os
 
-from apps.documentos import ocr
+from apps.documentos.ocr import parse_file as ocr_parse_file
 
 def _to_decimal(v):
     if v is None or v == "": return None
@@ -35,7 +35,8 @@ def extract_document(self, documento_id: int):
 
     try:
         local_path = doc.archivo.path
-        result = ocr.parse_file(local_path, doc.mime_type)
+        result = ocr_parse_file(local_path, doc.mime_type)
+
 
         # JSON crudo del OCR (serializable)
         doc.ocr_json = _to_jsonable(result)
