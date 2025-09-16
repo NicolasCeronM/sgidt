@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: ¿Qué tipo de gamer eres?</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .quiz-container {
+            padding: 30px;
+        }
+
+        .question {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+            border-left: 4px solid #ff6b6b;
+            padding-left: 15px;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .option:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            transform: translateY(-2px);
+        }
+
+        .option.selected {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff5252;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .result {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .result.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .result h2 {
+            font-size: 2.5rem;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+
+        .result-description {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+
+        .question-counter {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Quiz Gamer 🎮</h1>
+            <p>Descubre qué tipo de gamer eres realmente</p>
+        </div>
+
+        <div class="quiz-container">
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+
+            <div class="question-counter">
+                <span id="current-question">1</span> de <span id="total-questions">15</span>
+            </div>
+
+            <!-- Pregunta 1 -->
+            <div class="question active" data-question="1">
+                <h3>¿Cuál es tu género de videojuegos favorito?</h3>
+                <div class="options">
+                    <div class="option" data-value="action">Acción y aventura</div>
+                    <div class="option" data-value="strategy">Estrategia</div>
+                    <div class="option" data-value="rpg">RPG y mundo abierto</div>
+                    <div class="option" data-value="casual">Casuales y puzzle</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 2 -->
+            <div class="question" data-question="2">
+                <h3>¿Cuántas horas juegas por día en promedio?</h3>
+                <div class="options">
+                    <div class="option" data-value="hardcore">Más de 6 horas</div>
+                    <div class="option" data-value="enthusiast">3-6 horas</div>
+                    <div class="option" data-value="casual">1-3 horas</div>
+                    <div class="option" data-value="light">Menos de 1 hora</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 3 -->
+            <div class="question" data-question="3">
+                <h3>¿Qué prefieres al jugar?</h3>
+                <div class="options">
+                    <div class="option" data-value="competitive">Competir online</div>
+                    <div class="option" data-value="social">Jugar con amigos</div>
+                    <div class="option" data-value="solo">Experiencias single-player</div>
+                    <div class="option" data-value="creative">Crear y construir</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 4 -->
+            <div class="question" data-question="4">
+                <h3>¿En qué plataforma juegas principalmente?</h3>
+                <div class="options">
+                    <div class="option" data-value="pc">PC Master Race</div>
+                    <div class="option" data-value="console">Consolas (PlayStation/Xbox)</div>
+                    <div class="option" data-value="mobile">Móvil/Tablet</div>
+                    <div class="option" data-value="all">Todas las plataformas</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 5 -->
+            <div class="question" data-question="5">
+                <h3>¿Qué es lo más importante en un videojuego?</h3>
+                <div class="options">
+                    <div class="option" data-value="story">Una historia épica</div>
+                    <div class="option" data-value="graphics">Gráficos impresionantes</div>
+                    <div class="option" data-value="gameplay">Jugabilidad perfecta</div>
+                    <div class="option" data-value="multiplayer">Multijugador divertido</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 6 -->
+            <div class="question" data-question="6">
+                <h3>¿Cómo reaccionas cuando pierdes en un juego?</h3>
+                <div class="options">
+                    <div class="option" data-value="rage">Me frustro mucho</div>
+                    <div class="option" data-value="analyze">Analizo mis errores</div>
+                    <div class="option" data-value="chill">Me da igual, es solo un juego</div>
+                    <div class="option" data-value="quit">Cambio a otro juego</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 7 -->
+            <div class="question" data-question="7">
+                <h3>¿Qué haces cuando sale un juego nuevo que te interesa?</h3>
+                <div class="options">
+                    <div class="option" data-value="preorder">Lo pre-ordeno inmediatamente</div>
+                    <div class="option" data-value="wait">Espero reviews y ofertas</div>
+                    <div class="option" data-value="maybe">Lo considero si tengo tiempo</div>
+                    <div class="option" data-value="patient">Espero años hasta que esté barato</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 8 -->
+            <div class="question" data-question="8">
+                <h3>¿Cuál es tu actitud hacia los logros/trofeos?</h3>
+                <div class="options">
+                    <div class="option" data-value="completionist">Debo conseguirlos todos</div>
+                    <div class="option" data-value="selective">Solo los que me gustan</div>
+                    <div class="option" data-value="ignore">Los ignoro completamente</div>
+                    <div class="option" data-value="show">Me gusta presumirlos</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 9 -->
+            <div class="question" data-question="9">
+                <h3>¿Qué opinas de los juegos retro?</h3>
+                <div class="options">
+                    <div class="option" data-value="love">Los amo, son los mejores</div>
+                    <div class="option" data-value="respect">Los respeto pero prefiero modernos</div>
+                    <div class="option" data-value="occasional">Los juego ocasionalmente</div>
+                    <div class="option" data-value="outdated">Están obsoletos</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 10 -->
+            <div class="question" data-question="10">
+                <h3>¿Cómo es tu setup de gaming?</h3>
+                <div class="options">
+                    <div class="option" data-value="pro">Setup profesional con RGB</div>
+                    <div class="option" data-value="decent">Buena PC/consola</div>
+                    <div class="option" data-value="basic">Lo básico que funciona</div>
+                    <div class="option" data-value="mobile">Solo mi teléfono</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 11 -->
+            <div class="question" data-question="11">
+                <h3>¿Qué haces mientras esperas que cargue un juego?</h3>
+                <div class="options">
+                    <div class="option" data-value="impatient">Me desespero</div>
+                    <div class="option" data-value="phone">Reviso el teléfono</div>
+                    <div class="option" data-value="snack">Voy por snacks</div>
+                    <div class="option" data-value="chill">Espero pacientemente</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 12 -->
+            <div class="question" data-question="12">
+                <h3>¿Cuál es tu opinión sobre las microtransacciones?</h3>
+                <div class="options">
+                    <div class="option" data-value="hate">Las odio profundamente</div>
+                    <div class="option" data-value="cosmetic">Solo cosméticos están bien</div>
+                    <div class="option" data-value="support">Apoyan a los desarrolladores</div>
+                    <div class="option" data-value="whale">Gasto mucho en ellas</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 13 -->
+            <div class="question" data-question="13">
+                <h3>¿Cómo descubres nuevos juegos?</h3>
+                <div class="options">
+                    <div class="option" data-value="research">Investigo mucho antes</div>
+                    <div class="option" data-value="friends">Por recomendaciones</div>
+                    <div class="option" data-value="random">Los encuentro por casualidad</div>
+                    <div class="option" data-value="trending">Sigo las tendencias</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 14 -->
+            <div class="question" data-question="14">
+                <h3>¿Qué tan importante es la comunidad de un juego?</h3>
+                <div class="options">
+                    <div class="option" data-value="essential">Es esencial</div>
+                    <div class="option" data-value="nice">Es un plus</div>
+                    <div class="option" data-value="optional">No me importa</div>
+                    <div class="option" data-value="avoid">Prefiero evitarla</div>
+                </div>
+            </div>
+
+            <!-- Pregunta 15 -->
+            <div class="question" data-question="15">
+                <h3>¿Cuál es tu momento favorito para jugar?</h3>
+                <div class="options">
+                    <div class="option" data-value="night">Por la noche</div>
+                    <div class="option" data-value="weekend">Fines de semana</div>
+                    <div class="option" data-value="anytime">Cualquier momento libre</div>
+                    <div class="option" data-value="scheduled">Horarios específicos</div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn" id="prev-btn" onclick="previousQuestion()" disabled>Anterior</button>
+                <button class="btn" id="next-btn" onclick="nextQuestion()" disabled>Siguiente</button>
+            </div>
+        </div>
+
+        <div class="result" id="result">
+            <h2 id="result-title"></h2>
+            <div class="result-description" id="result-description"></div>
+            <button class="download-btn" onclick="downloadPDF()">📄 Descargar Resultado en PDF</button>
+            <button class="btn" id="restart-btn" onclick="restartQuiz()" style="margin-top: 20px; display: none;">🔄
+                Volver al Inicio</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = 15;
+        let answers = {};
+
+        const gamerTypes = {
+            hardcore: {
+                title: "🔥 HARDCORE GAMER 🔥",
+                description: "Eres un verdadero hardcore gamer. Los videojuegos son tu pasión y dedicas gran parte de tu tiempo a perfeccionar tus habilidades. Conoces todos los secretos, easter eggs y mecánicas avanzadas. Tu setup es impresionante y siempre estás al día con las últimas novedades del gaming.",
+                traits: ["Juegas más de 6 horas diarias", "Tienes un setup gaming profesional", "Prefieres juegos competitivos", "Conoces la industria a fondo", "Los logros son importantes para ti"]
+            },
+            enthusiast: {
+                title: "🎮 GAMER ENTUSIASTA 🎮",
+                description: "Eres un gamer entusiasta que disfruta mucho de los videojuegos pero mantiene un equilibrio saludable. Te gustan tanto los juegos single-player como multiplayer, y siempre estás dispuesto a probar nuevas experiencias. Tienes buen conocimiento sobre gaming pero no es tu única obsesión.",
+                traits: ["Juegas regularmente pero con moderación", "Disfrutas diversos géneros", "Balanceas gaming con otras actividades", "Te informas sobre nuevos lanzamientos", "Valoras tanto historia como jugabilidad"]
+            },
+            casual: {
+                title: "😊 CASUAL GAMER 😊",
+                description: "Eres un casual gamer que disfruta de los videojuegos como una forma de relajación y entretenimiento. Prefieres experiencias accesibles y divertidas sin demasiada complejidad. Los juegos son una manera perfecta de desestresarte después del trabajo o estudio.",
+                traits: ["Juegas para relajarte", "Prefieres juegos simples y divertidos", "No te estresan las derrotas", "Gaming es una actividad secundaria", "Disfrutas juegos en móvil o casuales"]
+            },
+            competitive: {
+                title: "⚔️ GAMER COMPETITIVO ⚔️",
+                description: "Eres un gamer altamente competitivo que vive por la emoción de la competencia. Los rankings, torneos y ser el mejor son lo que te motiva. Analizas cada jugada, estudias estrategias y siempre buscas mejorar tu rendimiento. Los esports son tu mundo.",
+                traits: ["La competencia te motiva", "Analizas tus errores para mejorar", "Sigues la escena esports", "Prefieres juegos multijugador", "Los rankings son importantes"]
+            },
+            social: {
+                title: "👥 SOCIAL GAMER 👥",
+                description: "Para ti, los videojuegos son principalmente una actividad social. Disfrutas más jugando con amigos que solo. Los juegos cooperativos, las party games y las experiencias compartidas son tu especialidad. La comunidad y las amistades que formas gaming son muy valiosas para ti.",
+                traits: ["Prefieres jugar con amigos", "La comunidad es importante", "Disfrutas juegos cooperativos", "Gaming como actividad social", "Valoras las experiencias compartidas"]
+            },
+            explorer: {
+                title: "🗺️ GAMER EXPLORADOR 🗺️",
+                description: "Eres un explorador nato en el mundo de los videojuegos. Te encantan los mundos abiertos, descubrir secretos, y perderte en universos virtuales. Los RPGs y juegos de aventura son tu fuerte. Disfrutas tanto del viaje como del destino en cada juego.",
+                traits: ["Amas los mundos abiertos", "Exploras cada rincón", "Te gustan las historias épicas", "Disfrutas el proceso más que ganar", "Prefieres experiencias single-player inmersivas"]
+            }
+        };
+
+        function updateProgress() {
+            const progress = (currentQuestion / totalQuestions) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+            document.getElementById('current-question').textContent = currentQuestion;
+        }
+
+        function selectOption(element) {
+            // Deseleccionar otras opciones
+            const options = element.parentNode.querySelectorAll('.option');
+            options.forEach(opt => opt.classList.remove('selected'));
+
+            // Seleccionar la opción clickeada
+            element.classList.add('selected');
+
+            // Guardar respuesta
+            answers[currentQuestion] = element.dataset.value;
+
+            // Habilitar botón siguiente
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < totalQuestions) {
+                document.querySelector(`[data-question="${currentQuestion}"]`).classList.remove('active');
+                currentQuestion++;
+                document.querySelector(`[data-question="${currentQuestion}"]`).classList.add('active');
+
+                updateProgress();
+                updateButtons();
+            } else {
+                showResult();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 1) {
+                document.querySelector(`[data-question="${currentQuestion}"]`).classList.remove('active');
+                currentQuestion--;
+                document.querySelector(`[data-question="${currentQuestion}"]`).classList.add('active');
+
+                updateProgress();
+                updateButtons();
+            }
+        }
+
+        function updateButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            prevBtn.disabled = currentQuestion === 1;
+
+            if (currentQuestion === totalQuestions) {
+                nextBtn.textContent = 'Ver Resultado';
+                nextBtn.disabled = !answers[currentQuestion];
+            } else {
+                nextBtn.textContent = 'Siguiente';
+                nextBtn.disabled = !answers[currentQuestion];
+            }
+        }
+
+        function calculateResult() {
+            const scores = {
+                hardcore: 0,
+                enthusiast: 0,
+                casual: 0,
+                competitive: 0,
+                social: 0,
+                explorer: 0
+            };
+
+            // Lógica de puntuación basada en las respuestas
+            Object.values(answers).forEach(answer => {
+                switch (answer) {
+                    case 'action':
+                    case 'hardcore':
+                    case 'preorder':
+                    case 'completionist':
+                    case 'pro':
+                    case 'impatient':
+                        scores.hardcore += 2;
+                        break;
+                    case 'competitive':
+                    case 'rage':
+                    case 'analyze':
+                    case 'essential':
+                        scores.competitive += 2;
+                        break;
+                    case 'social':
+                    case 'friends':
+                    case 'nice':
+                        scores.social += 2;
+                        break;
+                    case 'rpg':
+                    case 'solo':
+                    case 'story':
+                    case 'love':
+                    case 'avoid':
+                        scores.explorer += 2;
+                        break;
+                    case 'casual':
+                    case 'light':
+                    case 'chill':
+                    case 'maybe':
+                    case 'ignore':
+                    case 'basic':
+                    case 'mobile':
+                        scores.casual += 2;
+                        break;
+                    default:
+                        scores.enthusiast += 1;
+                }
+            });
+
+            // Encontrar el tipo con mayor puntuación
+            let maxScore = 0;
+            let resultType = 'enthusiast';
+
+            for (let type in scores) {
+                if (scores[type] > maxScore) {
+                    maxScore = scores[type];
+                    resultType = type;
+                }
+            }
+
+            return resultType;
+        }
+
+        function showResult() {
+            const resultType = calculateResult();
+            const result = gamerTypes[resultType];
+
+            document.querySelector('.quiz-container').style.display = 'none';
+            document.getElementById('result').classList.add('active');
+            document.getElementById('result-title').textContent = result.title;
+            document.getElementById('result-description').textContent = result.description;
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const resultType = calculateResult();
+            const result = gamerTypes[resultType];
+
+            // Configurar el PDF
+            doc.setFontSize(20);
+            doc.text('🎮 RESULTADO DEL QUIZ GAMER 🎮', 20, 30);
+
+            doc.setFontSize(16);
+            doc.text(result.title, 20, 50);
+
+            doc.setFontSize(12);
+            const splitDescription = doc.splitTextToSize(result.description, 170);
+            doc.text(splitDescription, 20, 70);
+
+            doc.text('Características principales:', 20, 120);
+
+            let yPosition = 135;
+            result.traits.forEach(trait => {
+                doc.text(`• ${trait}`, 25, yPosition);
+                yPosition += 10;
+            });
+
+            doc.setFontSize(10);
+            doc.text('Generado por Quiz Gamer - ' + new Date().toLocaleDateString(), 20, 280);
+
+            // Descargar el PDF
+            doc.save('mi-resultado-gamer.pdf');
+
+            document.getElementById('restart-btn').style.display = 'inline-block';
+        }
+
+        function restartQuiz() {
+            // Reset variables
+            currentQuestion = 1;
+            answers = {};
+
+            // Hide result and show quiz
+            document.getElementById('result').classList.remove('active');
+            document.querySelector('.quiz-container').style.display = 'block';
+
+            // Reset all questions
+            document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+            document.querySelector('[data-question="1"]').classList.add('active');
+
+            // Reset all selected options
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+
+            // Reset buttons and progress
+            updateProgress();
+            updateButtons();
+
+            // Hide restart button
+            document.getElementById('restart-btn').style.display = 'none';
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function () {
+            updateProgress();
+
+            // Agregar event listeners a todas las opciones
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', function () {
+                    selectOption(this);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
