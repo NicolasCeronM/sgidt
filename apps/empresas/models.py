@@ -4,7 +4,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, EmailValidator, RegexValidator
 from django.db import models
 
-
+def empresa_logo_upload_to(instance, filename):
+    return f"empresas/{instance.id or 'tmp'}/{filename}"
 # -----------------------------
 # Utilidades Chile: RUT
 # -----------------------------
@@ -102,7 +103,7 @@ class Empresa(models.Model):
         validators=[MinValueValidator(0)],
         help_text="Ingresos por ventas últimos 12 meses (en UF)"
     )
-
+    logo = models.ImageField(upload_to=empresa_logo_upload_to, blank=True, null=True)
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 
@@ -151,6 +152,7 @@ class EmpresaUsuario(models.Model):
     )
     rol = models.CharField(max_length=20, choices=RolEmpresa.choices, default=RolEmpresa.ADMIN)
     creado_en = models.DateTimeField(auto_now_add=True)
+    
 
     class Meta:
         unique_together = ("usuario", "empresa")

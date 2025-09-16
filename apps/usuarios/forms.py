@@ -1,8 +1,10 @@
 # usuarios/forms.py
+from __future__ import annotations
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
 from django.core.validators import EmailValidator
+
 Usuario = get_user_model()
 
 #
@@ -54,3 +56,11 @@ class PasswordResetSetForm(forms.Form):
         if data.get("password1") and len(data["password1"]) < 8:
             raise forms.ValidationError("La contraseña debe tener al menos 8 caracteres.")
         return data
+
+class UsuarioAdminConfigForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ["first_name", "last_name", "email", "telefono", "comuna", "region", "foto"]
+        widgets = {
+            "email": forms.EmailInput(attrs={"readonly": "readonly"}),
+        }

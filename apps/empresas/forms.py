@@ -2,7 +2,6 @@ from __future__ import annotations
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-
 from .models import Empresa, EmpresaUsuario, RegimenTributario, TipoSocietario, normalizar_rut, validar_rut
 
 User = get_user_model()
@@ -123,3 +122,17 @@ class RegistroPyMEForm(forms.Form):
             else:
                 css = field.widget.attrs.get("class", "")
                 field.widget.attrs["class"] = (css + " form-control").strip()
+
+class EmpresaAdminConfigForm(forms.ModelForm):
+    class Meta:
+        model = Empresa
+        fields = [
+            "razon_social", "giro", "codigo_actividad",
+            "tipo_societario", "regimen_tributario",
+            "email", "telefono", "direccion", "comuna", "region",
+            "fecha_inicio_actividades", "ingresos_12m_uf",
+            "logo",
+        ]
+        widgets = {
+            "fecha_inicio_actividades": forms.DateInput(attrs={"type": "date"}),
+        }

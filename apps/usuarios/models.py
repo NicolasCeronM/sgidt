@@ -3,6 +3,8 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 
+def user_avatar_upload_to(instance, filename):
+    return f"usuarios/{instance.id or 'tmp'}/{filename}"
 
 # Modelo personalizado de usuario
 class Usuario(AbstractUser):
@@ -17,6 +19,7 @@ class Usuario(AbstractUser):
     # opcional: comuna, región
     comuna = models.CharField(max_length=100, blank=True)
     region = models.CharField(max_length=100, blank=True)
+    foto = models.ImageField(upload_to=user_avatar_upload_to, blank=True, null=True)
 
     def __str__(self):
         return f"{self.username} ({self.rut})"
