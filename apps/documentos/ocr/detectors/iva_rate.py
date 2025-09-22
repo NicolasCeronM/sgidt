@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from decimal import Decimal
-from ..patterns import IVA_RATE_RE
+import re
+from ..utils.numbers import safe_rate
 
-def guess_iva_rate(text: str) -> Decimal | None:
-    m = IVA_RATE_RE.search((text or "").upper())
-    if m:
-        try: return Decimal(m.group(1))
-        except Exception: return None
-    return Decimal("19")
+def detect_iva_rate(text: str) -> float | None:
+    r = safe_rate(text)
+    if r: return r
+    if re.search(r"\bIVA\b", text, re.I): return 0.19
+    return None

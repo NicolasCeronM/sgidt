@@ -1,40 +1,37 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, date
-from typing import Optional
-from ..patterns import FOLIO_RE, FECHA_RE_NUM, FECHA_RE_TXT, MESES
-from ..utils.text_norm import strip_accents
+from ..utils import patterns, dates
 
-def extract_folio(text: str) -> str | None:
-    m = FOLIO_RE.search(text or "")
-    return m.group(1) if m else None
+def extract_folio(text: str):
+    folio = None; conf = 0.4
+    lines = text.splitlines()
+    for i, ln in enumerate(lines):
+        if patterns.ANCHOR_FACTURA.search(ln):
+            window = " ".join(lines[i:i+4])
+            m = patterns.RE_FOLIO.search(window)
+            if m:
+                try:
+                    folio = int(m.group(1)); conf = 0.9; break
+                except: pass
+    if not folio:
+        m = patterns.RE_FOLIO.search(text)
+        if m:
+            try: folio = int(m.group(1)); conf = 0.6
+            except: pass
+    return folio, conf
 
-def _parse_date_numeric(s: str) -> Optional[date]:
-    for fmt in ("%d-%m-%Y","%d/%m/%Y","%d.%m.%Y","%d-%m-%y","%d/%m/%y","%d.%m.%y","%Y-%m-%d","%Y/%m/%d","%Y.%m.%d"):
-        try: return datetime.strptime(s, fmt).date()
-        except Exception: continue
-    return None
+def extract_fecha(text: str):
+    # 1) Recorre línea por línea para agarrar el caso "misma línea"
+    lines = text.splitlines()
+    for i, ln in enumerate(lines):
+        if patterns.ANCHOR_FECHA.search(ln):
+            # mismo renglón
+            dt = dates.parse_date_any(ln)
+            if dt: return dt.isoformat(), 0.95
+            # ventana corta hacia adelante por si el proveedor lo corta
+            window = " ".join(lines[i:i+3])
+            dt2 = dates.parse_date_any(window)
+            if dt2: return dt2.isoformat(), 0.9
 
-def _month_from_text(mtxt: str) -> Optional[int]:
-    s = strip_accents(mtxt or "").lower().strip(". ")
-    if s in MESES: return MESES[s]
-    from difflib import get_close_matches
-    cand = get_close_matches(s, MESES.keys(), n=1, cutoff=0.7)
-    return MESES[cand[0]] if cand else None
-
-def _parse_date_textual(m) -> Optional[date]:
-    try:
-        d = int(m.group("d")); y = int(m.group("y")); y = y+2000 if y<50 else (y+1900 if y<100 else y)
-        month = _month_from_text(m.group("m"))
-        return date(y, month, d) if month else None
-    except Exception:
-        return None
-
-def extract_fecha(text: str) -> Optional[date]:
-    m1 = FECHA_RE_NUM.search(text or "")
-    if m1:
-        d = _parse_date_numeric(m1.group(1))
-        if d: return d
-    for m in FECHA_RE_TXT.finditer(text or ""):
-        dt = _parse_date_textual(m)
-        if dt: return dt
-    return None
+    # 2) Fallback global: cualquier fecha con formato '01 de Septiembre del 2025' o '01/09/2025'
+    dtg = dates.parse_date_any(text)
+    return (dtg.isoformat(), 0.7) if dtg else (None, 0.0)
