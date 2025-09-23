@@ -4,6 +4,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     # --- Administración ---
@@ -28,9 +29,18 @@ urlpatterns = [
     path("correo/", include(("apps.correo.urls", "correo"), namespace="correo")),
     path("integraciones/", include(("apps.integraciones.urls", "integraciones"), namespace="integraciones")),
 
+    # DRF login/logout para sesión (útil en pruebas web)
+    path("api/auth/session/", include("rest_framework.urls")),  # /login/ y /logout/
+
+    # JWT
+    path("api/auth/login/",   TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/auth/refresh/", TokenRefreshView.as_view(),    name="token_refresh"),
+
     # --- Redirecciones de compatibilidad ---
     path("app/documentos/api/list/",   RedirectView.as_view(url="/api/documentos/list/",   permanent=True)),
     path("app/documentos/api/upload/", RedirectView.as_view(url="/api/documentos/upload/", permanent=True)),
+
+    path("api/v1/sii/", include("apps.sii.urls")),
 ]
 
 if settings.DEBUG:

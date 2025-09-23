@@ -47,9 +47,8 @@ DJANGO_APPS = [
 
 # Apps de terceros (activar segun uso)
 THIRD_PARTY_APPS = [
-    # "rest_framework",
-    # "corsheaders",
-    # "storages",
+    "rest_framework",
+    "corsheaders",
 ]
 
 # Apps del proyecto
@@ -61,6 +60,7 @@ LOCAL_APPS = [
     "apps.sitio",
     'apps.proveedores',
     "apps.integraciones",
+    'apps.sii',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -88,6 +88,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -99,6 +100,38 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        # 1) Sesión (para tu panel web actual)
+        "rest_framework.authentication.SessionAuthentication",
+        # 2) JWT (para Postman / apps)
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
+
+# CORS (ajusta orígenes si usas front separado)
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    # agrega los tuyos si corresponde
+]
+
+# (Opcional) CSRF si consumes desde otro dominio
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# (Opcional recomendado) SimpleJWT
+from datetime import timedelta
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 # -------------------------------------------------------------------
 # TEMPLATES
@@ -237,3 +270,8 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60 * 4
 CELERY_WORKER_CONCURRENCY = int(os.getenv("CELERY_WORKER_CONCURRENCY", "1"))
 
 CELERY_TASK_ALWAYS_EAGER = True
+
+# --- SII ---
+SII_USE_MOCK = True   # ← en dev: True. En prod: False (cuando conectes real)
+SII_TIMEOUT = 15
+SII_BASE_URL = "https://api.sii.cl"   # placeholder para el real
