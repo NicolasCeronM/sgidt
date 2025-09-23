@@ -11,16 +11,23 @@
     </button>
   </div>
 
-  <!-- Perfil / empresa -->
-  <div class="sidebar-profile" role="button" tabindex="0" aria-label="Perfil SGIDT">
+  <!-- Perfil de usuario -->
+  <a href="{% url 'usuarios:config_admin' %}" class="sidebar-profile" aria-label="Perfil SGIDT">
     <div class="avatar" aria-hidden="true">
+      {% if empresa.logo %}
+      <img src="{{ empresa.logo.url }}" alt="Logo de {{ empresa.razon_social }}" class="avatar-logo">
+      {% else %}
       <i class="fas fa-user-circle"></i>
+      {% endif %}
     </div>
     <div class="profile-meta">
-      <strong>{{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}</strong>
-      <small>Administrador</small>
+      <span class="profile-name">{{ user.first_name }} {{ user.last_name|default:"a SGIDT" }}</span>
+      <span class="profile-role">Administrador</span>
     </div>
-  </div>
+  </a>
+
+
+
 
   <div class="sidebar-sep"></div>
 
@@ -83,7 +90,8 @@
 <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
 
 <!-- Botón hamburguesa (se muestra sólo en <=900px) -->
-<button class="sidebar-hamburger" id="sidebarHamburger" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
+<button class="sidebar-hamburger" id="sidebarHamburger" aria-label="Abrir menú" aria-controls="sidebar"
+  aria-expanded="false">
   <i class="fas fa-bars"></i>
 </button>
 
