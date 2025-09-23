@@ -40,6 +40,7 @@ class ConfiguracionAdministradorView(LoginRequiredMixin, View):
     def get(self, request):
         empresa = get_empresa_activa(request)
         if not user_es_admin_de(request, empresa):
+            messages.error(request, "No tienes permisos de administrador en la empresa activa.")
             return redirect("panel:dashboard")
 
         f_empresa = EmpresaAdminConfigForm(instance=empresa)
@@ -53,6 +54,7 @@ class ConfiguracionAdministradorView(LoginRequiredMixin, View):
     def post(self, request):
         empresa = get_empresa_activa(request)
         if not user_es_admin_de(request, empresa):
+            messages.error(request, "No tienes permisos de administrador en la empresa activa.")
             return redirect("panel:dashboard")
 
         f_empresa = EmpresaAdminConfigForm(request.POST, request.FILES, instance=empresa)   # ← FILES
@@ -70,8 +72,10 @@ class ConfiguracionAdministradorView(LoginRequiredMixin, View):
                 f_usuario.save()
 
         if not ok:
-            return render(request, self.template_name, {
-                "empresa": empresa,
-                "f_empresa": f_empresa,
-                "f_usuario": f_usuario,
-            })
+            messages.error(request, "Revisa los campos marcados en rojo.")
+
+        return render(request, self.template_name, {
+            "empresa": empresa,
+            "f_empresa": f_empresa,
+            "f_usuario": f_usuario,
+        })
