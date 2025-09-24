@@ -1,5 +1,6 @@
 // static/panel/js/documentos/list.js
-import { listUrl } from "./api.js";
+import { listUrl, csrftoken } from "./api.js";
+import { showToast } from "./ui.js";
 
 const tbody = () => document.getElementById("documentsTableBody");
 
@@ -16,6 +17,10 @@ const $dlBtn    = () => document.getElementById("docDownloadBtn");
 const $pillE    = () => document.getElementById("docEstadoPill");
 const $pillSII  = () => document.getElementById("docSiiPill");
 
+// builders para acciones SII
+const validarSiiUrl = (id) => `/api/v1/documentos/${id}/validar-sii/`;
+const estadoSiiUrl  = (id) => `/api/v1/documentos/${id}/estado-sii/`;
+
 export function wireFilters() {
   document.getElementById("btnFilter")?.addEventListener("click", loadDocuments);
 
@@ -28,9 +33,17 @@ export function wireFilters() {
   document.addEventListener("docs:reload", loadDocuments);
 
   // click en filas y en acciones
-  document.getElementById("documentsTable")?.addEventListener("click", (e) => {
-    const a = e.target.closest("a.act");
-    if (a) { e.stopPropagation(); return; } // las acciones de la tabla no abren el modal
+  document.getElementById("documentsTable")?.addEventListener("click", async (e) => {
+    const act = e.target?.closest?.(".act");
+    if (act) {
+      e.preventDefault(); e.stopPropagation();
+      const id = act.dataset.id || act.closest("tr")?.getAttribute("data-doc-id");
+      if (!id) return;
+      if (act.classList.contains("act-validate"))      return onValidateSii(id);
+      if (act.classList.contains("act-refresh"))       return onRefreshSii(id);
+      if (act.classList.contains("act-open"))          return; // enlaces normales
+      return;
+    }
     const tr = e.target.closest("tr[data-doc-id]");
     if (tr) {
       const id = tr.getAttribute("data-doc-id");
@@ -38,21 +51,19 @@ export function wireFilters() {
     }
   });
 
-  // cerrar modal
-  $closeBtn()?.addEventListener("click", closeModal);
-  $overlay()?.addEventListener("click", (e) => {
-    if (e.target === $overlay()) closeModal();
-  });
-  document.addEventListener("keydown", (e) => {
-    if ($overlay()?.getAttribute("aria-hidden")==="false" && e.key === "Escape") closeModal();
-  });
+  // auto-refresh suave: si hay filas “validando…”, actualizar cada 10s
+  setInterval(() => {
+    const anyProcessing = !!document.querySelector("#documentsTable .badge--info");
+    if (anyProcessing) document.dispatchEvent(new Event("docs:reload"));
+  }, 10000);
 }
 
-export async function loadDocuments() {
-  const dateFrom = document.getElementById("dateFrom")?.value;
-  const dateTo   = document.getElementById("dateTo")?.value;
-  const docType  = document.getElementById("docType")?.value;
-  const docStatus= document.getElementById("docStatus")?.value;
+export async function loadDocuments(){
+  // filtros
+  const dateFrom  = document.getElementById("filterDateFrom")?.value || "";
+  const dateTo    = document.getElementById("filterDateTo")?.value   || "";
+  const docType   = document.getElementById("filterType")?.value     || "";
+  const docStatus = document.getElementById("filterStatus")?.value   || "";
 
   const params = new URLSearchParams();
   if (dateFrom) params.set("dateFrom", dateFrom);
@@ -62,7 +73,7 @@ export async function loadDocuments() {
 
   const empty = document.getElementById("tbl-empty");
   try {
-    const res = await fetch(`${listUrl}?${params.toString()}`, { headers: { Accept: "application/json" }});
+    const res = await fetch(`${listUrl}?${params.toString()}`, { headers: { Accept: "application/json" }, credentials: "include" });
     if (!res.ok) throw new Error("Respuesta inválida");
     const { results = [] } = await res.json();
 
@@ -86,116 +97,79 @@ export async function loadDocuments() {
   }
 }
 
-function renderRows(rows) {
-  const fmtCLP = (v) =>
-    v == null
-      ? "—"
-      : new Intl.NumberFormat("es-CL", {
-          style: "currency",
-          currency: "CLP",
-          maximumFractionDigits: 0,
-        }).format(v);
+function renderSiiBadge(r){
+  const est = (r.sii_estado || "").toUpperCase();
+  if (!est) return "—";
+  if (est === "EN_PROCESO" || est === "RECIBIDO") {
+    return `<span class="badge badge--info">
+      <i class="fa-solid fa-circle-notch fa-spin" style="margin-right:6px"></i>
+      validando…
+    </span>`;
+  }
+  if (est === "ACEPTADO")  return `<span class="badge badge--success">aceptado</span>`;
+  if (est === "RECHAZADO") return `<span class="badge badge--danger">rechazado</span>`;
+  return escapeHtml(est.toLowerCase());
+}
 
-  tbody().innerHTML = rows.map((r) => `
-    <tr id="doc-row-${r.id}" data-doc-id="${r.id}" data-estado="${r.estado}">
-      <td class="col-fecha">${r.fecha || r.fecha_emision || "—"}</td>
-      <td class="col-tipo">${r.tipo || r.tipo_documento || "—"}</td>
-      <td class="col-folio">${r.folio || "—"}</td>
-      <td class="col-rut">${r.rut_emisor || r.rut_proveedor || "—"}</td>
-      <td class="col-razon">${r.razon_social || r.razon_social_proveedor || "—"}</td>
-      <td class="col-total num">${fmtCLP(r.total)}</td>
-      <td class="col-estado">
-        <span class="badge ${
-          r.estado === "procesado" || r.estado === "validado"
-            ? "badge-success"
-            : ["cola","pendiente","procesando"].includes(r.estado)
-            ? "badge-warning"
-            : "badge-error"
-        }">${r.estado || "—"}</span>
+function renderRows(rows){
+  const fmtCLP = (n) => (n==null ? "—" :
+    new Intl.NumberFormat("es-CL", { style:"currency", currency:"CLP", maximumFractionDigits:0 }).format(n));
+
+  const html = rows.map(r => `
+    <tr data-doc-id="${r.id}">
+      <td>${escapeHtml(r.fecha_emision || r.fecha || "—")}</td>
+      <td>${escapeHtml(r.tipo_documento || r.tipo || "—")}</td>
+      <td>${escapeHtml(r.folio ?? "—")}</td>
+      <td>${escapeHtml(r.rut_proveedor || r.rut_emisor || "—")}</td>
+      <td>${escapeHtml(r.razon_social_proveedor || r.razon_social || "—")}</td>
+      <td>${fmtCLP(r.total)}</td>
+      <td>
+        ${r.estado ? `<span class="badge ${r.estado==="procesado"||r.estado==="validado" ? "badge--success" :
+                                     (["cola","pendiente","procesando"].includes(r.estado) ? "badge--info" : "badge--danger")}">${escapeHtml(r.estado)}</span>` : "—"}
       </td>
-      <td class="col-sii">${r.validado_sii ? (r.sii_estado || "OK") : "—"}</td>
+      <td>${renderSiiBadge(r)}</td>
       <td class="actions">
-        ${ r.archivo ? `<a class="act" href="${r.archivo}" target="_blank" rel="noopener" style="color:black;"><i class="fa-solid fa-eye fa-xl"></i></a>` : "" }
-        ${ r.archivo ? `<a class="act" href="${r.archivo}" download style="color:black;"><i class="fa-solid fa-download fa-xl"></i></a>` : "" }
+        ${ r.archivo ? `<a class="act act-open" href="${r.archivo}" target="_blank" rel="noopener" title="Ver"><i class="fa-solid fa-eye fa-xl"></i></a>` : "" }
+        ${ r.archivo ? `<a class="act act-open" href="${r.archivo}" download title="Descargar"><i class="fa-solid fa-download fa-xl"></i></a>` : "" }
+
+        <!-- Validar SII: siempre disponible para reintento -->
+        <a class="act act-validate" href="#" data-id="${r.id}" title="Validar en SII" aria-label="Validar en SII">
+          <i class="fa-solid fa-shield-check fa-xl"></i>
+        </a>
+
+        <!-- Actualizar estado SII: solo si hay TrackID -->
+        ${ r.sii_track_id ? `
+          <a class="act act-refresh" href="#" data-id="${r.id}" title="Actualizar estado SII" aria-label="Actualizar estado SII">
+            <i class="fa-solid fa-rotate fa-xl"></i>
+          </a>` : `
+          <span class="act disabled" title="Valida primero para obtener Track ID" aria-label="Sin Track ID">
+            <i class="fa-solid fa-rotate fa-xl" style="opacity:.35;pointer-events:none"></i>
+          </span>`
+        }
       </td>
     </tr>
   `).join("");
 
-  // notificar a progreso.js que hay nueva renderización
-  document.dispatchEvent(new Event("docs:rendered"));
+  tbody().innerHTML = html;
 }
 
-/* ==========================
-   MODAL: abrir, pintar y fetch
-   ========================== */
-function openModal() {
-  const ov = $overlay(); if (!ov) return;
-  ov.setAttribute("aria-hidden", "false");
-  // focus accesible
-  setTimeout(() => ov.querySelector(".modal")?.focus(), 10);
+function openDetailModal(id){
+  const d = docCache.get(String(id));
+  if(!d) return;
+  $overlay().style.display = "flex";
+  paintDetail(d);
+  fetchDetailIfNeeded(id);
 }
-function closeModal() {
-  $overlay()?.setAttribute("aria-hidden", "true");
-}
+function closeDetailModal(){ $overlay().style.display = "none"; }
+$closeBtn()?.addEventListener("click", closeDetailModal);
+$overlay()?.addEventListener("click", (e) => { if (e.target === $overlay()) closeDetailModal(); });
 
-function setPill(el, text, kind){ if(!el) return; el.textContent = text; el.className = `pill ${kind}`; el.hidden = !text; }
-
-function kvGridFromObject(obj){
-  const entries = Object.entries(obj ?? {});
-  if(!entries.length) return `<p>No hay datos.</p>`;
-  return `
-    <div class="kv-grid">
-      ${entries.map(([k,v]) => `
-        <div class="k">${escapeHtml(k)}</div>
-        <div class="v">${formatValue(v)}</div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function formatValue(v){
-  if (v == null) return "—";
-  if (typeof v === "object") {
-    try { return `<pre style="white-space:pre-wrap;margin:.25rem 0 .5rem 0">${escapeHtml(JSON.stringify(v, null, 2))}</pre>`; }
-    catch { return String(v); }
-  }
-  if (typeof v === "number") {
-    // heurística: si parece CLP (>= 1000) muestra con formato local
-    if (Math.abs(v) >= 1000) {
-      return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(v);
-    }
-  }
-  return escapeHtml(String(v));
-}
-
-function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-async function openDetailModal(id){
-  // 1) mostrar modal con esqueleto
-  $title().textContent = "Detalle del documento";
-  $content().innerHTML = `
-    <div class="kv-skel">
-      <div class="skeleton"></div><div class="skeleton"></div>
-      <div class="skeleton"></div><div class="skeleton"></div>
-      <div class="skeleton"></div><div class="skeleton"></div>
-      <div class="skeleton"></div><div class="skeleton"></div>
-    </div>`;
-  setPill($pillE(), "", ""); setPill($pillSII(), "", "");
-  $viewBtn().hidden = true; $dlBtn().hidden = true;
-  openModal();
-
-  // 2) pintar rápido con lo que tenemos en cache
+async function fetchDetailIfNeeded(id){
   const cached = docCache.get(String(id));
-  if (cached) {
-    paintDetail(cached);
-  }
-
-  // 3) intentar ampliar con detalle desde API (si existe retrieve)
   try{
-    const res = await fetch(`${listUrl}${id}/`, { headers: { Accept: "application/json" }});
+    const res = await fetch(`${listUrl}${id}/`, { headers:{ Accept:"application/json" }, credentials:"include" });
     if (res.ok){
       const full = await res.json();
-      // merge superficial
       const merged = { ...(cached||{}), ...(full||{}) };
       docCache.set(String(id), merged);
       paintDetail(merged);
@@ -217,10 +191,12 @@ function paintDetail(doc){
     setPill($pillE(), `Estado: ${doc.estado}`, kind);
   } else setPill($pillE(), "", "");
 
-  if ("validado_sii" in doc){
-    const k = doc.validado_sii ? "ok" : "warn";
-    const t = doc.validado_sii ? (doc.sii_estado || "SII OK") : "No validado SII";
-    setPill($pillSII(), t, k);
+  if ("validado_sii" in doc || "sii_estado" in doc){
+    const est = (doc.sii_estado || "").toUpperCase();
+    if (est === "ACEPTADO") setPill($pillSII(), "SII: aceptado", "ok");
+    else if (est === "RECHAZADO") setPill($pillSII(), "SII: rechazado", "err");
+    else if (est === "EN_PROCESO" || est === "RECIBIDO") setPill($pillSII(), "SII: validando…", "warn");
+    else setPill($pillSII(), doc.validado_sii ? (doc.sii_estado || "SII OK") : "No validado SII", doc.validado_sii ? "ok" : "warn");
   } else setPill($pillSII(), "", "");
 
   // acciones
@@ -231,4 +207,104 @@ function paintDetail(doc){
 
   // contenido dinámico con todos los campos
   $content().innerHTML = kvGridFromObject(doc);
+}
+
+/* =======================
+   Acciones SII (fetch)
+   ======================= */
+async function onValidateSii(id){
+  const K = `valida-${id}`;
+  showToast("Validando en SII…", "info", { key: K, persist: true });
+  try{
+    const res = await fetch(validarSiiUrl(id), {
+      method: "POST",
+      headers: { "X-CSRFToken": csrftoken, Accept: "application/json" },
+      credentials: "include",
+    });
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(data?.detail || `HTTP ${res.status}`);
+    showToast(`TrackID: ${data?.result?.track_id || "—"}`, "success", { key: K, duration: 6000 });
+
+    // recarga lista para reflejar sii_estado/sii_track_id
+    document.dispatchEvent(new Event("docs:reload"));
+
+    // auto seguimiento (solo si hay track)
+    const tid = data?.result?.track_id;
+    if (tid){
+      for (let i=0; i<3; i++){
+        await new Promise(r=>setTimeout(r, 5000));
+        await onRefreshSii(id, { silent: i<2 });
+      }
+    }
+  }catch(err){
+    showToast(`Error validando en SII: ${String(err)}`, "error", { key: K, duration: 7000 });
+  }
+}
+
+async function onRefreshSii(id, { silent=false } = {}){
+  // protección: evitar 400 si no hay track
+  try{
+    const dRes = await fetch(`${listUrl}${id}/`, { headers:{Accept:"application/json"}, credentials:"include" });
+    const d = await dRes.json().catch(()=>null);
+    if (!d?.sii_track_id){
+      if (!silent) showToast("Primero valida el documento para obtener Track ID.", "warning");
+      return;
+    }
+  }catch(_){ /* ignore */ }
+
+  const K = `estado-${id}`;
+  if (!silent) showToast("Consultando estado SII…", "info", { key: K, persist: true });
+  try{
+    const res = await fetch(estadoSiiUrl(id), { headers: { Accept:"application/json" }, credentials:"include" });
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(data?.detail || `HTTP ${res.status}`);
+    if (!silent) showToast(`Estado SII: ${data?.result?.estado || "—"}`, "success", { key: K, duration: 4000 });
+    document.dispatchEvent(new Event("docs:reload"));
+  }catch(err){
+    if (!silent) showToast(`Error consultando SII: ${String(err)}`, "error", { key: K, duration: 6000 });
+  }
+}
+
+/* =======================
+   Utilidades UI
+   ======================= */
+function kvGridFromObject(obj){
+  const entries = Object.entries(obj ?? {});
+  if(!entries.length) return `<p>No hay datos.</p>`;
+  return `
+    <div class="kv-grid">
+      ${entries.map(([k,v]) => `
+        <div class="k">${escapeHtml(k)}</div>
+        <div class="v">${formatValue(v)}</div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function formatValue(v){
+  if (v == null) return "—";
+  if (typeof v === "object") {
+    try { return `<pre style="white-space:pre-wrap;margin:.25rem 0 .5rem 0">${escapeHtml(JSON.stringify(v, null, 2))}</pre>`; }
+    catch { return String(v); }
+  }
+  if (typeof v === "number") {
+    if (Math.abs(v) >= 1000) {
+      return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(v);
+    }
+  }
+  return escapeHtml(String(v));
+}
+
+function setPill(el, text, kind){
+  if(!el) return;
+  if(!text){ el.hidden=true; return; }
+  el.hidden=false;
+  el.className = `pill ${kind||""}`;
+  el.textContent = text;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"'`=\/]/g, (c) => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;","/":"&#x2F;","`":"&#x60;","=":"&#x3D;"
+  })[c]);
 }

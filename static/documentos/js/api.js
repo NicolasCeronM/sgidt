@@ -9,3 +9,6 @@ export function getCookie(name){
   if (v.length === 2) return v.pop().split(";").shift();
 }
 export const csrftoken = getCookie("csrftoken");
+
+export const validarSiiUrl = (id) => `/api/v1/documentos/${id}/validar-sii/`;
+export const estadoSiiUrl  = (id) => `/api/v1/documentos/${id}/estado-sii/`;

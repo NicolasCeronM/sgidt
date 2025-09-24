@@ -13,6 +13,10 @@ from ...selectors import documentos_de_empresas
 from ...services.upload_service import create_documents_from_files
 from ...services.storage_service import make_presigned_url
 from apps.empresas.models import EmpresaUsuario
+from apps.sii.services.sii_integration import validar_documento_con_sii, refrescar_estado_sii
+# ajusta si tu módulo difiere
+from apps.documentos.models import Documento
+from apps.sii.tasks import start_sii_validation_core, refresh_sii_estado_documento
 
 class DocumentoViewSet(viewsets.ModelViewSet):
     """
@@ -24,6 +28,7 @@ class DocumentoViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsCompanyMember]
     serializer_class = DocumentoSerializer
     pagination_class = DefaultPagination
+    queryset = Documento.objects.none()  # DRF sanity; usamos get_queryset abajo
 
     def get_queryset(self):
         empresa_ids = EmpresaUsuario.objects.filter(
@@ -34,8 +39,38 @@ class DocumentoViewSet(viewsets.ModelViewSet):
         return qs.order_by("-creado_en")
 
     def create(self, request, *args, **kwargs):
-        """Upload multipart: files[] o files. Encola OCR con Celery."""
+        """
+        Upload multipart: files[] o files. Encola OCR con Celery.
+        Además: deja SII en EN_PROCESO y dispara validación automática por cada doc creado.
+        """
         result = create_documents_from_files(request.user, request.FILES)
+
+        # robustez: detectar ids creados en diferentes formatos de respuesta
+        created_ids = []
+        for key in ("created_ids", "ids", "created"):
+            val = result.get(key)
+            if isinstance(val, list):
+                for x in val:
+                    if isinstance(x, int):
+                        created_ids.append(x)
+                    elif isinstance(x, dict) and "id" in x:
+                        created_ids.append(int(x["id"]))
+        created_ids = list(dict.fromkeys(created_ids))  # únicos manteniendo orden
+
+        if created_ids:
+            # marcar EN_PROCESO y disparar validación SII con escalados realistas
+            docs = Documento.objects.filter(id__in=created_ids)
+            for doc in docs:
+                if (doc.sii_estado or "") != "EN_PROCESO":
+                    doc.sii_estado = "EN_PROCESO"
+                    doc.validado_sii = False
+                    doc.save(update_fields=["sii_estado", "validado_sii"])
+                try:
+                    # corre en background si tienes worker; en dev eager=True igual funciona
+                    start_sii_validation_core.delay(doc.id)
+                except Exception:
+                    start_sii_validation_core.apply_async(args=[doc.id])
+
         status_code = status.HTTP_201_CREATED if result.get("created") else status.HTTP_200_OK
         return Response(result, status=status_code)
 
@@ -87,6 +122,48 @@ class DocumentoViewSet(viewsets.ModelViewSet):
                 "sii_estado": d.sii_estado,
             })
         return Response({"ok": True, "documentos": payload})
+
+    @action(detail=True, methods=["post"], url_path="validar-sii", permission_classes=[IsAuthenticated, IsCompanyMember])
+    def validar_sii(self, request, pk=None):
+        """
+        Dispara la validación SII (Mock/Real) para este documento.
+        Requiere: rut_proveedor, total, fecha_emision, folio, tipo_documento.
+        """
+        doc = self.get_queryset().filter(pk=pk).first()
+        if not doc:
+            return Response({"detail": "Documento no encontrado"}, status=404)
+
+        missing = []
+        if not doc.rut_proveedor: missing.append("rut_proveedor")
+        if not doc.total: missing.append("total")
+        if not doc.fecha_emision: missing.append("fecha_emision")
+        if not doc.folio: missing.append("folio")
+        if not doc.tipo_documento: missing.append("tipo_documento")
+        if missing:
+            return Response({"ok": False, "detail": "Faltan campos para validar", "missing": missing}, status=400)
+
+        res = validar_documento_con_sii(request, doc)
+
+        # primer refresh en background para “casi tiempo real”
+        try:
+            refresh_sii_estado_documento.delay(doc.id)
+        except Exception:
+            pass
+
+        return Response({"ok": True, "result": res, "documento_id": doc.id}, status=200 if res.get("ok") else 202)
+
+    @action(detail=True, methods=["get"], url_path="estado-sii", permission_classes=[IsAuthenticated, IsCompanyMember])
+    def estado_sii(self, request, pk=None):
+        """
+        Consulta el estado en SII para este documento por track_id y actualiza sii_estado/glosa.
+        """
+        doc = self.get_queryset().filter(pk=pk).first()
+        if not doc:
+            return Response({"detail": "Documento no encontrado"}, status=404)
+        res = refrescar_estado_sii(request, doc)
+        # si no hay track_id o error de negocio, devolvemos 200 con ok:false para no ensuciar consola del front
+        ok = bool(res.get("ok", True))
+        return Response({"ok": ok, "result": res, "documento_id": doc.id}, status=200)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
