@@ -7,6 +7,7 @@ from apps.panel.views.docuemntos import DocsView
 from apps.panel.views.reportes import ReportsView, ValidationsView
 from apps.panel.views.configuracion import SettingsView
 from apps.panel.views.ayuda import HelpView, FAQView, StatusView, help_contact, manual_usuario_pdf, chatbot_ask
+from apps.panel.views.api import DashboardSummaryApi, DashboardLatestDocsApi
 
 # APIs existentes de documentos
 from apps.documentos import views as doc_views
@@ -16,6 +17,9 @@ app_name = "panel"
 urlpatterns = [
     # Dashboard
     path("", DashboardView.as_view(), name="dashboard"),
+    # APIs Dashboard
+    path("api/dashboard/summary/", DashboardSummaryApi.as_view(), name="api_dashboard_summary"),
+    path("api/dashboard/latest/", DashboardLatestDocsApi.as_view(), name="api_dashboard_latest"),
 
     # Módulos
     path("documentos/", DocsView.as_view(), name="documentos_page"),

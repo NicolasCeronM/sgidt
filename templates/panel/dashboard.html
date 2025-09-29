@@ -1,13 +1,17 @@
-{% extends 'base_app.html' %} {% load static %} {% block title %}Inicio ·
-SGIDT{% endblock %} {% block content %}
+{% extends 'base_app.html' %} {% load static %} 
+{% block title %}Inicio · SGIDT{% endblock %} 
+{% block content %}
 <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=2" />
 
 <section class="db-page" aria-labelledby="db-title">
   <div class="db-container">
-    <!-- HERO / ENCABEZADO -->
     <header class="db-head">
       <div class="db-head-left">
-        <h1 id="db-title" class="db-title">{{ empresa.nombre }}</h1>
+        {# El JS llenará el nombre de la empresa #}
+        <h1 id="db-title" class="db-title"
+            data-summary-url="{% url 'panel:api_dashboard_summary' %}">
+          …
+        </h1>
         <p class="db-subtitle">
           Centraliza tus DTE, valida con SII y controla gastos en minutos.
           Plataforma minimalista y segura para tu PyME.
@@ -15,53 +19,39 @@ SGIDT{% endblock %} {% block content %}
       </div>
     </header>
 
-    <!-- KPIs -->
     <div class="kpi-grid">
-      <!-- KPI 1 -->
       <article class="kpi-card" aria-live="polite">
         <div class="kpi-row">
           <div class="kpi-meta">
             <p class="kpi-title">Documentos este mes</p>
-            <p class="kpi-number" data-target="{{ kpi_docs_mes|default:0 }}">0</p>
-            <!-- <span class="kpi-delta kpi-up" title="Variación vs. mes anterior">
-              <i class="fas fa-arrow-up" aria-hidden="true"></i> +4.8%
-            </span> -->
+            <p class="kpi-number" data-kpi="docs_mes">0</p>
           </div>
           <i class="fas fa-file-invoice kpi-icon" aria-hidden="true"></i>
         </div>
       </article>
 
-      <!-- KPI 2 -->
       <article class="kpi-card" aria-live="polite">
         <div class="kpi-row">
           <div class="kpi-meta">
             <p class="kpi-title">IVA total (mes)</p>
-            <p class="kpi-number" data-target="{{ kpi_iva_mes|default:0 }}" data-prefix="$">0</p>
-  
-            <!-- <span class="kpi-delta kpi-down" title="Variación vs. mes anterior">
-              <i class="fas fa-arrow-down" aria-hidden="true"></i> −2.1%
-            </span> -->
+            <p class="kpi-number" data-kpi="iva_mes">0</p>
           </div>
           <i class="fas fa-dollar-sign kpi-icon" aria-hidden="true"></i>
         </div>
       </article>
 
-      <!-- KPI 3 -->
       <article class="kpi-card" aria-live="polite">
         <div class="kpi-row">
           <div class="kpi-meta">
             <p class="kpi-title">Gasto acumulado (mes)</p>
-            <p class="kpi-number" data-target="{{ kpi_gasto_mes|default:0 }}" data-prefix="$">0</p>
-            <!-- <span class="kpi-period">Periodo: Mes actual</span> -->
+            <p class="kpi-number" data-kpi="gasto_mes">0</p>
           </div>
           <i class="fas fa-wallet kpi-icon" aria-hidden="true"></i>
         </div>
       </article>
     </div>
 
-    <!-- GRID: TIMELINE + ATAJOS -->
-    <div class="cards-grid" data-state="ready">
-      <!-- Últimos movimientos -->
+    <div class="cards-grid" data-state="loading">
       <section class="card" aria-labelledby="ult-movs">
         <div class="card-head">
           <h3 id="ult-movs" class="card-title">Últimos movimientos</h3>
@@ -70,50 +60,15 @@ SGIDT{% endblock %} {% block content %}
           </a>
         </div>
 
-        <!-- Skeleton (se oculta cuando hay datos) -->
         <ul class="list-compact skeleton" aria-hidden="true">
-          <li></li>
-          <li></li>
-          <li></li>
+          <li></li><li></li><li></li>
         </ul>
 
-        <!-- Timeline compacto -->
-        <ul class="list-compact timeline" aria-live="polite">
-          {% for d in ultimos_docs %}
-          <li class="item">
-            <div class="left">
-              <span class="dot dot-success" aria-hidden="true"><i class="fas fa-receipt"></i></span>
-              <div class="info">
-                <span class="title">
-                  {{ d.get_tipo_documento_display|default:"Documento" }}{% if d.folio %} de {{ d.razon_social_proveedor }}{% endif %}
-                </span>
-                <small class="meta">N° Folio: {{ d.folio }}</small>
-              </div>
-            </div>
-            <div class="right">
-              <span class="tag tag-success">{{ d.estado|default:"Procesado" }}</span>
-              <small class="when">
-                {% if d.fecha_emision %}{{ d.fecha_emision|date:"d/m/Y" }}{% else %}{{ d.creado_en|date:"d/m/Y H:i" }}{% endif %}
-              </small>
-              <div class="actions">
-                <a href="{% url 'panel:documentos_page' %}" class="act">Ver</a>
-                <a href="{% url 'panel:documentos_page' %}" class="act">Descargar</a>
-                <a href="{% url 'panel:documentos_page' %}" class="act">Detalle</a>
-              </div>
-            </div>
-          </li>
-          {% empty %}
-          <div class="empty">
-            <div class="empty-illu">📄</div>
-            <p class="empty-text">Aún no hay movimientos.</p>
-            <a href="{% url 'panel:documentos_page' %}" class="btn btn-primary">
-              <i class="fas fa-upload"></i> Subir documento
-            </a>
-          </div>
-          {% endfor %}
+        <ul class="list-compact timeline"
+            data-latest-url="{% url 'panel:api_dashboard_latest' %}">
+          {# el JS rellena acá #}
         </ul>
 
-        <!-- Empty state (por si no hay movimientos) -->
         <div class="empty" hidden>
           <div class="empty-illu" aria-hidden="true">📄</div>
           <p class="empty-text">Aún no hay movimientos.</p>
@@ -123,80 +78,13 @@ SGIDT{% endblock %} {% block content %}
         </div>
       </section>
 
-      <!-- Atajos -->
+      <!-- Atajos intacto -->
       <section class="card" aria-labelledby="atajos">
-        <h3 id="atajos" class="card-title">Atajos</h3>
-
-        <div class="shortcuts-group">
-          <p class="shortcuts-title">Documentos</p>
-          <div class="shortcuts-grid">
-            <a
-              href="{% url 'panel:documentos_page' %}"
-              class="btn btn-ghost btn-fill"
-            >
-              <i class="fas fa-folder-open" aria-hidden="true"></i> Ver
-              documentos
-            </a>
-            <a
-              href="{% url 'panel:documentos_page' %}"
-              class="btn btn-ghost btn-fill"
-            >
-              <i class="fas fa-upload" aria-hidden="true"></i> Subir documento
-            </a>
-          </div>
-        </div>
-
-        <div class="shortcuts-sep"></div>
-
-        <div class="shortcuts-group">
-          <p class="shortcuts-title">Administración</p>
-          <div class="shortcuts-grid">
-            <a
-              href="{% url 'panel:configuraciones' %}"
-              class="btn btn-ghost btn-fill"
-            >
-              <i class="fas fa-sliders-h" aria-hidden="true"></i> Configuración
-            </a>
-            <a
-              href="{% url 'panel:validaciones' %}"
-              class="btn btn-ghost btn-fill"
-            >
-              <i class="fas fa-circle-check" aria-hidden="true"></i> Validación
-              SII
-            </a>
-          </div>
-        </div>
+        …
       </section>
     </div>
   </div>
 </section>
 
-<!-- JS: animación KPIs + demo de skeleton -->
-<script>
-  // Animación numérica para KPIs (formato es-CL)
-  document.querySelectorAll(".kpi-number").forEach((el) => {
-    const target = +el.dataset.target || 0;
-    const prefix = el.dataset.prefix || "";
-    const duration = 900;
-    const start = performance.now();
-    const fmt = new Intl.NumberFormat("es-CL");
-
-    function tick(now) {
-      const p = Math.min((now - start) / duration, 1);
-      const val = Math.round(target * (0.2 + 0.8 * p));
-      el.textContent = prefix + fmt.format(val);
-      if (p < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  });
-
-  // Demo: quitar skeleton si hay datos (puedes reemplazar por tu fetch real)
-  const cards = document.querySelector(".cards-grid");
-  setTimeout(() => {
-    cards?.setAttribute("data-state", "ready");
-    document
-      .querySelector(".list-compact.skeleton")
-      ?.setAttribute("hidden", "");
-  }, 400);
-</script>
+<script src="{% static 'panel/js/dashboard.js' %}?v=1"></script>
 {% endblock %}
