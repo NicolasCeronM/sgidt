@@ -2,7 +2,7 @@
 from django.urls import path
 
 # Vistas del panel (separadas por módulo, en español)
-from apps.panel.views.dashboard import DashboardView
+from apps.panel.views.dashboard import DashboardView, GastosUltimos6MesesAPI
 from apps.panel.views.docuemntos import DocsView
 from apps.panel.views.reportes import ReportsView, ValidationsView
 from apps.panel.views.configuracion import SettingsView
@@ -40,4 +40,6 @@ urlpatterns = [
     # APIs Documentos (conserva tus endpoints actuales)
     path("documentos/api/list/", doc_views.documentos_list_api, name="documentos_list_api"),
     path("documentos/api/upload/", doc_views.documentos_upload_api, name="documentos_upload_api"),
+    path("api/dashboard/gastos6m/", GastosUltimos6MesesAPI.as_view(), name="api_dashboard_gastos6m"),
+
 ]

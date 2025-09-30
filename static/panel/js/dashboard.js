@@ -1,120 +1,182 @@
 // static/panel/js/dashboard.js
-
 (function () {
   const fmtCL = new Intl.NumberFormat("es-CL");
+  const qs = (sel, root=document) => root.querySelector(sel);
 
-  const elTitle = document.getElementById("db-title");
-  const elDocs = document.querySelector('[data-kpi="docs_mes"]');
-  const elIva  = document.querySelector('[data-kpi="iva_mes"]');
-  const elGasto= document.querySelector('[data-kpi="gasto_mes"]');
+  const elTitle   = qs("#db-title");
+  const elDocs    = qs('[data-kpi="docs_mes"]');
+  const elIva     = qs('[data-kpi="iva_mes"]');
+  const elGasto   = qs('[data-kpi="gasto_mes"]');
+  const elAlertas = qs('[data-kpi="alertas"]');
+  const elAlertasPri = qs('[data-kpi="alertas_prioritarias"]');
 
-  const elSkeleton = document.querySelector(".list-compact.skeleton");
-  const elTimeline = document.querySelector(".list-compact.timeline");
-  const cardsGrid  = document.querySelector(".cards-grid");
+  const elChart   = qs("#gastosChart");
+  const elChartSk = qs(".chart-skeleton");
 
-  function animateNumber(el, target, { prefix = "" } = {}) {
-    const duration = 900;
-    const start = performance.now();
+  const elRecent    = qs(".recent-list[data-latest-url]");
+  const elRecentSk  = qs(".recent-list.skeleton");
+  const elEmpty     = qs(".empty");
 
-    function tick(now) {
-      const p = Math.min((now - start) / duration, 1);
-      const val = Math.round(target * (0.2 + 0.8 * p));
-      el.textContent = prefix + fmtCL.format(val);
-      if (p < 1) requestAnimationFrame(tick);
+  // ---------- Animaciones KPI ----------
+  const animate = (el, target, {prefix=""}={})=>{
+    const start = performance.now(), dur=900, from=0;
+    function tick(t){
+      const p = Math.min((t-start)/dur,1);
+      const v = Math.round(from + (target-from)*p);
+      el.textContent = prefix + (prefix==="$" ? fmtCL.format(v) : v.toLocaleString("es-CL"));
+      if(p<1) requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
-  }
+  };
 
-  async function loadSummary() {
+  const setDelta = (key, val) => {
+    const el = qs(`[data-kpi-delta="${key}"]`);
+    if(!el) return;
+    if(Number.isFinite(val)){
+      el.textContent = `${val>=0?"+":""}${val.toFixed(1)}% desde el mes pasado`;
+      el.style.color = val>=0 ? "#15803d" : "#b91c1c";
+      el.hidden = false;
+    }else{
+      el.hidden = true;
+    }
+  };
+
+  async function loadSummary(){
     const url = elTitle?.dataset.summaryUrl;
-    if (!url) return;
+    if(!url) return;
 
-    const r = await fetch(url, { credentials: "same-origin" });
-    if (!r.ok) throw new Error("No se pudo cargar summary");
+    const r = await fetch(url, {credentials:"same-origin"});
+    if(!r.ok) throw new Error("summary failed");
     const data = await r.json();
 
-    // Empresa
-    if (elTitle) elTitle.textContent = data.empresa?.nombre || "Mi Empresa";
+    if(elTitle) elTitle.textContent = data.empresa?.nombre || "Mi Empresa";
 
-    // KPIs por carga (mes)
-    const docs  = Number(data.kpis_carga?.docs || 0);
-    const iva   = Number(data.kpis_carga?.iva || 0);
-    const gasto = Number(data.kpis_carga?.gasto || 0);
+    const docs  = Number(data.kpis_carga?.docs ?? 0);
+    const iva   = Number(data.kpis_carga?.iva ?? 0);
+    const gasto = Number(data.kpis_carga?.gasto ?? 0);
+    const alert = Number(data.alertas?.total ?? 0);
+    const alertPri = Number(data.alertas?.prioritarias ?? 0);
 
-    if (elDocs)  animateNumber(elDocs, docs);
-    if (elIva)   animateNumber(elIva,  iva, { prefix: "$" });
-    if (elGasto) animateNumber(elGasto, gasto, { prefix: "$" });
+    if(elDocs)  animate(elDocs, docs);
+    if(elIva)   animate(elIva, iva,   {prefix:"$"});
+    if(elGasto) animate(elGasto, gasto,{prefix:"$"});
+    if(elAlertas) elAlertas.textContent = alert.toLocaleString("es-CL");
+    if(elAlertasPri) elAlertasPri.textContent = alertPri.toLocaleString("es-CL");
+
+    setDelta("docs_mes",  Number(data.kpis_carga?.delta_docs ?? NaN));
+    setDelta("iva_mes",   Number(data.kpis_carga?.delta_iva ?? NaN));
+    setDelta("gasto_mes", Number(data.kpis_carga?.delta_gasto ?? NaN));
   }
 
-  function buildItem(doc) {
-    const li = document.createElement("li");
-    li.className = "item";
+  // ---------- Chart: ApexCharts ----------
+  async function loadChart(){
+  const elChart = document.getElementById("gastosChart");
+  const elSk = document.querySelector(".chart-skeleton");
+  if(!elChart) return;
 
-    const tipo = doc.tipo_display || "Documento";
-    const prov = doc.razon_social_proveedor || "";
+  const url = elChart.dataset.chartUrl;
+  if(!url) return;
+
+  try{
+    const r = await fetch(url, { credentials: "same-origin" });
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+
+    const data = await r.json(); // [{label, total}]
+    const labels = Array.isArray(data) ? data.map(d=>String(d.label||"")) : [];
+    const values = Array.isArray(data) ? data.map(d=>Number(d.total||0)) : [];
+
+    if(!labels.length){
+      elSk?.remove();
+      elChart.innerHTML = `<div style="padding:12px;color:#6b7280">Sin datos para los últimos 6 meses.</div>`;
+      return;
+    }
+
+    const options = {
+      chart: { type: 'bar', height: 300, toolbar: { show:false } },
+      series: [{ name: 'Gastos', data: values }],
+      xaxis: { categories: labels, axisBorder:{show:false}, axisTicks:{show:false} },
+      yaxis: { labels: { formatter: v => "$" + new Intl.NumberFormat("es-CL").format(Math.round(v)) } },
+      grid: { borderColor: '#eef2f7' },
+      plotOptions: { bar: { borderRadius: 6, columnWidth: '45%' } },
+      dataLabels: { enabled: false },
+      tooltip: { y: { formatter: val => "$" + new Intl.NumberFormat("es-CL").format(Math.round(val)) } },
+      colors: ['#111827']
+    };
+
+    const chart = new ApexCharts(elChart, options);
+    await chart.render();
+    elSk?.remove();
+
+  } catch (err) {
+    console.error("[gastos6m] error:", err);
+    elSk?.remove();
+    elChart.innerHTML = `<div style="padding:12px;color:#b91c1c">
+      No se pudo cargar el gráfico. Revisa la consola (F12 → Network) y que la URL <code>${url}</code> responda 200 con JSON válido.
+    </div>`;
+  }
+}
+
+
+  // ---------- Recent list ----------
+  const relTime = (iso)=>{
+    if(!iso) return "";
+    const now = new Date(), t = new Date(iso);
+    const diffMs = now - t;
+    const hrs = Math.floor(diffMs / 36e5);
+    if(hrs < 1){ const min = Math.max(1, Math.floor(diffMs/6e4)); return `Hace ${min} min`; }
+    if(hrs < 24) return `Hace ${hrs} ${hrs===1?"hora":"horas"}`;
+    const d = Math.floor(hrs/24); return `Hace ${d} ${d===1?"día":"días"}`;
+  };
+
+  function badge(estado){
+    const s = (estado||"").toLowerCase();
+    if(s.includes("apro") || s==="procesado") return '<span class="badge ok">Aprobado</span>';
+    if(s.includes("pend")) return '<span class="badge warn">Pendiente</span>';
+    if(s.includes("rech")) return '<span class="badge err">Rechazado</span>';
+    return '<span class="badge warn">-</span>';
+  }
+
+  function buildRecentItem(d){
+    const li = document.createElement("li"); li.className="recent-item";
+    const prov = d.razon_social_proveedor || d.proveedor || "";
+    const folio = d.folio || "-";
+    const monto = (d.total!=null) ? "$"+fmtCL.format(Number(d.total)) : "";
+    const when = relTime(d.fecha_emision || d.creado_en);
 
     li.innerHTML = `
-      <div class="left">
-        <span class="dot dot-success" aria-hidden="true"><i class="fas fa-receipt"></i></span>
-        <div class="info">
-          <span class="title">${tipo}${prov ? ` de ${prov}` : ""}</span>
-          <small class="meta">N° Folio: ${doc.folio || "-"}</small>
-        </div>
+      <div class="recent-left">
+        <div class="rec-title">F-${folio} ${badge(d.estado)}</div>
+        <div class="rec-sub">${prov || "Documento tributario"}</div>
       </div>
-      <div class="right">
-        <span class="tag tag-success">${doc.estado || "Procesado"}</span>
-        <small class="when">${doc.fecha_emision || doc.creado_en || ""}</small>
-        <div class="actions">
-          <a href="/panel/documentos/" class="act">Ver</a>
-          <a href="/panel/documentos/" class="act">Descargar</a>
-          <a href="/panel/documentos/" class="act">Detalle</a>
-        </div>
+      <div class="rec-right">
+        <strong class="rec-amount">${monto}</strong>
+        <small>${when}</small>
       </div>
     `;
     return li;
   }
 
-  async function loadLatest() {
-    const url = elTimeline?.dataset.latestUrl;
-    if (!url) return;
-
-    const r = await fetch(url, { credentials: "same-origin" });
-    if (!r.ok) throw new Error("No se pudo cargar latest");
+  async function loadRecent(){
+    const url = elRecent?.dataset.latestUrl;
+    if(!url) return;
+    const r = await fetch(url, {credentials:"same-origin"});
+    if(!r.ok) throw new Error("latest failed");
     const data = await r.json();
-
-    // Limpia y pinta
-    elTimeline.innerHTML = "";
     const results = Array.isArray(data.results) ? data.results : [];
-    if (!results.length) {
-      // Mostrar estado vacío
-      cardsGrid?.setAttribute("data-state", "ready");
-      elSkeleton?.setAttribute("hidden", "");
-      const empty = document.querySelector(".card .empty");
-      if (empty) empty.hidden = false;
+    elRecent.innerHTML = "";
+    if(!results.length){
+      elEmpty.hidden = false;
+      elRecentSk?.remove();
       return;
     }
-
-    results.forEach((doc) => elTimeline.appendChild(buildItem(doc)));
-
-    // UI states
-    cardsGrid?.setAttribute("data-state", "ready");
-    elSkeleton?.setAttribute("hidden", "");
+    results.forEach(d=>elRecent.appendChild(buildRecentItem(d)));
+    elRecentSk?.remove();
   }
 
-  async function boot() {
-    try {
-      await Promise.all([loadSummary(), loadLatest()]);
-    } catch (e) {
-      console.error(e);
-      // al menos saca el skeleton para no dejar “cargando” infinito
-      cardsGrid?.setAttribute("data-state", "ready");
-      elSkeleton?.setAttribute("hidden", "");
-    }
+  async function boot(){
+    await Promise.all([loadSummary(), loadChart(), loadRecent()]);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot, { once: true });
-  } else {
-    boot();
-  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", boot, {once:true});
+  else boot();
 })();
