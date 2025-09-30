@@ -128,3 +128,36 @@
     }
   });
 })();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const fab   = document.getElementById("chatFab");
+  const modal = document.getElementById("chatbotModal");
+
+  if (!fab || !modal) return;
+
+  // Abre el modal con el FAB (usa tu misma clase .active)
+  fab.addEventListener("click", () => {
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    // foco al input si existe
+    const input = document.getElementById("chatbotText");
+    if (input) setTimeout(() => input.focus(), 0);
+  });
+
+  // Si tu botón de cerrar usa data-close="true", ya se cierra solo.
+  // Aun así forzamos aria-hidden cuando se cierre.
+  modal.addEventListener("click", (e) => {
+    if (e.target?.dataset?.close === "true") {
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+    }
+  });
+
+  // Cerrar con ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("active")) {
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+    }
+  });
+});
