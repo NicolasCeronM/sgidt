@@ -3,7 +3,7 @@
 {% block title %}Ayuda · SGIDT{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=11">
+<link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=12">
 
 <section class="section">
   <div class="container">
@@ -32,87 +32,77 @@
         </a>
       </div>
 
-      <div class="help-card">
+      <!-- Soporte Técnico -->
+      <div class="help-card" id="cardSoporte">
         <i class="fas fa-headset help-icon"></i>
         <h3>Soporte Técnico</h3>
         <p>¿Problemas técnicos? Nuestro equipo está para ayudarte.</p>
-        <a href="#contactar-soporte" id="btnContactarSoporte" class="btn btn-secondary">
+
+        <a href="#support-panel" id="btnContactarSoporte" class="btn btn-secondary" aria-expanded="false" aria-controls="support-panel">
           <i class="fas fa-comments"></i> Contactar Soporte
         </a>
-      </div>
-    </div>
 
-    <!-- Contacto rápido -->
-    <div class="settings-card contact-card">
-      <h3 class="card-title">Contacto Rápido</h3>
+        <!-- Panel colapsable con el formulario -->
+        <div id="support-panel" class="support-panel" hidden>
+          <hr class="support-sep">
 
-      <form id="helpContactForm" action="{% url 'panel:ayuda_contacto' %}" method="post">
-        {% csrf_token %}
-        <input type="text" name="hp" style="display:none" tabindex="-1" autocomplete="off">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="helpName">Nombre</label>
-            <input type="text" id="helpName" name="name" class="form-input" placeholder="Tu nombre" required>
-          </div>
-          <div class="form-group">
-            <label for="helpEmail">Email</label>
-            <input type="email" id="helpEmail" name="email" class="form-input" placeholder="tu@correo.cl" required>
-          </div>
-          <div class="form-group" style="grid-column: 1 / -1">
-            <label for="helpMessage">Mensaje</label>
-            <textarea id="helpMessage" name="message" class="form-input" rows="4"
-              placeholder="Cuéntanos tu duda o problema" required></textarea>
-          </div>
+          <form id="helpContactForm" action="{% url 'panel:ayuda_contacto' %}" method="post" class="support-form">
+            {% csrf_token %}
+            <input type="text" name="hp" style="display:none" tabindex="-1" autocomplete="off">
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="helpName">Nombre</label>
+                <input type="text" id="helpName" name="name" class="form-input" placeholder="Tu nombre" required>
+              </div>
+              <div class="form-group">
+                <label for="helpEmail">Email</label>
+                <input type="email" id="helpEmail" name="email" class="form-input" placeholder="tu@correo.cl" required>
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1">
+                <label for="helpMessage">Mensaje</label>
+                <textarea id="helpMessage" name="message" class="form-input" rows="4"
+                  placeholder="Cuéntanos tu duda o problema" required></textarea>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" type="submit">
+              <i class="fas fa-paper-plane"></i> Enviar Mensaje
+            </button>
+          </form>
         </div>
-        <button class="btn btn-primary" type="submit">
-          <i class="fas fa-paper-plane"></i> Enviar Mensaje
-        </button>
-      </form>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Chatbot -->
-<div class="chatbot-modal" id="chatbotModal" aria-hidden="true">
-  <div class="chatbot-backdrop" data-close="true"></div>
-
-  <div class="chatbot-window" role="dialog" aria-modal="true" aria-labelledby="chatbotTitle">
-    <div class="chatbot-header">
-      <div class="agent">
-        <span class="avatar">🤖</span>
-        <div class="titles">
-          <h3 id="chatbotTitle">Asistente de Soporte</h3>
-        </div>
-      </div>
-      <button class="chatbot-close" type="button" aria-label="Cerrar" data-close="true">x</button>
-    </div>
-
-    <div class="chatbot-body">
-      <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
-        <div class="msg bot">¡Hola! 👋 Soy tu asistente de SGIDT. ¿En qué puedo ayudarte?</div>
-      </div>
-      
-      <div id="chatSuggest"></div>
-
-      <form class="chatbot-input" id="chatbotForm" data-endpoint="{% url 'panel:chatbot_ask' %}">
-        {% csrf_token %}
-        <input
-          type="text"
-          id="chatbotText"
-          class="form-input"
-          placeholder="Escribe tu mensaje…"
-          autocomplete="off"
-          required
-        >
-        <button class="btn btn-primary" type="submit" aria-label="Enviar">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Scripts -->
 <script src="{% static 'ayuda/js/ayuda_contacto.js' %}?v=3"></script>
-<script src="{% static 'ayuda/js/chatbot.js' %}?v=5"></script>
+
+<!-- Toggle del panel de soporte -->
+<script>
+  (function () {
+    const btn   = document.getElementById('btnContactarSoporte');
+    const panel = document.getElementById('support-panel');
+    const name  = document.getElementById('helpName');
+
+    if (!btn || !panel) return;
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const open = panel.hasAttribute('hidden') ? false : true;
+      if (open) {
+        panel.setAttribute('hidden', '');
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        panel.removeAttribute('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+        // foco y scroll suave
+        requestAnimationFrame(() => {
+          name?.focus();
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+    });
+  })();
+</script>
 {% endblock %}

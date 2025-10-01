@@ -1,9 +1,8 @@
-/* ===== Reset + Paleta consistente (sin verdes) ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root{
-  --top:#111827;                /* gradiente superior */
-  --bottom:#1e293b;             /* gradiente inferior */
-  --accent:#374151;             /* gris oscuro p/ detalles */
+  --top:#111827;               
+  --bottom:#1e293b;             
+  --accent:#374151;             
   --card:#ffffff;
   --bg:#f5f7fb;
   --text:#0f172a;
@@ -358,4 +357,23 @@ body.dark .chat-fab{
     linear-gradient(135deg, #0b1220, #111827);
 }
 
+/* Panel contactar soporte */
+.support-panel {
+  margin-top: 12px;
+  text-align: left;
+}
+.support-sep{
+  border: 0;
+  height: 1px;
+  background: var(--b-200);
+  margin: 12px 0 14px;
+  opacity: .9;
+}
+.support-title{
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+}
+.support-form .form-grid{ margin-bottom: 10px; }
 
