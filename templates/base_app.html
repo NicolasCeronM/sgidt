@@ -8,10 +8,99 @@
 
   <!-- CSS -->
   <link rel="stylesheet" href="{% static 'panel/css/base.css' %}" />
+  <link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=11">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   {% block css %}{% endblock %}
 </head>
+
+<!-- Chatbot (modal global) -->
+<div class="chatbot-modal" id="chatbotModal" aria-hidden="true">
+  <div class="chatbot-backdrop" data-close="true"></div>
+
+  <div class="chatbot-window" role="dialog" aria-modal="true" aria-labelledby="chatbotTitle">
+    <div class="chatbot-header">
+      <div class="agent">
+        <span class="avatar">🤖</span>
+        <div class="titles">
+          <h3 id="chatbotTitle">Asistente de Soporte</h3>
+        </div>
+      </div>
+      <button class="chatbot-close" type="button" aria-label="Cerrar" data-close="true">x</button>
+    </div>
+
+    <div class="chatbot-body">
+      <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
+        <div class="msg bot">¡Hola! 👋 Soy tu asistente de SGIDT. ¿En qué puedo ayudarte?</div>
+      </div>
+      <div id="chatSuggest"></div>
+
+      <form class="chatbot-input" id="chatbotForm" data-endpoint="{% url 'panel:chatbot_ask' %}">
+        {% csrf_token %}
+        <input type="text" id="chatbotText" class="form-input" placeholder="Escribe tu mensaje…" autocomplete="off" required>
+        <button class="btn btn-primary" type="submit" aria-label="Enviar">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- FAB flotante global -->
+<button id="chatFab" class="chat-fab" aria-label="Asistente de Soporte" data-tooltip="Asistente de Soporte">
+  <!-- Ícono “carita” -->
+  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-3 7a1 1 0 110-2 1 1 0 010 2zm6 0a1 1 0 110-2 1 1 0 010 2zm-6.5 6h7a.75.75 0 010 1.5h-7a.75.75 0 010-1.5z"/>
+  </svg>
+</button>
+
+<!-- JS del chatbot (envío de mensajes, sugerencias, etc.) -->
+<script src="{% static 'ayuda/js/chatbot.js' %}?v=7"></script>
+
+<!-- Enganche global: abrir/cerrar modal también desde el FAB -->
+<script>
+(function () {
+  const fab    = document.getElementById('chatFab');
+  const modal  = document.getElementById('chatbotModal');
+  const closeB = modal?.querySelector('.chatbot-close');
+  const back   = modal?.querySelector('.chatbot-backdrop');
+  const input  = document.getElementById('chatbotText');
+  if (!fab || !modal) return;
+
+  // Asegura que el FAB cuelgue de <body> y quede en la esquina
+  if (fab.parentElement !== document.body) document.body.appendChild(fab);
+  Object.assign(fab.style, {
+    position: 'fixed', right: '24px', bottom: '24px',
+    left: 'auto', top: 'auto', transform: 'none', zIndex: '2147483647'
+  });
+
+  const openModal = () => {
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    if (input) setTimeout(() => input.focus(), 50);
+  };
+  const closeModal = () => {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+  };
+
+  // Evitar duplicados si ya había listeners
+  const freshFab = fab.cloneNode(true);
+  fab.replaceWith(freshFab);
+
+  // Click FAB abre modal
+  freshFab.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
+
+  // Cierres
+  closeB?.addEventListener('click', closeModal);
+  back?.addEventListener('click', (e) => { if (e.target === back) closeModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+  });
+})();
+</script>
+
+
 <body>
   <!-- Navbar / Sidebar -->
   {% include "includes/navbar_app.html" %}
