@@ -1,0 +1,101 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Registro por Fases</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Reusa tus estilos existentes -->
+  <link rel="stylesheet" href="{% static 'usuarios/registro_empresa.css' %}">
+ 
+</head>
+<body>
+  <div class="container">
+    {% if messages %}
+    <ul style="list-style:none;padding:0;margin:0 0 12px 0">
+        {% for message in messages %}
+        <li style="margin:6px 0;padding:10px;border-radius:8px;background:#fee;border:1px solid #f5c2c7;color:#842029;">
+            {{ message }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <h1>Registro (Paso {{ step|add:1 }} de {{ total }})</h1>
+
+    {% comment %}
+      Calcula % de progreso simple: (step+1)/total * 100
+    {% endcomment %}
+    {% with pc=step|add:1 %}
+      {% with pct=pc|divisibleby:total %}
+      {% endwith %}
+    {% endwith %}
+
+    <div class="progress">
+      <div class="progress-bar" ></div>
+    </div>
+
+    <div class="steps">
+      {% for k in steps %}
+        {% if forloop.counter0 == step %}
+          <strong>{{ k }}</strong>{% if not forloop.last %} &middot; {% endif %}
+        {% else %}
+          {{ k }}{% if not forloop.last %} &middot; {% endif %}
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="actions">
+        {% if step > 0 %}
+          <a class="btn" href="{% url 'empresas:registro_wizard' step|add:-1 %}">&larr; Anterior</a>
+        {% endif %}
+        <button class="btn btn-primary" type="submit">
+          {% if step|add:1 == total %}Finalizar{% else %}Siguiente{% endif %}
+        </button>
+      </div>
+    </form>
+
+    {% if data %}
+      <details>
+        <summary>Ver resumen parcial</summary>
+        <pre>{{ data|safe }}</pre>
+      </details>
+    {% endif %}
+  </div>
+  {% if tipo_actual == "PN_HONORARIOS" %}
+    <script>
+    (function(){
+        const hide = (sel) => { const el = document.querySelector(sel); if (el) el.closest('p')?.setAttribute('style','display:none'); };
+        hide('select[name="sistema_facturacion"]');
+        hide('input[name="certificado_usa"]');
+        hide('input[name="tipos_dte_autorizados"]');
+    })();
+    </script>
+{% endif %}
+  <script>
+  (function(){
+    // Intenta leer el tipo desde el resumen parcial renderizado (simple)
+    const pre = document.querySelector('details pre');
+    if (!pre) return;
+    try {
+      const data = JSON.parse(pre.textContent.replace(/'/g, '"'));
+      const tipo = data.tipo?.tipo;
+      if (tipo === 'PN_HONORARIOS') {
+        // Oculta/Deshabilita campos DTE
+        const dteInput = document.querySelector('input[name="tipos_dte_autorizados"]');
+        const sistSel  = document.querySelector('select[name="sistema_facturacion"]');
+        const certChk  = document.querySelector('input[name="certificado_usa"]');
+        if (dteInput) { dteInput.value=''; dteInput.closest('p')?.setAttribute('style','display:none'); }
+        if (sistSel)  { sistSel.value='';  sistSel.closest('p')?.setAttribute('style','display:none'); }
+        if (certChk)  { certChk.checked=false; certChk.closest('p')?.setAttribute('style','display:none'); }
+      }
+    } catch(e) {}
+  })();
+</script>
+</body>
+
+
+</html>

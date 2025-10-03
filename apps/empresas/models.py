@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, EmailValidator, RegexValidator
 from django.db import models
+from .models_contribuyente import Contribuyente
 
 def empresa_logo_upload_to(instance, filename):
     return f"empresas/{instance.id or 'tmp'}/{filename}"
@@ -89,6 +90,14 @@ class Empresa(models.Model):
         max_length=4, choices=RegimenTributario.choices, default=RegimenTributario.PYME_GENERAL
     )
     fecha_inicio_actividades = models.DateField(null=True, blank=True)
+
+    contribuyente = models.OneToOneField(
+        Contribuyente,
+        on_delete=models.PROTECT,
+        related_name="empresa",
+        null=True,
+        blank=True
+    )
 
     # Contacto / domicilio
     email = models.EmailField(validators=[EmailValidator()], blank=True)
