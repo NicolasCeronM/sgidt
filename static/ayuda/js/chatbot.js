@@ -1,11 +1,14 @@
 (function () {
-  const openBtn  = document.getElementById('btnContactarSoporte');
+  const openBtn  = document.getElementById('btnContactarSoporte'); 
+  const fabBtn   = document.getElementById('chatFab');             
   const modal    = document.getElementById('chatbotModal');
   const form     = document.getElementById('chatbotForm');
   const input    = document.getElementById('chatbotText');
   const messages = document.getElementById('chatbotMessages');
-  const suggest  = document.getElementById('chatSuggest'); 
-  if (!openBtn || !modal || !form || !input || !messages) return;
+  const suggest  = document.getElementById('chatSuggest');
+
+  // Si falta lo esencial del chat, salimos
+  if (!modal || !form || !input || !messages) return;
 
   // Bloquear scroll del fondo cuando el modal está abierto
   const lockScroll = (on) => {
@@ -13,104 +16,95 @@
     document.body.style.overflow = on ? 'hidden' : '';
   };
 
-  // Scroll hasta el final 
+  // Scroll hasta el final
   function scrollBottom(){
     const go = () => { messages.scrollTop = messages.scrollHeight; };
     go(); requestAnimationFrame(go); setTimeout(go, 60);
   }
 
-  // Abrir / Cerrar
-  openBtn.addEventListener('click', (e) => {
-    e.preventDefault();
+  // Abrir y cerrar el chat
+  function openModal() {
     modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
     lockScroll(true);
     requestAnimationFrame(() => { input.focus(); scrollBottom(); });
-  });
-  modal.addEventListener('click', (e) => {
-    if (e.target.dataset.close === 'true') {
-      modal.classList.remove('active');
-      lockScroll(false);
-    }
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
-      modal.classList.remove('active');
-      lockScroll(false);
-    }
-  });
-  window.addEventListener('resize', () => { if (modal.classList.contains('active')) scrollBottom(); });
-
-  // CSRF 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`; const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
   }
-  const csrftoken = getCookie('csrftoken');
+  function closeModal() {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    lockScroll(false);
+  }
 
-  // Markdown mínimo
+  // Abrir desde el botón de la página
+  if (openBtn) {
+    openBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
+  }
+  // Abrir desde el FAB global 
+  if (fabBtn){
+    const fresh = fabBtn.cloneNode(true);
+    fabBtn.replaceWith(fresh);
+    fresh.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
+  }
+
+  // Cerrar con backdrop o botón X
+  modal.addEventListener('click', (e) => {
+    if (e.target.dataset.close === 'true') closeModal();
+  });
+  const btnClose = modal.querySelector('.chatbot-close');
+  btnClose?.addEventListener('click', closeModal);
+
+  // Envío del formulario
   function renderMD(text){
     return text
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
       .replace(/\n/g, '<br>');
   }
-
-  // Burbujas
   function pushMsg(text, who = 'user') {
     const div = document.createElement('div');
     div.className = `msg ${who}`;
-    div.innerHTML = renderMD(text) + `<span class="meta">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
+    const now = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    div.innerHTML = renderMD(text) + `<span class="meta">${now}</span>`;
     messages.appendChild(div);
     scrollBottom();
   }
-
-  // “Escribiendo…”
   function showTyping(on=true){
     let t = document.getElementById('botTyping');
-    if(on){
-      if(!t){
-        t = document.createElement('div');
-        t.id = 'botTyping';
-        t.className = 'msg bot typing';
-        t.innerHTML = `<span>Escribiendo</span><span class="typing-dots"><i></i><i></i><i></i></span>`;
-        messages.appendChild(t);
-      }
-    } else if(t){ t.remove(); }
-    scrollBottom();
+    if (on && !t) {
+      t = document.createElement('div');
+      t.id = 'botTyping';
+      t.className = 'msg bot small';
+      t.textContent = 'Escribiendo…';
+      messages.appendChild(t);
+      scrollBottom();
+    } else if (!on && t) {
+      t.remove();
+    }
   }
-
-  // Sugerencias
-  function renderSuggest(list){
-    if (!suggest) return;
+  function renderSuggest(items){
     suggest.innerHTML = '';
-    if (list && list.length){
-      list.forEach(txt => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = txt;
-        b.className = 'chip-suggest';
-        b.onclick = () => { input.value = txt; form.requestSubmit(); };
-        suggest.appendChild(b);
+    (items || []).slice(0,6).forEach(txt => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip-suggest'; b.textContent = txt;
+      b.addEventListener('click', () => {
+        input.value = txt;
+        form.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true}));
       });
-    }
+      suggest.appendChild(b);
+    });
   }
+  function getCookie(name) {
+    const value = `; ${document.cookie}`; const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+  const csrftoken = getCookie('csrftoken');
 
-  // Enviar 
-  input.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter' && !e.shiftKey){
-      e.preventDefault();
-      form.requestSubmit();
-    }
-  });
-
-  // Submit
-  form.addEventListener('submit', async function (e) {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = input.value.trim();
     if (!text) return;
     pushMsg(text, 'user');
     input.value = '';
-
     showTyping(true);
     try {
       const res = await fetch(form.dataset.endpoint, {
@@ -122,42 +116,12 @@
       showTyping(false);
       pushMsg(data.reply || 'Lo siento, no pude procesar tu solicitud.', 'bot');
       renderSuggest(data.suggest || []);
-    } catch {
+    } catch (err) {
       showTyping(false);
       pushMsg('Error de red. Intenta nuevamente.', 'bot');
     }
   });
+
+  window.addEventListener('resize', () => { if (modal.classList.contains('active')) scrollBottom(); });
 })();
 
-document.addEventListener("DOMContentLoaded", () => {
-  const fab   = document.getElementById("chatFab");
-  const modal = document.getElementById("chatbotModal");
-
-  if (!fab || !modal) return;
-
-  // Abre el modal con el FAB (usa tu misma clase .active)
-  fab.addEventListener("click", () => {
-    modal.classList.add("active");
-    modal.setAttribute("aria-hidden", "false");
-    // foco al input si existe
-    const input = document.getElementById("chatbotText");
-    if (input) setTimeout(() => input.focus(), 0);
-  });
-
-  // Si tu botón de cerrar usa data-close="true", ya se cierra solo.
-  // Aun así forzamos aria-hidden cuando se cierre.
-  modal.addEventListener("click", (e) => {
-    if (e.target?.dataset?.close === "true") {
-      modal.classList.remove("active");
-      modal.setAttribute("aria-hidden", "true");
-    }
-  });
-
-  // Cerrar con ESC
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("active")) {
-      modal.classList.remove("active");
-      modal.setAttribute("aria-hidden", "true");
-    }
-  });
-});
