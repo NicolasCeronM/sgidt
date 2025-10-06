@@ -31,6 +31,7 @@ urlpatterns = [
 
     # DRF login/logout para sesión (útil en pruebas web)
     path("api/auth/session/", include("rest_framework.urls")),  # /login/ y /logout/
+     path("api/", include("apps.usuarios.api_urls", namespace="auth_api")),
 
     # JWT
     path("api/auth/login/",   TokenObtainPairView.as_view(), name="token_obtain_pair"),

@@ -103,15 +103,29 @@ ROOT_URLCONF = 'config.urls'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        # 1) Sesión (para tu panel web actual)
         "rest_framework.authentication.SessionAuthentication",
-        # 2) JWT (para Postman / apps)
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "50/hour",
+        "user": "200/hour",
+        "login": "10/minute",
+    },
 }
+
+AUTHENTICATION_BACKENDS = [
+    # ya tienes Email/RUT/Username en backends.py
+    "apps.usuarios.backends.EmailRutOrUsernameBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 # CORS (ajusta orígenes si usas front separado)
 CORS_ALLOWED_ORIGINS = [
