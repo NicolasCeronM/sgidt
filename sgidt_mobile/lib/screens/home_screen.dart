@@ -53,7 +53,10 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: CurvedBottomNav(
         index: tab,
         onTap: (i) {
-          if (i == 2) { Navigator.pushNamed(context, '/profile'); return; }
+          if (i == 2) {
+            Navigator.pushNamed(context, '/profile');
+            return;
+          }
           setState(() => tab = i); // i == 0 (Inicio)
         },
         onCentralTap: _goCapture,
@@ -81,13 +84,29 @@ class _HomeScreenState extends State<HomeScreen> {
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (_, i) {
         final d = docs[i];
-        return DocumentCard(
-          id: d['id']!,
-          proveedor: d['prov']!,
-          fecha: d['fecha']!,
-          total: d['total']!,
-          estado: d['estado']!,
-          onTap: () => Navigator.pushNamed(context, '/document', arguments: d['id']!),
+        return Builder(
+          builder: (context) {
+            final id = d['id'] ?? '';
+            // Probables alias de API: ajusta según tu backend
+            final proveedor =
+                d['prov'] ?? d['proveedor'] ?? d['supplier'] ?? '—';
+            final fecha = d['fecha'] ?? d['created'] ?? d['date'] ?? '';
+            final total = d['total'] ?? d['monto'] ?? d['amount'] ?? '';
+            final estado = d['estado'] ?? d['status'] ?? '—';
+
+            return DocumentCard(
+              id: id,
+              proveedor: proveedor,
+              fecha: fecha,
+              total: total,
+              estado: estado,
+              onTap: () {
+                if (id.isNotEmpty) {
+                  Navigator.pushNamed(context, '/document', arguments: id);
+                }
+              },
+            );
+          },
         );
       },
     );
@@ -121,36 +140,37 @@ class CurvedBottomNav extends StatelessWidget {
         topLeft: Radius.circular(22),
         topRight: Radius.circular(22),
       ),
-      child: BottomAppBar
+      child:
+          BottomAppBar
           // shape crea el notch para el FAB central
           (
-        color: bg,
-        elevation: 10,
-        height: 64,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        padding: EdgeInsets.zero,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _NavIcon(
-              icon: Icons.home_outlined,
-              isActive: index == 0,
-              activeColor: active,
-              inactiveColor: inactive,
-              onTap: () => onTap(0),
+            color: bg,
+            elevation: 10,
+            height: 64,
+            shape: const CircularNotchedRectangle(),
+            notchMargin: 8,
+            padding: EdgeInsets.zero,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _NavIcon(
+                  icon: Icons.home_outlined,
+                  isActive: index == 0,
+                  activeColor: active,
+                  inactiveColor: inactive,
+                  onTap: () => onTap(0),
+                ),
+                const SizedBox(width: 48), // hueco del notch del FAB
+                _NavIcon(
+                  icon: Icons.person_outline,
+                  isActive: index == 2,
+                  activeColor: active,
+                  inactiveColor: inactive,
+                  onTap: () => onTap(2),
+                ),
+              ],
             ),
-            const SizedBox(width: 48), // hueco del notch del FAB
-            _NavIcon(
-              icon: Icons.person_outline,
-              isActive: index == 2,
-              activeColor: active,
-              inactiveColor: inactive,
-              onTap: () => onTap(2),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 }
@@ -178,7 +198,9 @@ class _NavIcon extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.sgidtRed.withOpacity(.10) : Colors.transparent,
+          color: isActive
+              ? AppTheme.sgidtRed.withOpacity(.10)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Icon(icon, color: isActive ? activeColor : inactiveColor),
