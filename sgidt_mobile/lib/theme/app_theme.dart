@@ -1,54 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
+  // Colores corporativos
   static const Color sgidtRed = Color(0xFFE2261C);
-  static const Color ink = Color(0xFF232323);
-  static const Color ok = Color(0xFF4CAF50);
-  static const Color err = Color(0xFFE53935);
-  static const Color surface = Colors.white;
-  static const Color soft = Color(0xFFF7F8FA);
+  static const Color ok       = Color(0xFF16A34A); // verde éxito
+  static const Color err      = Color(0xFFDC2626); // rojo error
 
+  // ------ LIGHT ------
   static ThemeData light() {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: sgidtRed,
+      brightness: Brightness.light,
+    );
+
     return ThemeData(
+      colorScheme: scheme,
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: sgidtRed,
-        primary: sgidtRed,
-        onPrimary: Colors.white,
-      ),
-      scaffoldBackgroundColor: surface,
-      textTheme: GoogleFonts.interTextTheme(),
-      fontFamily: GoogleFonts.poppins().fontFamily, // títulos/botones
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
+        centerTitle: true,
         elevation: 0,
-        backgroundColor: surface,
-        foregroundColor: ink,
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: soft,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      // En tu SDK, ThemeData.cardTheme es CardThemeData
+      cardTheme: CardThemeData(
+        color: scheme.surface,
+        elevation: 0.3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: sgidtRed,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          minimumSize: const Size(double.infinity, 48),
-        ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: sgidtRed,
+        foregroundColor: Colors.white,
       ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: ink,
-          side: const BorderSide(color: Color(0xFFE5E7EB)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          minimumSize: const Size(double.infinity, 48),
-        ),
+    );
+  }
+
+  // ------ DARK ------
+  static ThemeData dark() {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: sgidtRed,
+      brightness: Brightness.dark,
+    );
+
+    return ThemeData(
+      colorScheme: scheme,
+      useMaterial3: true,
+      appBarTheme: AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
+      ),
+      cardTheme: CardThemeData(
+        color: scheme.surface,
+        elevation: 0.3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: sgidtRed,
+        foregroundColor: Colors.white,
       ),
     );
   }

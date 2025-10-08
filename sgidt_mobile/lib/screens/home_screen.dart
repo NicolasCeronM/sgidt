@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/document_card.dart';
 import '../widgets/empty_state.dart';
 import '../services/documents_service.dart';
-import '../theme/app_theme.dart'; // para el color rojo SGIDT
+import '../theme/app_theme.dart'; // color SGIDT
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,7 +26,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => loading = true);
     try {
       final data = await DocumentsService.fetchRecent();
-      // Loguea las claves del primer item para inspección rápida en consola
       if (kDebugMode && data.isNotEmpty) {
         debugPrint('🔎 Claves primer doc: ${data.first.keys.toList()}');
       }
@@ -61,11 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
       body: SafeArea(child: _buildDocs()),
 
-      // FAB central con notch
       floatingActionButton: CaptureFab(onPressed: _goCapture),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      // Barra inferior curva integrada
       bottomNavigationBar: CurvedBottomNav(
         index: tab,
         onTap: (i) {
@@ -73,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.pushNamed(context, '/profile');
             return;
           }
-          setState(() => tab = i); // i == 0 (Inicio)
+          setState(() => tab = i);
         },
         onCentralTap: _goCapture,
         bgColor: scheme.surface,
@@ -114,9 +111,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final id = d['id'] ?? d['uuid'] ?? d['pk'] ?? '';
 
-        // === proveedor/nombre ===
+        // === proveedor/nombre (o fallback a tipo + folio) ===
         final proveedor = _pickFirst(d, [
-              // nombres típicos de emisor/proveedor
               'proveedor',
               'prov',
               'supplier',
@@ -129,7 +125,6 @@ class _HomeScreenState extends State<HomeScreen> {
               'company',
               'nombre',
             ]) ??
-            // fallback: tipo + folio si existen
             [
               _pickFirst(d, ['tipo', 'document_type', 'tipo_dte']),
               _pickFirst(d, ['folio', 'numero', 'nro']),
@@ -146,17 +141,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ]) ??
             '';
 
-        // === total ===
-        final total = _pickFirst(d, [
-              'total',
-              'monto_total',
-              'monto',
-              'amount',
-              'total_bruto',
-              'total_neto',
-              'neto',
-            ]) ??
-            '';
+        // === total (AHORA con parser inteligente y formato CLP) ===
+        final totalRaw = d['total'] ?? d['monto'] ?? d['amount'] ?? '';
+        final total = _formatAmountCLP(totalRaw); // -> "$119.000"
 
         // === estado ===
         final estado = _pickFirst(d, [
@@ -182,6 +169,63 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+  }
+
+  // =======================
+  //  Formateo de montos CLP
+  // =======================
+
+  // Convierte cualquier string/num a CLP con puntos de miles (sin decimales)
+  static String _formatAmountCLP(dynamic v) {
+    final n = _parseAmountSmart(v);
+    if (n == null) return (v ?? '').toString();
+    return _formatCLP(n);
+  }
+
+  // Parser robusto: detecta miles/decimales en "es-CL" y "en-US"
+  static num? _parseAmountSmart(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v;
+
+    String s = v.toString().trim();
+    if (s.isEmpty) return null;
+
+    // Quita símbolos y espacios (deja solo dígitos, coma, punto y signo)
+    s = s.replaceAll(RegExp(r'[^\d,.\-]'), '');
+
+    final hasDot = s.contains('.');
+    final hasComma = s.contains(',');
+
+    if (hasDot && hasComma) {
+      // "119.000,00" -> miles ".", decimal ","
+      s = s.replaceAll('.', '').replaceAll(',', '.');
+    } else if (hasComma && !hasDot) {
+      // "119000,00" -> decimal con coma
+      s = s.replaceAll(',', '.');
+    } else if (hasDot && !hasComma) {
+      // Solo punto: puede ser miles o decimal
+      final dotCount = '.'.allMatches(s).length;
+      final last = s.lastIndexOf('.');
+      final digitsRight = s.length - last - 1;
+      final looksThousands = dotCount > 1 || digitsRight == 3;
+      if (looksThousands) {
+        s = s.replaceAll('.', ''); // eran separadores de miles
+      }
+    }
+    return num.tryParse(s);
+  }
+
+  // Formatea como $X.XXX (sin decimales)
+  static String _formatCLP(num value) {
+    final s = value.toStringAsFixed(0);
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      final idx = s.length - 1 - i;
+      buf.write(s[idx]);
+      if (i % 3 == 2 && idx != 0) buf.write('.');
+    }
+    final miles = buf.toString().split('').reversed.join();
+    return '\$$miles';
   }
 }
 

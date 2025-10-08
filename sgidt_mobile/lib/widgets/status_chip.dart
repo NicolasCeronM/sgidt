@@ -2,21 +2,44 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 class StatusChip extends StatelessWidget {
-  final String status; // 'validado' | 'pendiente' | 'rechazado'
+  final String status;
   const StatusChip(this.status, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    Color bg = Colors.grey.shade200;
-    Color fg = Colors.grey.shade800;
-    if (status == 'validado') { bg = AppTheme.ok.withOpacity(.15); fg = AppTheme.ok; }
-    if (status == 'rechazado') { bg = AppTheme.err.withOpacity(.15); fg = AppTheme.err; }
-    if (status == 'pendiente') { bg = Colors.amber.withOpacity(.18); fg = Colors.amber.shade800; }
+    final s = (status).trim().toLowerCase();
+
+    Color fg;
+    if (s.contains('valid') || s.contains('proces')) {
+      fg = AppTheme.ok;
+    } else if (s.contains('rechaz') || s.contains('error') || s.contains('fail')) {
+      fg = AppTheme.err;
+    } else {
+      fg = Theme.of(context).colorScheme.primary;
+    }
+    final bg = fg.withOpacity(.15);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
-      child: Text(status[0].toUpperCase()+status.substring(1),
-        style: TextStyle(fontWeight: FontWeight.w600, color: fg)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        _pretty(status),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: fg,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
+  }
+
+  String _pretty(String v) {
+    if (v.isEmpty) return '—';
+    final t = v.trim();
+    return t[0].toUpperCase() + t.substring(1).toLowerCase();
   }
 }

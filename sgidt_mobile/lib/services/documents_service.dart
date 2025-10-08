@@ -6,7 +6,7 @@ class DocumentsService {
   // 🔧 Ajusta a tu backend real
   static const String kApiBaseUrl = 'http://localhost:8000/api';
   static const String kDocumentsEndpoint = '/v1/documentos/'; // listado/creación
-  static String kDocumentDetail(String id) => '/documentos/$id/';
+  static String kDocumentDetail(String id) => '/v1/documentos/$id/';
 
   static Uri _url(String path) => Uri.parse('$kApiBaseUrl$path');
 
