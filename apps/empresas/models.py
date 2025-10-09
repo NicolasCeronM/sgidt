@@ -53,6 +53,8 @@ class RegimenTributario(models.TextChoices):
     PYME_TRASPARENTE = "14D8", "Pro PyME Transparente (14 D 8)"
     PYME_GENERAL     = "14D3", "Pro PyME General (14 D 3)"
     GENERAL          = "GEN",  "Régimen General"
+    PRIMERA_CATEGORIA = "PCAT", "Régimen Primera Categoría"
+    SEGUNDA_CATEGORIA = "SCAT", "Régimen Segunda Categoría"
 
 class TipoSocietario(models.TextChoices):
     PERSONA_NATURAL = "PN",   "Persona Natural con Giro"
