@@ -1,127 +1,115 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+import 'package:dio/dio.dart';
 
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import '../core/api/api_client.dart';
+import '../core/api/api_result.dart';
+import '../core/api/api_exceptions.dart';
+import '../core/api/endpoints.dart';
+import '../core/storage/token_storage.dart';
 
 class AuthService {
   AuthService._();
   static final AuthService instance = AuthService._();
 
-  /// Base de API (inyectable con --dart-define)
-  /// En dev móvil físico usa:
-  ///   - ADB reverse:  http://localhost:8000/api
-  ///   - IP del PC:    http://192.168.x.x:8000/api
-  static const String _base = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:8000/api',
-  );
-
-  static Uri _u(String path) => Uri.parse('$_base$path');
-
-  // ---------------- Token storage ----------------
-
-  static const _kToken = 'auth_token';
-  static const _kIsBearer = 'auth_is_bearer';
-
-  static Future<void> _saveToken(String token, {required bool bearer}) async {
-    final sp = await SharedPreferences.getInstance();
-    await sp.setString(_kToken, token);
-    await sp.setBool(_kIsBearer, bearer);
-  }
-
-  static Future<void> logout() async {
-    final sp = await SharedPreferences.getInstance();
-    await sp.remove(_kToken);
-    await sp.remove(_kIsBearer);
-  }
-
-  static Future<bool> isLoggedIn() async {
-    final sp = await SharedPreferences.getInstance();
-    return (sp.getString(_kToken) ?? '').isNotEmpty;
-  }
-
-  static Future<Map<String, String>> authHeader() async {
-    final sp = await SharedPreferences.getInstance();
-    final token = sp.getString(_kToken);
-    if (token == null || token.isEmpty) return {};
-    final isBearer = sp.getBool(_kIsBearer) ?? true;
-    return {'Authorization': isBearer ? 'Bearer $token' : 'Token $token'};
-  }
-
-  // ------------------- LOGIN ---------------------
-
-  /// Hace POST a /api/auth/login/ (o el que tengas configurado)
-  /// Guarda el token automáticamente. Lanza [AuthException] con
-  /// mensajes legibles si falla.
-  static Future<void> login(String userOrEmail, String password) async {
-    final client = http.Client();
+  /// Método de instancia que retorna Result — lo usa el shim estático
+  Future<Result<Map<String, dynamic>>> loginResult({
+    required String username,
+    required String password,
+  }) async {
     try {
-      final headers = {'Content-Type': 'application/json'};
+      final res = await ApiClient.instance.dio.post(
+        Endpoints.login,
+        data: {'username': username, 'password': password},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
 
-      // 1) Intento con "username"
-      var res = await client
-          .post(_u('/auth/login/'),
-              headers: headers,
-              body: jsonEncode({'username': userOrEmail, 'password': password}))
-          .timeout(const Duration(seconds: 20));
+      final data = res.data as Map<String, dynamic>;
+      final access   = data['access']?.toString();
+      final refresh  = data['refresh']?.toString();
+      final user     = (data['user'] ?? {}) as Map<String, dynamic>;
+      final empresas = (data['empresas'] ?? []) as List;
 
-      // 2) Si falló, intento con "email" (algunos endpoints lo requieren)
-      if (res.statusCode >= 400) {
-        res = await client
-            .post(_u('/auth/login/'),
-                headers: headers,
-                body:
-                    jsonEncode({'email': userOrEmail, 'password': password}))
-            .timeout(const Duration(seconds: 20));
+      if (access == null || access.isEmpty) {
+        return Failure(ApiException('Token de acceso no recibido', statusCode: res.statusCode));
       }
 
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        // Intenta extraer "detail" de DRF
-        String msg;
-        try {
-          final body = jsonDecode(res.body);
-          msg = body['detail']?.toString() ??
-              body['message']?.toString() ??
-              'Credenciales inválidas';
-        } catch (_) {
-          msg = 'Error ${res.statusCode} en login';
+      // Guardar tokens + user + empresas
+      await TokenStorage.saveTokens(access: access, refresh: refresh);
+      await TokenStorage.saveUser(user);
+      await TokenStorage.saveEmpresas(empresas);
+
+      // Seleccionar empresa por defecto (si hay)
+      if (empresas.isNotEmpty && empresas.first is Map) {
+        final id = (empresas.first as Map)['empresa_id'];
+        if (id is int) {
+          await TokenStorage.setEmpresaSeleccionada(id);
         }
-        throw AuthException(msg, statusCode: res.statusCode);
       }
 
-      final body = jsonDecode(res.body);
-
-      // Soporta formatos comunes
-      final token =
-          body['access'] ?? body['token'] ?? body['key'] ?? body['auth_token'];
-      if (token == null || token.toString().isEmpty) {
-        throw const AuthException('La respuesta no contiene token.');
-      }
-
-      // Si viene "access" asumimos Bearer (JWT), si no, Token
-      final isBearer = body.containsKey('access');
-      await _saveToken(token.toString(), bearer: isBearer);
-    } on SocketException {
-      throw const AuthException(
-          'No se pudo conectar con el servidor. ¿Está arriba en 8000?');
-    } on TimeoutException {
-      throw const AuthException('Tiempo de espera agotado. Intenta de nuevo.');
-    } on AuthException {
-      rethrow;
+      return Success(data);
+    } on DioException catch (e) {
+      final err = e.error is ApiException
+          ? e.error as ApiException
+          : ApiException(e.message ?? 'Error');
+      return Failure(err);
     } catch (e) {
-      throw AuthException('Error inesperado: $e');
-    } finally {
-      client.close();
+      return Failure(ApiException(e.toString()));
     }
   }
-}
 
-class AuthException implements Exception {
-  final String message;
-  final int? statusCode;
-  const AuthException(this.message, {this.statusCode});
-  @override
-  String toString() => 'AuthException($statusCode): $message';
+  Future<void> logoutInstance() => TokenStorage.clear();
+  Future<bool> isLoggedInInstance() => TokenStorage.isLoggedIn();
+
+  /// Opcional: implementar si usas refresh flow
+  Future<Result<String>> refresh() async {
+    final r = await TokenStorage.refresh;
+    if (r == null || r.isEmpty) return Failure(ApiException('No hay refresh token'));
+    try {
+      final res = await ApiClient.instance.dio.post(
+        Endpoints.refresh,
+        data: {'refresh': r},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      final access = res.data['access']?.toString();
+      if (access == null || access.isEmpty) {
+        return Failure(ApiException('Refresh sin access'));
+      }
+      await TokenStorage.saveTokens(access: access, refresh: r);
+      return Success(access);
+    } on DioException catch (e) {
+      final err = e.error is ApiException
+          ? e.error as ApiException
+          : ApiException(e.message ?? 'Error');
+      return Failure(err);
+    } catch (e) {
+      return Failure(ApiException(e.toString()));
+    }
+  }
+
+  // =========================
+  // SHIMS DE COMPATIBILIDAD
+  // =========================
+
+  /// Antiguo: AuthService.isLoggedIn()
+  static Future<bool> isLoggedIn() => AuthService.instance.isLoggedInInstance();
+
+  /// Antiguo: AuthService.logout()
+  static Future<void> logout() => AuthService.instance.logoutInstance();
+
+  /// Antiguo: AuthService.login(usuario, pass) que lanza excepción
+  static Future<void> login(String username, String password) async {
+    final r = await AuthService.instance.loginResult(
+      username: username,
+      password: password,
+    );
+    if (r is Success) return;
+    final err = (r as Failure).error;
+    // Lanza AuthException para que tu LoginScreen lo capture
+    throw AuthException(err.message, statusCode: err.statusCode);
+  }
+
+  /// Antiguo: headers para http Multipart/etc.
+  static Future<Map<String, String>> authHeader() async {
+    final t = await TokenStorage.access;
+    return t != null && t.isNotEmpty ? {'Authorization': 'Bearer $t'} : <String, String>{};
+  }
 }

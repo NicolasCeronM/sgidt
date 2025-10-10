@@ -4,40 +4,34 @@ import 'package:http/http.dart' as http;
 import '../services/auth_service.dart';
 
 class UploadService {
-  // 🔧 Ajusta a tu backend real
-  static const String kApiBaseUrl = 'https://tu-backend/api';
-  static const String kUploadEndpoint = '/documents/upload/'; // el que tengas
+  static const String kApiBaseUrl = 'http://localhost:8000/api'; // o por dart-define
+  static const String kUploadEndpoint = '/v1/documentos/';
 
   static Uri _url(String path) => Uri.parse('$kApiBaseUrl$path');
 
-  /// Subida genérica multipart que retorna el JSON de respuesta
   static Future<Map<String, dynamic>> uploadFile({
     required File file,
     String fileFieldName = 'file',
     Map<String, String>? extraFields,
   }) async {
-    final headers = {
-      ...await AuthService.authHeader(), // no agregues Content-Type aquí
-    };
+    final uri = _url(kUploadEndpoint);
+    final req = http.MultipartRequest('POST', uri);
 
-    final request = http.MultipartRequest('POST', _url(kUploadEndpoint));
-    request.headers.addAll(headers);
+    final Map<String, String> headers = <String, String>{};
+    final auth = await AuthService.authHeader();
+    if (auth.isNotEmpty) headers.addAll(auth);
+    req.headers.addAll(headers);
 
-    if (extraFields != null) {
-      request.fields.addAll(extraFields);
-    }
+    if (extraFields != null) req.fields.addAll(extraFields);
+    final fileName = file.path.split(Platform.pathSeparator).last;
+    req.files.add(await http.MultipartFile.fromPath(fileFieldName, file.path, filename: fileName));
 
-    final multipartFile = await http.MultipartFile.fromPath(fileFieldName, file.path);
-    request.files.add(multipartFile);
-
-    final streamed = await request.send();
+    final streamed = await req.send();
     final res = await http.Response.fromStream(streamed);
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-
-    // Error legible
     try {
       final err = jsonDecode(res.body);
       final detail = (err is Map && err['detail'] != null) ? err['detail'].toString() : res.body;
@@ -47,15 +41,8 @@ class UploadService {
     }
   }
 
-  /// === ALIAS COMPATIBLE (para tu PreviewScreen) ===
-  /// Devuelve true/false según éxito.
   static Future<bool> uploadImage(File file) async {
-    try {
-      // Si tu backend espera 'image' en vez de 'file', cambia el nombre del campo
-      await uploadFile(file: file, fileFieldName: 'file');
-      return true;
-    } catch (_) {
-      return false;
-    }
+    try { await uploadFile(file: file, fileFieldName: 'file'); return true; }
+    catch (_) { return false; }
   }
 }

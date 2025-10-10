@@ -27,11 +27,22 @@ class LoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "first_name", "last_name", "is_active"]
+        fields = ["id","rut", "email","tipo_contribuyente", "first_name", "last_name", "is_active","foto"]
 
 def empresas_de_usuario(user: User):
     qs = EmpresaUsuario.objects.select_related("empresa").filter(usuario=user)
     return [
-        {"empresa_id": m.empresa_id, "empresa_nombre": m.empresa.razon_social, "rol": m.rol}
+        {
+         "empresa_id": m.empresa_id, 
+         "empresa_nombre": m.empresa.razon_social, 
+         "giro":m.empresa.giro,
+         #"logo_empresa": m.empresa.logo,
+         "rol": m.rol,
+         "emailContacto":m.empresa.email,
+         "telefono":m.empresa.telefono,
+         "direccion":m.empresa.direccion,
+         "comuna":m.empresa.comuna,
+         "region":m.empresa.region,
+         }
         for m in qs
     ]
