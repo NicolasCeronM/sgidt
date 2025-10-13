@@ -1,10 +1,10 @@
 class Endpoints {
   // Auth
-  static const String login = '/auth/login/';
+  static const String login = '/usuarios/auth/login/';
   static const String refresh = '/auth/refresh/';
 
   // Documentos
-  static const String documentos = '/v1/documentos/';
-  static String documentoDetalle(String id) => '/v1/documentos/$id/';
-  static const String documentosProgressBatch = '/v1/documentos/progress-batch/';
+  static const String documentos = '/documentos/';
+  static String documentoDetalle(String id) => '/documentos/$id/';
+  static const String documentosProgressBatch = '/documentos/progress-batch/';
 }
