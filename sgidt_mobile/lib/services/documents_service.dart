@@ -3,6 +3,8 @@ import '../core/api/api_result.dart';
 import '../core/api/api_exceptions.dart';
 import '../core/api/endpoints.dart';
 
+
+
 class DocumentsService {
   DocumentsService._();
   static final DocumentsService instance = DocumentsService._();
@@ -78,4 +80,13 @@ class DocumentsService {
     final err = (r as Failure).error;
     throw ApiException(err.message, statusCode: err.statusCode);
   }
+
+  // Alias para compatibilidad con el wrapper usado en la ruta /document
+  static Future<Map<String, String>> fetchById(String id) {
+  return fetchDetail(id); // reutiliza tu método existente
 }
+
+}
+
+
+
