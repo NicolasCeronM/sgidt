@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     # Sitio público / landings
@@ -22,4 +24,6 @@ urlpatterns = [
     # APIs (todo DRF bajo /api/v1/)
     path("api/v1/", include("config.api_v1")),  # <- un router centralizado
 ]
-# path("api/v1/auth/", include("rest_framework.urls")),  # <- si usas browsable API
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

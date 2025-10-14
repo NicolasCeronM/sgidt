@@ -1,293 +1,272 @@
-import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 
-import '../services/documents_service.dart';
-import '../widgets/status_chip.dart';
-import '../theme/app_theme.dart';
+class DocumentDetailScreen extends StatelessWidget {
+  final Map<String, String> documento;
+  const DocumentDetailScreen({super.key, required this.documento});
 
-class DocumentDetailScreen extends StatefulWidget {
-  final String id;
-  const DocumentDetailScreen({super.key, required this.id});
-
-  @override
-  State<DocumentDetailScreen> createState() => _DocumentDetailScreenState();
-}
-
-class _DocumentDetailScreenState extends State<DocumentDetailScreen> {
-  Map<String, String>? data;
-  bool loading = true;
-  String? error;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() {
-      loading = true;
-      error = null;
-    });
-    try {
-      final d = await DocumentsService.fetchDetail(widget.id);
-      if (!mounted) return;
-      setState(() {
-        data = d;
-        loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        error = 'No se pudo cargar el documento';
-        loading = false;
-      });
-    }
-  }
-
-  String? _pick(List<String> keys) {
-    final m = data ?? {};
-    for (final k in keys) {
-      final v = m[k];
-      if (v != null && v.trim().isNotEmpty) return v.trim();
-    }
-    return null;
-  }
-
-  // ====== Parser + formato CLP (igual que en Home) ======
-
-  num? _parseAmountSmart(dynamic v) {
-    if (v == null) return null;
-    if (v is num) return v;
-
-    String s = v.toString().trim();
-    if (s.isEmpty) return null;
-
-    s = s.replaceAll(RegExp(r'[^\d,.\-]'), '');
-
-    final hasDot = s.contains('.');
-    final hasComma = s.contains(',');
-
-    if (hasDot && hasComma) {
-      s = s.replaceAll('.', '').replaceAll(',', '.');
-    } else if (hasComma && !hasDot) {
-      s = s.replaceAll(',', '.');
-    } else if (hasDot && !hasComma) {
-      final dotCount = '.'.allMatches(s).length;
-      final last = s.lastIndexOf('.');
-      final digitsRight = s.length - last - 1;
-      final looksThousands = dotCount > 1 || digitsRight == 3;
-      if (looksThousands) s = s.replaceAll('.', '');
-    }
-    return num.tryParse(s);
-  }
-
-  String _formatCLP(num value) {
-    final s = value.toStringAsFixed(0);
-    final b = StringBuffer();
-    for (int i = 0; i < s.length; i++) {
-      final idx = s.length - 1 - i;
-      b.write(s[idx]);
-      if (i % 3 == 2 && idx != 0) b.write('.');
-    }
-    return '\$${b.toString().split('').reversed.join()}';
-  }
+  String _val(String key) => (documento[key] ?? '').toString();
 
   @override
   Widget build(BuildContext context) {
-    final title = 'Documento #${widget.id}';
+    final urlArchivo = _val('archivo');
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: SafeArea(
-        child: loading
-            ? const Center(child: CircularProgressIndicator())
-            : error != null
-                ? _ErrorView(message: error!, onRetry: _load)
-                : _buildContent(context),
+      appBar: AppBar(
+        title: Text('Documento #${_val('folio')}'),
       ),
-    );
-  }
-
-  Widget _buildContent(BuildContext context) {
-    final theme = Theme.of(context);
-
-    final proveedor = _pick([
-          'razon_social_proveedor',
-          'proveedor',
-          'empresa',
-          'emisor_nombre',
-          'emisor_razon_social',
-        ]) ??
-        '—';
-
-    final fecha = _pick([
-          'fecha_emision',
-          'fecha',
-          'creado_en',
-          'created',
-          'date',
-        ]) ??
-        '—';
-
-    final folio = _pick([
-          'folio',
-          'numero',
-          'nro',
-          'document_number',
-        ]) ??
-        '—';
-
-    final totalNum = _parseAmountSmart(_pick([
-      'total',
-      'monto_total',
-      'monto_neto',
-      'neto',
-      'amount',
-    ]));
-    final total =
-        totalNum != null ? _formatCLP(totalNum) : (_pick(['total']) ?? '—');
-
-    final estado = _pick(['estado', 'sii_estado']) ??
-        ((_pick(['validado_sii']) ?? '').toLowerCase() == 'true'
-            ? 'Validado SII'
-            : 'Procesado');
-
-    final archivo = _pick(['archivo', 'file', 'url', 'document_url']) ?? '';
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-      children: [
-        _KV('Proveedor', proveedor),
-        _KV('Fecha', fecha),
-        _KV('Folio', folio),
-        _KV('Total', total,
-            valueStyle: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            )),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: StatusChip(estado),
-        ),
-        const SizedBox(height: 16),
-        _PreviewBox(archivo: archivo),
-      ],
-    );
-  }
-}
-
-/* -------------------- UI helpers -------------------- */
-
-class _KV extends StatelessWidget {
-  final String k;
-  final String v;
-  final TextStyle? valueStyle;
-  const _KV(this.k, this.v, {this.valueStyle});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          Text(
-            '$k: ',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+          _InfoChipRow(
+            estado: _val('estado'),
+            siiEstado: _val('sii_estado'),
+            validado: (_val('validado_sii').toLowerCase() == 'true'),
           ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Text(
-              v.isEmpty ? '—' : v,
-              style: valueStyle ?? theme.textTheme.bodyMedium,
-            ),
-          ),
+          const SizedBox(height: 12),
+
+          _Tile(label: 'Tipo', value: _val('tipo_documento')),
+          _Tile(label: 'Folio', value: _val('folio')),
+          _Tile(label: 'Proveedor', value: _val('razon_social_proveedor')),
+          _Tile(label: 'RUT', value: _val('rut_proveedor')),
+          _Tile(label: 'Fecha emisión', value: _val('fecha_emision')),
+          _Tile(label: 'Neto', value: _val('monto_neto')),
+          _Tile(label: 'Exento', value: _val('monto_exento')),
+          _Tile(label: 'IVA', value: _val('iva')),
+          _Tile(label: 'Total', value: _val('total')),
+          if (_val('sii_track_id').isNotEmpty)
+            _Tile(label: 'SII Track ID', value: _val('sii_track_id')),
+          if (_val('sii_glosa').isNotEmpty)
+            _Tile(label: 'SII Glosa', value: _val('sii_glosa')),
+          const SizedBox(height: 16),
+
+          Text('Archivo', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          if (urlArchivo.isNotEmpty)
+            _DocumentViewer(url: urlArchivo, height: 520)
+          else
+            const Text('— No hay archivo disponible —'),
         ],
       ),
     );
   }
 }
 
-class _PreviewBox extends StatelessWidget {
-  final String archivo;
-  const _PreviewBox({required this.archivo});
-
-  bool get _isImage {
-    final u = archivo.toLowerCase();
-    return u.endsWith('.jpg') ||
-        u.endsWith('.jpeg') ||
-        u.endsWith('.png') ||
-        u.endsWith('.webp');
-  }
+class _Tile extends StatelessWidget {
+  final String label;
+  final String value;
+  const _Tile({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    if (archivo.isEmpty) {
-      return _placeholder(theme, 'Sin archivo adjunto');
-    }
-    if (_isImage) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: AspectRatio(
-          aspectRatio: 16 / 9,
-          child: Image.network(
-            archivo,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                _placeholder(theme, 'No se pudo cargar la imagen'),
-          ),
-        ),
-      );
-    }
-    // Para PDF u otros, placeholder (sin url_launcher aquí)
-    return _placeholder(theme, 'Vista previa no disponible');
-  }
-
-  Widget _placeholder(ThemeData theme, String text) {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Center(
-        child: Text(
-          text,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.hintColor,
-          ),
-        ),
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      title: Text(label, style: Theme.of(context).textTheme.bodySmall),
+      subtitle: Text(
+        value.isEmpty ? '—' : value,
+        style: Theme.of(context).textTheme.titleMedium,
       ),
     );
   }
 }
 
-class _ErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-  const _ErrorView({required this.message, required this.onRetry});
+class _InfoChipRow extends StatelessWidget {
+  final String estado;
+  final String siiEstado;
+  final bool validado;
+
+  const _InfoChipRow({
+    required this.estado,
+    required this.siiEstado,
+    required this.validado,
+  });
+
+  Color _chipColor() {
+    if (validado) return Colors.green;
+    if (estado.toLowerCase() == 'procesado') return Colors.blue;
+    return Colors.orange;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
+    final color = _chipColor();
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        Chip(
+          label: Text('Estado: $estado'),
+          backgroundColor: color.withOpacity(0.15),
+          side: BorderSide(color: color.withOpacity(0.4)),
+        ),
+        Chip(
+          label: Text('SII: $siiEstado'),
+          backgroundColor: color.withOpacity(0.15),
+          side: BorderSide(color: color.withOpacity(0.4)),
+        ),
+        Chip(
+          label: Text(validado ? 'Validado SII' : 'No validado'),
+          backgroundColor:
+              (validado ? Colors.green : Colors.red).withOpacity(0.15),
+          side: BorderSide(
+            color: (validado ? Colors.green : Colors.red).withOpacity(0.4),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Visor con vista previa inline:
+/// - JPG/PNG: embebido con zoom.
+/// - PDF:
+///   - En Web: se muestra tarjeta con botón "Abrir PDF" (nueva pestaña).
+///   - En App nativa (Android/iOS/Desktop): también botón externo (simple y estable).
+class _DocumentViewer extends StatelessWidget {
+  final String url;
+  final double height;
+  const _DocumentViewer({required this.url, this.height = 420, super.key});
+
+  String _ext(String u) {
+    final path = Uri.parse(u).path.toLowerCase();
+    final dot = path.lastIndexOf('.');
+    if (dot == -1) return '';
+    return path.substring(dot + 1);
+  }
+
+  bool get _isImage {
+    final e = _ext(url);
+    return e == 'jpg' || e == 'jpeg' || e == 'png';
+  }
+
+  bool get _isPdf => _ext(url) == 'pdf';
+
+  Future<void> _openExternal({bool newTab = false}) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(
+        uri,
+        mode: kIsWeb
+            ? LaunchMode.externalApplication
+            : LaunchMode.inAppBrowserView,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(16);
+
+    Widget child;
+    if (_isImage) {
+      // === IMÁGENES ===
+      child = InteractiveViewer(
+        minScale: 0.5,
+        maxScale: 5,
+        child: Image.network(
+          url,
+          fit: BoxFit.contain,
+          loadingBuilder: (context, child, evt) {
+            if (evt == null) return child;
+            return const Center(child: CircularProgressIndicator());
+          },
+          errorBuilder: (context, error, stack) {
+            return _ErrorBox(
+              title: 'No se pudo cargar la imagen',
+              details: '$error',
+              onOpen: _openExternal,
+              cta: 'Abrir imagen',
+            );
+          },
+        ),
+      );
+    } else if (_isPdf) {
+      // === PDF (Web y Nativo): abrimos externo para máxima compatibilidad ===
+      child = Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 40),
+            const Icon(Icons.picture_as_pdf, size: 48),
             const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(onPressed: onRetry, child: const Text('Reintentar')),
+            const Text('Vista previa PDF'),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: _openExternal,
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Abrir PDF'),
+            ),
           ],
         ),
+      );
+    } else {
+      // === FORMATO DESCONOCIDO ===
+      child = Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.insert_drive_file, size: 42),
+            const SizedBox(height: 12),
+            const Text('Vista previa no disponible'),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: _openExternal,
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Abrir / Descargar'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: radius,
+      child: Container(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        height: height,
+        width: double.infinity,
+        child: child,
+      ),
+    );
+  }
+}
+
+class _ErrorBox extends StatelessWidget {
+  final String title;
+  final String details;
+  final Future<void> Function({bool newTab}) onOpen;
+  final String cta;
+  const _ErrorBox({
+    required this.title,
+    required this.details,
+    required this.onOpen,
+    this.cta = 'Abrir / Descargar',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 42),
+          const SizedBox(height: 12),
+          Text(title, textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          Text(
+            details,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: () => onOpen(newTab: kIsWeb),
+            icon: const Icon(Icons.open_in_new),
+            label: Text(cta),
+          ),
+        ],
       ),
     );
   }
