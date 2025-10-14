@@ -52,15 +52,20 @@
       </form>
 
       {% if data %}
+      <!--  
         <details class="reg-details">
           <summary>Ver resumen parcial</summary>
           <pre>{{ data|safe }}</pre>
-        </details>
+        </details>-->
       {% endif %}
     </div>
   </div>
 </section>
 {% endblock content %}
+
+<script>
+  const tipoActual = "{{ tipo_actual|default:'' }}";
+</script>
 
 {% block js %}
   {{ block.super }}

@@ -10,8 +10,8 @@
 })();
 
 // === OCULTAR CAMPOS SI PN_HONORARIOS ===
-{% if tipo_actual == "PN_HONORARIOS" %}
 (function () {
+  if (typeof tipoActual === "undefined" || tipoActual !== "PN_HONORARIOS") return;
   [
     'select[name="sistema_facturacion"]',
     'input[name="certificado_usa"]',
@@ -21,4 +21,3 @@
     el?.closest("p")?.setAttribute("style", "display:none");
   });
 })();
-{% endif %}
