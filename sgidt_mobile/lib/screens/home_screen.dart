@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../widgets/document_card.dart';
 import '../widgets/empty_state.dart';
 import '../services/documents_service.dart';
-import '../theme/app_theme.dart';
-// ✨ 1. Importa tu controlador de tema
 import '../theme/theme_controller.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -45,22 +43,36 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // ✨ 2. Determina el ícono y tooltip correctos según el tema actual
-    final isDark = ThemeController.instance.isDark;
-    final themeIcon = isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined;
-    final themeTooltip = isDark ? 'Activar modo claro' : 'Activar modo oscuro';
+
+    // ✅ LÓGICA MEJORADA: Determina el ícono y tooltip para los TRES modos.
+    final IconData themeIcon;
+    final String themeTooltip;
+
+    switch (ThemeController.instance.mode) {
+      case ThemeMode.light:
+        themeIcon = Icons.light_mode_outlined;
+        themeTooltip = 'Cambiar a modo oscuro';
+        break;
+      case ThemeMode.dark:
+        themeIcon = Icons.dark_mode_outlined;
+        themeTooltip = 'Usar tema del sistema';
+        break;
+      case ThemeMode.system:
+        themeIcon = Icons.brightness_auto_outlined; // Ícono para "Automático"
+        themeTooltip = 'Cambiar a modo claro';
+        break;
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('SGIDT – Documentos'),
-        centerTitle: false, // Se ve mejor alineado a la izquierda con acciones
+        centerTitle: false,
         elevation: 0,
         actions: [
-          // ✨ 3. Agrega el IconButton para cambiar el tema
+          // ✅ ACCIÓN MEJORADA: Llama al nuevo método cycleTheme()
           IconButton(
             onPressed: () {
-              // Llama al método del controlador para cambiar el tema
-              ThemeController.instance.toggleTheme();
+              ThemeController.instance.cycleTheme();
             },
             icon: Icon(themeIcon),
             tooltip: themeTooltip,
@@ -72,12 +84,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
       body: SafeArea(child: _buildDocs()),
-
       floatingActionButton: CaptureFab(onPressed: _goCapture),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
       bottomNavigationBar: CurvedBottomNav(
         index: tab,
         onTap: (i) {
@@ -89,14 +98,13 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         onCentralTap: _goCapture,
         bgColor: scheme.surface,
-        // ✨ MEJORA: Usa el color primario del tema para el ícono activo
-        activeColor: scheme.primary, 
+        activeColor: scheme.primary,
       ),
     );
   }
-
-  // ... (El resto de tus métodos como _buildDocs, _pickFirst, _formatAmountCLP, etc., se mantienen exactamente igual)
   
+  // --- El resto de los métodos y widgets (buildDocs, _pickFirst, CurvedBottomNav, etc.) se mantienen sin cambios ---
+
   String? _pickFirst(Map<String, String> m, List<String> keys) {
     for (final k in keys) {
       final v = m[k];
@@ -194,15 +202,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/* ============================
- * Barra curva + FAB central
- * ============================ */
 class CurvedBottomNav extends StatelessWidget {
   final int index;
   final ValueChanged<int> onTap;
   final VoidCallback onCentralTap;
   final Color bgColor;
-  final Color activeColor; // ✨ MEJORA: Recibe el color activo
+  final Color activeColor;
 
   const CurvedBottomNav({
     super.key,
@@ -210,7 +215,7 @@ class CurvedBottomNav extends StatelessWidget {
     required this.onTap,
     required this.onCentralTap,
     required this.bgColor,
-    required this.activeColor, // ✨ MEJORA
+    required this.activeColor,
   });
 
   @override
@@ -230,15 +235,15 @@ class CurvedBottomNav extends StatelessWidget {
           _NavIcon(
             icon: Icons.home_outlined,
             isActive: index == 0,
-            activeColor: activeColor, // ✨ MEJORA
+            activeColor: activeColor,
             inactiveColor: inactive,
             onTap: () => onTap(0),
           ),
-          const SizedBox(width: 48), // espacio para el notch del FAB
+          const SizedBox(width: 48),
           _NavIcon(
             icon: Icons.person_outline,
             isActive: index == 2,
-            activeColor: activeColor, // ✨ MEJORA
+            activeColor: activeColor,
             inactiveColor: inactive,
             onTap: () => onTap(2),
           ),
@@ -248,7 +253,6 @@ class CurvedBottomNav extends StatelessWidget {
   }
 }
 
-// ... El widget _NavIcon se mantiene igual ...
 class _NavIcon extends StatelessWidget {
   final IconData icon;
   final bool isActive;
@@ -290,7 +294,6 @@ class CaptureFab extends StatelessWidget {
     return SizedBox(
       height: 64,
       width: 64,
-      // ✨ MEJORA: Usa el tema definido en app_theme.dart en lugar de colores fijos
       child: FloatingActionButton(
         onPressed: onPressed,
         elevation: 6,

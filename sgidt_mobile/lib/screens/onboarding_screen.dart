@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -9,80 +9,159 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
-  int _index = 0;
+  int _currentPage = 0;
 
-  final List<_SlideData> _slides = const [
-    _SlideData(
-      title: 'Bienvenido a SGIDT',
-      text: 'Captura documentos con tu teléfono.\nRápido y sencillo.',
+  // 1. Datos para cada slide, ahora usando IconData en lugar de imágenes.
+  final List<_OnboardingSlideData> _slides = const [
+    _OnboardingSlideData(
+      icon: Icons.document_scanner_outlined,
+      title: 'Digitaliza tus documentos',
+      description: 'Captura facturas, recibos y cualquier documento importante directamente con la cámara de tu teléfono.',
     ),
-    _SlideData(
-      title: 'Súbelos a SGIDT',
-      text: 'Sincroniza automáticamente con tu empresa\npara mantener todo ordenado.',
+    _OnboardingSlideData(
+      icon: Icons.cloud_upload_outlined,
+      title: 'Organización simplificada',
+      description: 'Sube automáticamente tus documentos a la plataforma SGIDT para una gestión eficiente y segura.',
     ),
-    _SlideData(
-      title: 'Validación automática',
-      text: '¡Comencemos!',
+    _OnboardingSlideData(
+      icon: Icons.rocket_launch_outlined,
+      title: 'Comienza a transformar tu gestión',
+      description: 'Estás listo para experimentar la eficiencia. ¡Vamos a optimizar tu flujo de trabajo!',
     ),
   ];
 
-  void _goNext() {
-    if (_index < _slides.length - 1) {
-      _controller.nextPage(
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOut,
-      );
-    } else {
-      Navigator.pushReplacementNamed(context, '/login');
+  Future<void> _onOnboardingComplete() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', true);
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/splash');
     }
   }
 
-  void _skip() => Navigator.pushReplacementNamed(context, '/login');
+  void _goToNextPage() {
+    if (_currentPage < _slides.length - 1) {
+      _controller.nextPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _onOnboardingComplete();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _controller,
-            itemCount: _slides.length,
-            onPageChanged: (i) => setState(() => _index = i),
-            itemBuilder: (_, i) => _OnboardingSlide(
-              slide: _slides[i],
-              isLast: i == _slides.length - 1,
-            ),
-          ),
+    final scheme = Theme.of(context).colorScheme;
 
-          // Skip chip (arriba derecha)
-          SafeArea(
-            child: Align(
+    return Scaffold(
+      backgroundColor: scheme.surface,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Botón de Saltar
+            Align(
               alignment: Alignment.topRight,
               child: Padding(
-                padding: const EdgeInsets.only(right: 16, top: 10),
-                child: _SkipChip(onTap: _skip),
-              ),
-            ),
-          ),
-
-          // Indicadores + flecha (abajo)
-          SafeArea(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 22),
-                child: Row(
-                  children: [
-                    _PagerIndicator(length: _slides.length, index: _index),
-                    const Spacer(),
-                    _RoundGhostButton(
-                      onTap: _goNext,
-                      child: const Icon(Icons.arrow_forward, color: Colors.white),
-                    ),
-                  ],
+                padding: const EdgeInsets.only(top: 16, right: 16),
+                child: TextButton(
+                  onPressed: _onOnboardingComplete,
+                  child: const Text('Saltar'),
                 ),
               ),
             ),
+            // Contenido principal con el PageView
+            Expanded(
+              child: PageView.builder(
+                controller: _controller,
+                itemCount: _slides.length,
+                onPageChanged: (index) => setState(() => _currentPage = index),
+                itemBuilder: (context, index) {
+                  return _OnboardingSlide(slide: _slides[index]);
+                },
+              ),
+            ),
+            // Controles de navegación inferiores
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _PageIndicator(
+                    count: _slides.length,
+                    currentIndex: _currentPage,
+                    activeColor: scheme.primary,
+                    inactiveColor: scheme.onSurface.withOpacity(0.2),
+                  ),
+                  FloatingActionButton(
+                    onPressed: _goToNextPage,
+                    elevation: 2,
+                    child: Icon(
+                      _currentPage == _slides.length - 1 ? Icons.check_rounded : Icons.arrow_forward_rounded,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Clase de datos para cada slide
+class _OnboardingSlideData {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _OnboardingSlideData({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+}
+
+// Widget para cada slide individual
+class _OnboardingSlide extends StatelessWidget {
+  final _OnboardingSlideData slide;
+  const _OnboardingSlide({required this.slide});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 2. Contenedor estilizado para el icono
+          Container(
+            width: 150,
+            height: 150,
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              slide.icon,
+              size: 72,
+              color: scheme.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(height: 48),
+          Text(
+            slide.title,
+            textAlign: TextAlign.center,
+            style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: scheme.onSurface),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            slide.description,
+            textAlign: TextAlign.center,
+            style: textTheme.bodyLarge?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -90,213 +169,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-/* ---------------------------------------------
- *   Slide visual con blob + textos
- * --------------------------------------------- */
-class _OnboardingSlide extends StatelessWidget {
-  const _OnboardingSlide({required this.slide, required this.isLast});
-  final _SlideData slide;
-  final bool isLast;
+// Widget para el indicador de página
+class _PageIndicator extends StatelessWidget {
+  final int count;
+  final int currentIndex;
+  final Color activeColor;
+  final Color inactiveColor;
 
-  @override
-  Widget build(BuildContext context) {
-    const purpleDeep = Color(0xFF2A1140);
-    const purple = Color(0xFF4A1D6A);
-    const magenta = Color(0xFFD63C7B);
-    const yellow = Color(0xFFF7D700);
-
-    return LayoutBuilder(
-      builder: (_, constraints) {
-        return Stack(
-          children: [
-            // Fondo degradado
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [purpleDeep, purple],
-                  begin: Alignment(-0.8, -1.0),
-                  end: Alignment(0.8, 1.0),
-                ),
-              ),
-            ),
-
-            // Círculos decorativos sutiles
-            Positioned(
-              left: -40,
-              top: 60,
-              child: Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.06),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            Positioned(
-              right: -24,
-              top: -14,
-              child: Container(
-                width: 118,
-                height: 118,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.06),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-
-            // Blob inferior
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: ClipPath(
-                clipper: _BlobClipper(),
-                child: Container(
-                  height: constraints.maxHeight * 0.42,
-                  color: magenta,
-                ),
-              ),
-            ),
-
-            // Contenido textual
-            Positioned(
-              left: 24,
-              right: 24,
-              bottom: 96,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isLast ? '' : slide.title.toUpperCase(),
-                    style: TextStyle(
-                      color: isLast ? Colors.white : yellow,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: .5,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    slide.text,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: isLast ? 20 : 15,
-                      fontWeight: isLast ? FontWeight.w700 : FontWeight.normal,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-/* ---------------------------------------------
- *   Widgets reutilizables
- * --------------------------------------------- */
-
-class _RoundGhostButton extends StatelessWidget {
-  final VoidCallback onTap;
-  final Widget child;
-  const _RoundGhostButton({required this.onTap, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.14),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: Colors.white24),
-        ),
-        child: Center(child: child),
-      ),
-    );
-  }
-}
-
-class _SkipChip extends StatelessWidget {
-  final VoidCallback onTap;
-  const _SkipChip({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.12),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: Colors.white24),
-        ),
-        child: const Text(
-          'Skip',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
-}
-
-class _PagerIndicator extends StatelessWidget {
-  const _PagerIndicator({required this.length, required this.index});
-  final int length;
-  final int index;
+  const _PageIndicator({
+    required this.count,
+    required this.currentIndex,
+    required this.activeColor,
+    required this.inactiveColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: List.generate(length, (i) {
-        final active = i == index;
+      children: List.generate(count, (index) {
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          height: 10,
-          width: active ? 32 : 10,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          height: 8.0,
+          width: currentIndex == index ? 24.0 : 8.0,
           decoration: BoxDecoration(
-            color: active ? AppTheme.sgidtRed : Colors.white.withOpacity(.4),
-            borderRadius: BorderRadius.circular(999),
+            color: currentIndex == index ? activeColor : inactiveColor,
+            borderRadius: BorderRadius.circular(4.0),
           ),
         );
       }),
     );
   }
-}
-
-/* ---------------------------------------------
- *   Utilidades / modelos
- * --------------------------------------------- */
-
-class _SlideData {
-  final String title;
-  final String text;
-  const _SlideData({required this.title, required this.text});
-}
-
-/// ClipPath para blob orgánico inferior
-class _BlobClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final p = Path();
-    p.moveTo(0, size.height * 0.38);
-    p.quadraticBezierTo(size.width * 0.00, size.height * 0.08, size.width * 0.26, 0);
-    p.lineTo(size.width * 0.95, 0);
-    p.quadraticBezierTo(size.width, 0, size.width, size.height * 0.12);
-    p.lineTo(size.width, size.height);
-    p.lineTo(0, size.height);
-    p.close();
-    return p;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

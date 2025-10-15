@@ -13,7 +13,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _user;
   List<Map<String, dynamic>> _empresas = [];
   int? _empresaSelId;
-
   bool _loading = true;
 
   @override
@@ -23,37 +22,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _load() async {
+    setState(() => _loading = true);
     final u = await TokenStorage.getUser();
     final e = await TokenStorage.getEmpresas();
     final sel = await TokenStorage.getEmpresaSeleccionada();
-    setState(() {
-      _user = u;
-      _empresas = e;
-      _empresaSelId = sel ?? (e.isNotEmpty ? (e.first['empresa_id'] as int?) : null);
-      _loading = false;
-    });
-  }
-
-  // =========================
-  // Helpers de presentación
-  // =========================
-  String _val(String key) => (_user?[key] ?? '').toString();
-
-  String _iniciales() {
-    final fn = (_user?['first_name'] ?? '').toString();
-    final ln = (_user?['last_name'] ?? '').toString();
-    final i1 = fn.isNotEmpty ? fn[0] : '';
-    final i2 = ln.isNotEmpty ? ln[0] : '';
-    final j = (i1 + i2).trim();
-    if (j.isEmpty) {
-      final backup = (_user?['email'] ?? _user?['username'] ?? '').toString();
-      return backup.isNotEmpty ? backup[0].toUpperCase() : '?';
+    if (mounted) {
+      setState(() {
+        _user = u;
+        _empresas = e;
+        _empresaSelId = sel ?? (e.isNotEmpty ? (e.first['empresa_id'] as int?) : null);
+        _loading = false;
+      });
     }
-    return j.toUpperCase();
   }
 
+  // --- Helpers de Datos ---
+  String _val(String key) => (_user?[key] ?? '').toString();
+  
   Map<String, dynamic>? _empresaActual() {
-    if (_empresaSelId == null) return null;
+    if (_empresaSelId == null || _empresas.isEmpty) return null;
     try {
       return _empresas.firstWhere((e) => e['empresa_id'] == _empresaSelId);
     } catch (_) {
@@ -61,33 +48,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Widget _chipTipo() {
-    final t = _val('tipo_contribuyente');
-    if (t.isEmpty) return const SizedBox.shrink();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.blueGrey.withOpacity(0.25)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.verified_user, size: 16),
-          const SizedBox(width: 6),
-          Text(_titleCase(t)),
-        ],
-      ),
-    );
-  }
-
-  static String _titleCase(String s) {
-    if (s.isEmpty) return s;
-    return s
-        .split(RegExp(r'\s+|_+'))
-        .map((w) => w.isEmpty ? '' : w[0].toUpperCase() + w.substring(1).toLowerCase())
-        .join(' ');
+  String _iniciales() {
+    final fn = _val('first_name');
+    final ln = _val('last_name');
+    if (fn.isEmpty && ln.isEmpty) {
+      final email = _val('email');
+      return email.isNotEmpty ? email[0].toUpperCase() : '?';
+    }
+    return ((fn.isNotEmpty ? fn[0] : '') + (ln.isNotEmpty ? ln[0] : '')).toUpperCase();
   }
 
   @override
@@ -98,14 +66,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final empresa = _empresaActual();
     final fotoUrl = _user?['foto']?.toString();
+    final nombreCompleto = '${_val('first_name')} ${_val('last_name')}'.trim();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil'),
+        centerTitle: false,
         actions: [
           IconButton(
             tooltip: 'Cerrar sesión',
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_outlined),
             onPressed: () async {
               await AuthService.logout();
               if (mounted) {
@@ -117,174 +87,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _load,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
+        child: ListView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // ===== CABECERA =====
-              Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      if (fotoUrl != null && fotoUrl.isNotEmpty && fotoUrl != 'null')
-                        CircleAvatar(radius: 36, backgroundImage: NetworkImage(fotoUrl))
-                      else
-                        CircleAvatar(
-                          radius: 36,
-                          child: Text(
-                            _iniciales(),
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${_val('first_name')} ${_val('last_name')}'.trim(),
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(Icons.mail, size: 16, color: Colors.grey),
-                                const SizedBox(width: 6),
-                                Flexible(child: Text(_val('email'))),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                _chipTipo(),
-                                if (_val('rut').isNotEmpty)
-                                  _Pill(icon: Icons.badge, label: 'RUT', value: _val('rut')),
-                                if (_val('telefono').isNotEmpty)
-                                  _Pill(icon: Icons.phone, label: 'Teléfono', value: _val('telefono')),
-                                if (_val('region').isNotEmpty)
-                                  _Pill(icon: Icons.map, label: 'Región', value: _val('region')),
-                                if (_val('comuna').isNotEmpty)
-                                  _Pill(icon: Icons.location_on, label: 'Comuna', value: _val('comuna')),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // ===== DETALLE DE CUENTA =====
-              _SectionCard(
-                title: 'Cuenta',
-                children: [
-                  _ItemRow(icon: Icons.alternate_email, label: 'Email', value: _val('email')),
-                  _ItemRow(
-                    icon: Icons.verified,
-                    label: 'Activo',
-                    value: (_user?['is_active'] == true) ? 'Sí' : 'No',
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // ===== EMPRESA =====
-              _SectionCard(
-                title: 'Empresa',
-                trailing: _empresas.length > 1
-                    ? DropdownButton<int>(
-                        value: _empresaSelId,
-                        onChanged: (val) async {
-                          if (val == null) return;
-                          await TokenStorage.setEmpresaSeleccionada(val);
-                          setState(() => _empresaSelId = val);
-                        },
-                        items: _empresas.map((e) {
-                          final id = e['empresa_id'] as int;
-                          return DropdownMenuItem<int>(
-                            value: id,
-                            child: Text('${e['empresa_nombre']} (${e['rol']})'),
-                          );
-                        }).toList(),
-                      )
-                    : null,
-                children: [
-                  if (empresa == null)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text('Sin empresa seleccionada'),
-                    )
-                  else ...[
-                    _ItemRow(icon: Icons.apartment, label: 'Nombre', value: '${empresa['empresa_nombre'] ?? ''}'),
-                    _ItemRow(icon: Icons.workspace_premium, label: 'Rol', value: '${empresa['rol'] ?? ''}'),
-                    if ((empresa['giro'] ?? '').toString().isNotEmpty)
-                      _ItemRow(icon: Icons.category_outlined, label: 'Giro', value: '${empresa['giro']}'),
-                    if ((empresa['emailContacto'] ?? '').toString().isNotEmpty)
-                      _ItemRow(icon: Icons.email_outlined, label: 'Email contacto', value: '${empresa['emailContacto']}'),
-                    if ((empresa['telefono'] ?? '').toString().isNotEmpty)
-                      _ItemRow(icon: Icons.call_outlined, label: 'Teléfono', value: '${empresa['telefono']}'),
-                    if ((empresa['direccion'] ?? '').toString().isNotEmpty)
-                      _ItemRow(icon: Icons.place_outlined, label: 'Dirección', value: '${empresa['direccion']}'),
-                    if ((empresa['comuna'] ?? '').toString().isNotEmpty)
-                      _ItemRow(icon: Icons.location_city, label: 'Comuna', value: '${empresa['comuna']}'),
-                    if ((empresa['region'] ?? '').toString().isNotEmpty)
-                      _ItemRow(icon: Icons.public, label: 'Región', value: '${empresa['region']}'),
-                  ],
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// =========================
-// Widgets reutilizables
-// =========================
-
-class _SectionCard extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-  final Widget? trailing;
-
-  const _SectionCard({
-    required this.title,
-    required this.children,
-    this.trailing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            // --- Tarjeta de Cabecera de Usuario ---
+            _HeaderCard(
+              nombre: nombreCompleto,
+              email: _val('email'),
+              iniciales: _iniciales(),
+              fotoUrl: (fotoUrl != null && fotoUrl != 'null') ? fotoUrl : null,
+              rut: _val('rut'),
+              telefono: _val('telefono'),
+            ),
+            const SizedBox(height: 24),
+
+            // --- Sección de Cuenta ---
+            _SectionCard(
+              title: 'Detalles de la Cuenta',
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const Spacer(),
-                if (trailing != null) trailing!,
+                _InfoTile(
+                  icon: Icons.verified_user_outlined,
+                  label: 'Estado',
+                  value: (_user?['is_active'] == true) ? 'Activo' : 'Inactivo',
+                ),
+                _InfoTile(
+                  icon: Icons.alternate_email_outlined,
+                  label: 'Nombre de usuario',
+                  value: _val('username'),
+                ),
               ],
             ),
-            const SizedBox(height: 8),
-            ...children,
+            const SizedBox(height: 24),
+
+            // --- Sección de Empresa ---
+            _SectionCard(
+              title: 'Empresa Actual',
+              trailing: _empresas.length > 1
+                  ? _CompanyDropdown(
+                      empresas: _empresas,
+                      selectedId: _empresaSelId,
+                      onChanged: (val) async {
+                        if (val == null) return;
+                        await TokenStorage.setEmpresaSeleccionada(val);
+                        setState(() => _empresaSelId = val);
+                      },
+                    )
+                  : null,
+              children: [
+                if (empresa == null)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Center(child: Text('Sin empresa seleccionada')),
+                  )
+                else ...[
+                  _InfoTile(icon: Icons.apartment_outlined, label: 'Nombre', value: '${empresa['empresa_nombre'] ?? ''}'),
+                  _InfoTile(icon: Icons.work_outline_rounded, label: 'Rol', value: '${empresa['rol'] ?? ''}'),
+                  _InfoTile(icon: Icons.location_on_outlined, label: 'Dirección', value: '${empresa['direccion'] ?? ''}'),
+                  _InfoTile(icon: Icons.phone_outlined, label: 'Teléfono', value: '${empresa['telefono'] ?? ''}'),
+                ],
+              ],
+            ),
           ],
         ),
       ),
@@ -292,61 +154,170 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _ItemRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
+// --- WIDGETS DE UI MEJORADOS ---
 
-  const _ItemRow({
-    required this.icon,
-    required this.label,
-    required this.value,
+class _HeaderCard extends StatelessWidget {
+  final String nombre, email, iniciales, rut, telefono;
+  final String? fotoUrl;
+
+  const _HeaderCard({
+    required this.nombre, required this.email, required this.iniciales,
+    required this.rut, required this.telefono, this.fotoUrl,
   });
 
   @override
   Widget build(BuildContext context) {
-    final muted = Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 18, color: Colors.grey[700]),
-          const SizedBox(width: 10),
-          SizedBox(width: 130, child: Text(label, style: muted)),
-          const SizedBox(width: 8),
-          Expanded(child: Text(value)),
-        ],
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    // ✅ CORRECCIÓN: Determina si el tema actual es oscuro.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Card(
+      elevation: 0,
+      // ✅ CORRECCIÓN: Usa un color diferente para el modo oscuro.
+      color: isDark ? scheme.surfaceContainerHighest : scheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: scheme.primary,
+                  foregroundColor: scheme.onPrimary,
+                  backgroundImage: (fotoUrl != null) ? NetworkImage(fotoUrl!) : null,
+                  child: (fotoUrl == null)
+                      ? Text(iniciales, style: textTheme.headlineSmall?.copyWith(color: scheme.onPrimary))
+                      : null,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(nombre, style: textTheme.headlineSmall?.copyWith(color: isDark ? scheme.onSurface : scheme.onPrimaryContainer, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Text(email, style: textTheme.bodyMedium?.copyWith(color: isDark ? scheme.onSurfaceVariant : scheme.onPrimaryContainer)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (rut.isNotEmpty || telefono.isNotEmpty) ...[
+              const Divider(height: 24),
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: [
+                  if (rut.isNotEmpty) _InfoChip(icon: Icons.badge_outlined, text: rut),
+                  if (telefono.isNotEmpty) _InfoChip(icon: Icons.phone_outlined, text: telefono),
+                ],
+              )
+            ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _Pill extends StatelessWidget {
+class _SectionCard extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+  final Widget? trailing;
+
+  const _SectionCard({required this.title, required this.children, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(title, style: textTheme.titleMedium),
+            const Spacer(),
+            if (trailing != null) trailing!,
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(children: children),
+        ),
+      ],
+    );
+  }
+}
+
+class _InfoTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
 
-  const _Pill({required this.icon, required this.label, required this.value});
+  const _InfoTile({required this.icon, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.black.withOpacity(0.08)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14),
-          const SizedBox(width: 6),
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
-          Text(value),
-        ],
-      ),
+    if (value.isEmpty || value == 'null') return const SizedBox.shrink();
+    return ListTile(
+      leading: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
+      title: Text(value),
+      subtitle: Text(label),
+      dense: true,
+      visualDensity: VisualDensity.compact,
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _InfoChip({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Chip(
+      avatar: Icon(icon, size: 18, color: isDark ? scheme.onSurfaceVariant : scheme.onSecondaryContainer),
+      label: Text(text),
+      backgroundColor: isDark ? scheme.surfaceContainer : scheme.secondaryContainer.withOpacity(0.4),
+      side: BorderSide.none,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+    );
+  }
+}
+
+class _CompanyDropdown extends StatelessWidget {
+  final List<Map<String, dynamic>> empresas;
+  final int? selectedId;
+  final ValueChanged<int?> onChanged;
+
+  const _CompanyDropdown({required this.empresas, this.selectedId, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<int>(
+      value: selectedId,
+      onChanged: onChanged,
+      underline: const SizedBox.shrink(),
+      icon: const Icon(Icons.unfold_more_rounded),
+      items: empresas.map((e) {
+        final id = e['empresa_id'] as int;
+        return DropdownMenuItem<int>(
+          value: id,
+          child: Text(e['empresa_nombre'] as String),
+        );
+      }).toList(),
     );
   }
 }

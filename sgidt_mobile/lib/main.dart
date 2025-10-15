@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
 import 'screens/splash_screen.dart';
@@ -12,43 +13,47 @@ import 'screens/profile_screen.dart';
 import 'services/documents_service.dart';
 
 Future<void> main() async {
-  // Asegura que los bindings de Flutter estén inicializados.
   WidgetsFlutterBinding.ensureInitialized();
-  // Inicializa el controlador del tema para cargar la preferencia del usuario.
   await ThemeController.instance.init();
-  runApp(const SGIDTApp());
+
+  // 2. Lógica para determinar la ruta inicial
+  final prefs = await SharedPreferences.getInstance();
+  // Busca el valor 'hasSeenOnboarding'. Si no existe, el valor por defecto es `false`.
+  final bool hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+  runApp(SGIDTApp(hasSeenOnboarding: hasSeenOnboarding)); // 3. Pasa el valor a la app
 }
 
 class SGIDTApp extends StatelessWidget {
-  const SGIDTApp({super.key});
+  // 4. Recibe el valor en el constructor
+  final bool hasSeenOnboarding;
+  const SGIDTApp({super.key, required this.hasSeenOnboarding});
 
   @override
   Widget build(BuildContext context) {
-    // AnimatedBuilder reconstruye MaterialApp cuando el tema cambia.
     return AnimatedBuilder(
       animation: ThemeController.instance,
       builder: (_, __) {
         return MaterialApp(
           title: 'SGIDT Móvil',
           debugShowCheckedModeBanner: false,
-
-          // --- Configuración de Tema ---
           theme: AppTheme.light(),
           darkTheme: AppTheme.dark(),
           themeMode: ThemeController.instance.mode,
+          
+          // 5. Usa el valor para decidir la ruta inicial de la app
+          initialRoute: hasSeenOnboarding ? '/splash' : '/onboarding',
 
-          // --- Configuración de Rutas ---
-          initialRoute: '/splash',
           routes: {
-            '/splash': (_) => const SplashScreen(),
+            // Asegúrate de que la ruta '/onboarding' esté definida
             '/onboarding': (_) => const OnboardingScreen(),
+            '/splash': (_) => const SplashScreen(),
             '/login': (_) => const LoginScreen(),
             '/home': (_) => const HomeScreen(),
             '/capture': (_) => const CaptureScreen(),
             '/profile': (_) => const ProfileScreen(),
           },
           
-          // ✨ REFACTORIZACIÓN: Lógica de generación de rutas centralizada y más limpia.
           onGenerateRoute: (settings) {
             if (settings.name == '/preview') {
               final path = settings.arguments as String;
@@ -59,7 +64,7 @@ class SGIDTApp extends StatelessWidget {
 
             if (settings.name == '/document') {
               final args = settings.arguments;
-              Widget screen; // Variable para almacenar la pantalla a mostrar
+              Widget screen;
 
               if (args is Map<String, String>) {
                 screen = DocumentDetailScreen(documento: args);
@@ -71,16 +76,12 @@ class SGIDTApp extends StatelessWidget {
               } else if (args is String || args is int) {
                 screen = DocumentDetailByIdScreen(id: args.toString());
               } else {
-                // Pantalla de fallback si los argumentos no son válidos.
                 screen = const Scaffold(
                   body: Center(child: Text('Argumento inválido para /document')),
                 );
               }
-              // Se crea el MaterialPageRoute una sola vez al final.
               return MaterialPageRoute(builder: (_) => screen);
             }
-
-            // Si la ruta no es manejada, retorna null.
             return null;
           },
         );
@@ -89,50 +90,39 @@ class SGIDTApp extends StatelessWidget {
   }
 }
 
-/// ✨ MEJORA: Wrapper convertido a StatefulWidget para permitir reintentar la carga.
-/// Obtiene el documento por ID usando un FutureBuilder y luego muestra la pantalla de detalle.
+// --- El resto de tu main.dart (DocumentDetailByIdScreen) se mantiene igual ---
 class DocumentDetailByIdScreen extends StatefulWidget {
   final String id;
   const DocumentDetailByIdScreen({super.key, required this.id});
-
   @override
   State<DocumentDetailByIdScreen> createState() => _DocumentDetailByIdScreenState();
 }
 
 class _DocumentDetailByIdScreenState extends State<DocumentDetailByIdScreen> {
   late Future<Map<String, String>> _documentFuture;
-
   @override
   void initState() {
     super.initState();
-    // Inicia la carga del documento cuando el widget se crea por primera vez.
     _fetchDocument();
   }
-
   void _fetchDocument() {
     _documentFuture = DocumentsService.fetchDetail(widget.id);
   }
-
   void _retryFetch() {
-    // Actualiza el estado para que FutureBuilder se reconstruya y reintente el future.
     setState(() {
       _fetchDocument();
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, String>>(
       future: _documentFuture,
       builder: (context, snap) {
-        // --- Estado de Carga ---
         if (snap.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
-
-        // --- Estado de Error ---
         if (snap.hasError) {
           return Scaffold(
             appBar: AppBar(title: Text('Documento #${widget.id}')),
@@ -156,7 +146,7 @@ class _DocumentDetailByIdScreenState extends State<DocumentDetailByIdScreen> {
                     const SizedBox(height: 24),
                     FilledButton.icon(
                       icon: const Icon(Icons.refresh),
-                      onPressed: _retryFetch, // Botón para reintentar
+                      onPressed: _retryFetch,
                       label: const Text('Reintentar'),
                     ),
                   ],
@@ -165,8 +155,6 @@ class _DocumentDetailByIdScreenState extends State<DocumentDetailByIdScreen> {
             ),
           );
         }
-        
-        // --- Estado Exitoso ---
         final doc = snap.data!;
         return DocumentDetailScreen(documento: doc);
       },
