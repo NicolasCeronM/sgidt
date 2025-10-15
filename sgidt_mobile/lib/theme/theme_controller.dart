@@ -42,7 +42,17 @@ class ThemeController extends ChangeNotifier {
     );
   }
 
+  // This method wasn't quite a toggle, it was more of a setter.
+  // We'll leave it in case you use it elsewhere.
   Future<void> toggleDark(bool value) async {
     await setMode(value ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  // ✨ --- NEW METHOD --- ✨
+  /// Toggles the theme between light and dark mode.
+  Future<void> toggleTheme() async {
+    // If it's currently dark (or system dark), switch to light. Otherwise, switch to dark.
+    final newMode = isDark ? ThemeMode.light : ThemeMode.dark;
+    await setMode(newMode);
   }
 }

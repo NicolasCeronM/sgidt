@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../widgets/document_card.dart';
 import '../widgets/empty_state.dart';
 import '../services/documents_service.dart';
-import '../theme/app_theme.dart'; // color SGIDT
+import '../theme/app_theme.dart';
+// ✨ 1. Importa tu controlador de tema
+import '../theme/theme_controller.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,13 +45,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // ✨ 2. Determina el ícono y tooltip correctos según el tema actual
+    final isDark = ThemeController.instance.isDark;
+    final themeIcon = isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined;
+    final themeTooltip = isDark ? 'Activar modo claro' : 'Activar modo oscuro';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('SGIDT – Documentos'),
-        centerTitle: true,
+        centerTitle: false, // Se ve mejor alineado a la izquierda con acciones
         elevation: 0,
         actions: [
+          // ✨ 3. Agrega el IconButton para cambiar el tema
+          IconButton(
+            onPressed: () {
+              // Llama al método del controlador para cambiar el tema
+              ThemeController.instance.toggleTheme();
+            },
+            icon: Icon(themeIcon),
+            tooltip: themeTooltip,
+          ),
           IconButton(
             onPressed: _load,
             icon: const Icon(Icons.refresh_rounded),
@@ -74,11 +89,14 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         onCentralTap: _goCapture,
         bgColor: scheme.surface,
+        // ✨ MEJORA: Usa el color primario del tema para el ícono activo
+        activeColor: scheme.primary, 
       ),
     );
   }
 
-  // Helper: toma el primer campo no vacío que exista en el mapa
+  // ... (El resto de tus métodos como _buildDocs, _pickFirst, _formatAmountCLP, etc., se mantienen exactamente igual)
+  
   String? _pickFirst(Map<String, String> m, List<String> keys) {
     for (final k in keys) {
       final v = m[k];
@@ -101,60 +119,22 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
-
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96), // deja aire sobre el FAB
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       itemCount: docs.length,
       separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (_, i) {
         final d = docs[i];
-
         final id = d['id'] ?? d['uuid'] ?? d['pk'] ?? '';
-
-        // === proveedor/nombre (o fallback a tipo + folio) ===
-        final proveedor = _pickFirst(d, [
-              'proveedor',
-              'prov',
-              'supplier',
-              'emisor',
-              'emisor_nombre',
-              'emisor_razon_social',
-              'razon_social_emisor',
-              'razon_social',
-              'receptor',
-              'company',
-              'nombre',
-            ]) ??
+        final proveedor = _pickFirst(d, ['proveedor', 'prov', 'supplier', 'emisor', 'emisor_nombre', 'emisor_razon_social', 'razon_social_emisor', 'razon_social', 'receptor', 'company', 'nombre',]) ??
             [
               _pickFirst(d, ['tipo', 'document_type', 'tipo_dte']),
               _pickFirst(d, ['folio', 'numero', 'nro']),
             ].whereType<String>().join(' #');
-
-        // === fecha ===
-        final fecha = _pickFirst(d, [
-              'fecha',
-              'fecha_emision',
-              'fecha_recepcion',
-              'created',
-              'created_at',
-              'date',
-            ]) ??
-            '';
-
-        // === total (AHORA con parser inteligente y formato CLP) ===
+        final fecha = _pickFirst(d, ['fecha', 'fecha_emision', 'fecha_recepcion', 'created', 'created_at', 'date',]) ?? '';
         final totalRaw = d['total'] ?? d['monto'] ?? d['amount'] ?? '';
-        final total = _formatAmountCLP(totalRaw); // -> "$119.000"
-
-        // === estado ===
-        final estado = _pickFirst(d, [
-              'estado',
-              'status',
-              'estado_desc',
-              'resultado',
-              'status_label',
-            ]) ??
-            '—';
-
+        final total = _formatAmountCLP(totalRaw);
+        final estado = _pickFirst(d, ['estado', 'status', 'estado_desc', 'resultado', 'status_label',]) ?? '—';
         return DocumentCard(
           id: id,
           proveedor: proveedor.isEmpty ? '—' : proveedor,
@@ -171,51 +151,36 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // =======================
-  //  Formateo de montos CLP
-  // =======================
-
-  // Convierte cualquier string/num a CLP con puntos de miles (sin decimales)
   static String _formatAmountCLP(dynamic v) {
     final n = _parseAmountSmart(v);
     if (n == null) return (v ?? '').toString();
     return _formatCLP(n);
   }
 
-  // Parser robusto: detecta miles/decimales en "es-CL" y "en-US"
   static num? _parseAmountSmart(dynamic v) {
     if (v == null) return null;
     if (v is num) return v;
-
     String s = v.toString().trim();
     if (s.isEmpty) return null;
-
-    // Quita símbolos y espacios (deja solo dígitos, coma, punto y signo)
     s = s.replaceAll(RegExp(r'[^\d,.\-]'), '');
-
     final hasDot = s.contains('.');
     final hasComma = s.contains(',');
-
     if (hasDot && hasComma) {
-      // "119.000,00" -> miles ".", decimal ","
       s = s.replaceAll('.', '').replaceAll(',', '.');
     } else if (hasComma && !hasDot) {
-      // "119000,00" -> decimal con coma
       s = s.replaceAll(',', '.');
     } else if (hasDot && !hasComma) {
-      // Solo punto: puede ser miles o decimal
       final dotCount = '.'.allMatches(s).length;
       final last = s.lastIndexOf('.');
       final digitsRight = s.length - last - 1;
       final looksThousands = dotCount > 1 || digitsRight == 3;
       if (looksThousands) {
-        s = s.replaceAll('.', ''); // eran separadores de miles
+        s = s.replaceAll('.', '');
       }
     }
     return num.tryParse(s);
   }
 
-  // Formatea como $X.XXX (sin decimales)
   static String _formatCLP(num value) {
     final s = value.toStringAsFixed(0);
     final buf = StringBuffer();
@@ -230,14 +195,14 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 /* ============================
- *  Barra curva + FAB central
+ * Barra curva + FAB central
  * ============================ */
-
 class CurvedBottomNav extends StatelessWidget {
   final int index;
   final ValueChanged<int> onTap;
   final VoidCallback onCentralTap;
   final Color bgColor;
+  final Color activeColor; // ✨ MEJORA: Recibe el color activo
 
   const CurvedBottomNav({
     super.key,
@@ -245,13 +210,13 @@ class CurvedBottomNav extends StatelessWidget {
     required this.onTap,
     required this.onCentralTap,
     required this.bgColor,
+    required this.activeColor, // ✨ MEJORA
   });
 
   @override
   Widget build(BuildContext context) {
     final inactive = Theme.of(context).colorScheme.onSurface.withOpacity(.6);
-    final active = AppTheme.sgidtRed;
-
+    
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       notchMargin: 8,
@@ -265,7 +230,7 @@ class CurvedBottomNav extends StatelessWidget {
           _NavIcon(
             icon: Icons.home_outlined,
             isActive: index == 0,
-            activeColor: active,
+            activeColor: activeColor, // ✨ MEJORA
             inactiveColor: inactive,
             onTap: () => onTap(0),
           ),
@@ -273,7 +238,7 @@ class CurvedBottomNav extends StatelessWidget {
           _NavIcon(
             icon: Icons.person_outline,
             isActive: index == 2,
-            activeColor: active,
+            activeColor: activeColor, // ✨ MEJORA
             inactiveColor: inactive,
             onTap: () => onTap(2),
           ),
@@ -283,6 +248,7 @@ class CurvedBottomNav extends StatelessWidget {
   }
 }
 
+// ... El widget _NavIcon se mantiene igual ...
 class _NavIcon extends StatelessWidget {
   final IconData icon;
   final bool isActive;
@@ -324,11 +290,11 @@ class CaptureFab extends StatelessWidget {
     return SizedBox(
       height: 64,
       width: 64,
+      // ✨ MEJORA: Usa el tema definido en app_theme.dart en lugar de colores fijos
       child: FloatingActionButton(
         onPressed: onPressed,
-        backgroundColor: AppTheme.sgidtRed,
         elevation: 6,
-        child: const Icon(Icons.document_scanner_outlined, color: Colors.white, size: 30),
+        child: const Icon(Icons.document_scanner_outlined, size: 30),
       ),
     );
   }

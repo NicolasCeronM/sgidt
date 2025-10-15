@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_theme.dart'; // Necesitas esta importación para acceder a CustomColors
 
 class StatusChip extends StatelessWidget {
   final String status;
@@ -9,14 +9,23 @@ class StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = (status).trim().toLowerCase();
 
-    Color fg;
+    // ✨ PASO 1: Obtener los colores personalizados del tema actual.
+    final customColors = Theme.of(context).extension<CustomColors>()!;
+
+    Color fg; // Foreground color
+
     if (s.contains('valid') || s.contains('proces')) {
-      fg = AppTheme.ok;
+      // ✨ PASO 2: Usar el color de éxito del tema.
+      fg = customColors.success!; 
     } else if (s.contains('rechaz') || s.contains('error') || s.contains('fail')) {
-      fg = AppTheme.err;
+      // ✨ PASO 3: Usar el color de error del tema.
+      fg = customColors.error!;
     } else {
+      // Esta parte ya era correcta, usa el color primario del tema.
       fg = Theme.of(context).colorScheme.primary;
     }
+    
+    // El resto de tu lógica es perfecta y no necesita cambios.
     final bg = fg.withOpacity(.15);
 
     return Container(
