@@ -20,6 +20,8 @@ dependencies:
   flutter_cached_pdfview: ^0.4.2
   url_launcher: ^6.3.0
   intl: ^0.19.0
+  camera: ^0.10.6
+  camera_windows: ^0.2.1+1
 
 dev_dependencies:
   flutter_test:
