@@ -32,7 +32,7 @@ class UploadService {
     try {
       // 'archivo' es el nombre del campo que Django espera.
       // ¡Asegúrate de que coincida con el nombre en tu `DocumentoSerializer`!
-      request.files.add(await http.MultipartFile.fromPath('archivo', filePath));
+      request.files.add(await http.MultipartFile.fromPath('files', filePath));
     } catch (e) {
       print('Error crítico al leer el archivo: $e');
       return false;

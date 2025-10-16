@@ -2,7 +2,7 @@ class AppConfig {
   /// Usa --dart-define=API_BASE_URL=http://192.168.1.100:8000/api
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8000/api/v1',
+    defaultValue: 'https://z4cqhf8b-8000.brs.devtunnels.ms/api/v1',
   );
 
   /// Timeouts (ms)
