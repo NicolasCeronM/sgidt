@@ -1,48 +1,58 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import '../services/auth_service.dart';
+import 'package:sgidt_mobile/core/api/endpoints.dart';
+import 'package:sgidt_mobile/core/config/app_config.dart';
+import 'package:sgidt_mobile/core/storage/token_storage.dart';
 
 class UploadService {
-  static const String kApiBaseUrl = 'http://localhost:8000/api'; // o por dart-define
-  static const String kUploadEndpoint = '/v1/documentos/';
-
-  static Uri _url(String path) => Uri.parse('$kApiBaseUrl$path');
-
-  static Future<Map<String, dynamic>> uploadFile({
-    required File file,
-    String fileFieldName = 'file',
-    Map<String, String>? extraFields,
-  }) async {
-    final uri = _url(kUploadEndpoint);
-    final req = http.MultipartRequest('POST', uri);
-
-    final Map<String, String> headers = <String, String>{};
-    final auth = await AuthService.authHeader();
-    if (auth.isNotEmpty) headers.addAll(auth);
-    req.headers.addAll(headers);
-
-    if (extraFields != null) req.fields.addAll(extraFields);
-    final fileName = file.path.split(Platform.pathSeparator).last;
-    req.files.add(await http.MultipartFile.fromPath(fileFieldName, file.path, filename: fileName));
-
-    final streamed = await req.send();
-    final res = await http.Response.fromStream(streamed);
-
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      return jsonDecode(res.body) as Map<String, dynamic>;
+  /// Sube un documento (imagen) al backend.
+  ///
+  /// Recibe el [filePath] del archivo en el dispositivo.
+  /// Devuelve `true` si la subida fue exitosa (código 201), de lo contrario `false`.
+  Future<bool> uploadDocument(String filePath) async {
+    // 1. Obtener el token de autenticación de forma segura
+    final token = await TokenStorage.access;
+    if (token == null) {
+      print('Error de subida: Usuario no autenticado (token no encontrado).');
+      return false;
     }
+
+    // 2. Construir la URL final a partir de la configuración central
+    final url = Uri.parse('${AppConfig.apiBaseUrl}${Endpoints.documentos}');
+    print('Subiendo a: $url');
+
+    // 3. Crear la solicitud multipart, que es la estándar para archivos
+    var request = http.MultipartRequest('POST', url);
+
+    // 4. Adjuntar el token de autorización en los headers
+    request.headers['Authorization'] = 'Bearer $token';
+
+    // 5. Adjuntar el archivo
     try {
-      final err = jsonDecode(res.body);
-      final detail = (err is Map && err['detail'] != null) ? err['detail'].toString() : res.body;
-      throw Exception(detail);
-    } catch (_) {
-      throw Exception('Error ${res.statusCode}: ${res.body}');
+      // 'archivo' es el nombre del campo que Django espera.
+      // ¡Asegúrate de que coincida con el nombre en tu `DocumentoSerializer`!
+      request.files.add(await http.MultipartFile.fromPath('archivo', filePath));
+    } catch (e) {
+      print('Error crítico al leer el archivo: $e');
+      return false;
     }
-  }
 
-  static Future<bool> uploadImage(File file) async {
-    try { await uploadFile(file: file, fileFieldName: 'file'); return true; }
-    catch (_) { return false; }
+    // 6. Enviar la solicitud y manejar la respuesta
+    try {
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 201) {
+        print('✅ Documento subido con éxito. Respuesta: ${response.body}');
+        return true;
+      } else {
+        print('❌ Error del servidor. Código: ${response.statusCode}. Respuesta: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Excepción de red durante la subida: $e');
+      return false;
+    }
   }
 }
