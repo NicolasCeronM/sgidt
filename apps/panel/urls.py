@@ -4,7 +4,7 @@ from django.urls import path
 # Vistas del panel (separadas por módulo, en español)
 from apps.panel.views.dashboard import DashboardView, GastosUltimos6MesesAPI
 from apps.panel.views.docuemntos import DocsView
-from apps.panel.views.reportes import ReportsView, ValidationsView
+from apps.panel.views.reportes import ReportsView, export_report_data, ValidationsView
 from apps.panel.views.configuracion import SettingsView
 from apps.panel.views.ayuda import HelpView, FAQView, StatusView, help_contact, manual_usuario_pdf, chatbot_ask
 from apps.panel.views.api import DashboardSummaryApi, DashboardLatestDocsApi
@@ -23,9 +23,11 @@ urlpatterns = [
 
     # Módulos
     path("documentos/", DocsView.as_view(), name="documentos_page"),
-    path("reportes/", ReportsView.as_view(), name="reportes"),
+    #path("reportes/", ReportsView.as_view(), name="reportes"),
     path("validaciones/", ValidationsView.as_view(), name="validaciones"),
     path("configuraciones/", SettingsView.as_view(), name="configuraciones"),
+    path('reportes/', ReportsView.as_view(), name='reportes'),
+    path('reportes/exportar/<str:file_type>/', export_report_data, name='exportar_reporte'),
 
     # Ayuda / Soporte
     path("ayuda/", HelpView.as_view(), name="ayuda"),

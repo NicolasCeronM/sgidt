@@ -2,111 +2,83 @@
 {% load static %}
 {% block title %}Reportes · SGIDT{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'reportes/css/reportes.css' %}">
+{% endblock %}
+
+
 {% block content %}
-<link rel="stylesheet" href="{% static 'reportes/css/reportes.css' %}?v=1">
-
-<section class="rp-page">
-  <div class="rp-container">
-    <!-- Encabezado -->
-    <header class="rp-head">
-      <div>
-        <h1 class="rp-title">Reportes</h1>
-        <p class="rp-subtitle">Visualiza y exporta tus indicadores tributarios por período.</p>
-      </div>
-
-      <!-- Controles superiores -->
-      <div class="rp-controls">
-        <label for="reportPeriod" class="rp-label">Período</label>
-        <select id="reportPeriod" class="rp-select">
-          <option value="monthly" selected>Mensual</option>
-          <option value="quarterly">Trimestral</option>
-          <option value="yearly">Anual</option>
-        </select>
-
-        <button class="btn btn-ghost" onclick="exportReport('csv', event)">
-          <i class="fas fa-file-csv"></i> CSV
-        </button>
-        <button class="btn btn-ghost" onclick="exportReport('excel', event)">
-          <i class="fas fa-file-excel"></i> Excel
-        </button>
-      </div>
+<div class="rp-container">
+    <header class="rp-header">
+        <div>
+            <h1 class="rp-title">Reportes Mensuales</h1>
+            <p class="rp-subtitle">Visualiza y exporta tus indicadores tributarios.</p>
+        </div>
+        <div class="rp-filters">
+            <select id="monthSelector" class="rp-select"></select>
+            <select id="yearSelector" class="rp-select"></select>
+            <button id="exportCsvBtn" class="btn btn-secondary"><i class="fas fa-file-csv"></i> Exportar a CSV</button>
+            <button id="exportExcelBtn" class="btn btn-secondary"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
+        </div>
     </header>
 
-    <!-- Resumen + Detalle -->
-    <div class="rp-grid">
-      <!-- Resumen -->
-      <section class="card">
-        <h3 class="card-title">Resumen Financiero</h3>
-
-        <div class="rp-summary">
-          <div class="sum-item">
-            <span class="sum-label">Ingresos Totales</span>
-            <span class="sum-value positive" id="summaryIncome">$45.678.900</span>
-          </div>
-          <div class="sum-item">
-            <span class="sum-label">Gastos Totales</span>
-            <span class="sum-value negative" id="summaryExpenses">$32.456.780</span>
-          </div>
-          <div class="sum-item">
-            <span class="sum-label">IVA Débito</span>
-            <span class="sum-value" id="summaryIvaDebit">$8.678.991</span>
-          </div>
-          <div class="sum-item">
-            <span class="sum-label">IVA Crédito</span>
-            <span class="sum-value" id="summaryIvaCredit">$6.166.787</span>
-          </div>
+    <section class="rp-kpi-grid">
+        <div class="rp-kpi-card">
+            <h4>Total Ingresos</h4>
+            <p id="kpiIngresos">$0</p>
         </div>
-      </section>
-
-      <!-- Tabla -->
-      <section class="card">
-        <h3 class="card-title">Detalle por Período</h3>
-
-        <div class="rp-tablewrap">
-          <table class="rp-table">
-            <thead>
-              <tr>
-                <th>Período</th>
-                <th>Ingresos</th>
-                <th>Gastos</th>
-                <th>IVA Débito</th>
-                <th>IVA Crédito</th>
-                <th>Resultado</th>
-              </tr>
-            </thead>
-            <tbody id="reportTableBody">
-              <!-- se llena desde JS -->
-            </tbody>
-          </table>
+        <div class="rp-kpi-card">
+            <h4>Total Gastos</h4>
+            <p id="kpiGastos">$0</p>
         </div>
-      </section>
-    </div>
-  </div>
-</section>
+        <div class="rp-kpi-card">
+            <h4>Resultado del Mes</h4>
+            <p id="kpiResultado">$0</p>
+        </div>
+    </section>
 
-<script>
-  // Ejemplo de carga mínima si aún no tienes script
-  (function () {
-    const rows = [
-      { p: '2025-01', i: 4567890, g: 3245678, d: 867899, c: 616678, r: 1322212 },
-      { p: '2024-12', i: 4211000, g: 2978000, d: 801000, c: 571000, r: 1233000 },
-      { p: '2024-11', i: 3980000, g: 2846000, d: 760000, c: 545000, r: 1134000 },
-    ];
-    const fmt = new Intl.NumberFormat('es-CL');
-    const tbody = document.getElementById('reportTableBody');
-    if (!tbody || tbody.children.length) return;
-    rows.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${r.p}</td>
-        <td>$${fmt.format(r.i)}</td>
-        <td>$${fmt.format(r.g)}</td>
-        <td>$${fmt.format(r.d)}</td>
-        <td>$${fmt.format(r.c)}</td>
-        <td><span class="badge ${r.r >= 0 ? 'ok' : 'off'}">${r.r >= 0 ? '▲ ' : '▼ '}$${fmt.format(Math.abs(r.r))}</span></td>
-      `;
-      tbody.appendChild(tr);
-    });
-  })();
-</script>
+    <section class="rp-charts-grid">
+        <div class="rp-chart-card">
+            <h5>Ingresos vs. Gastos</h5>
+            <div id="ingresosVsGastosChart"></div>
+        </div>
+        <div class="rp-chart-card">
+            <h5>Análisis de IVA</h5>
+            <div id="analisisIvaChart"></div>
+        </div>
+        <div class="rp-chart-card">
+            <h5>Distribución de Ingresos</h5>
+            <div id="distribucionIngresosChart"></div>
+        </div>
+        <div class="rp-chart-card">
+            <h5>Distribución de Gastos</h5>
+            <div id="distribucionGastosChart"></div>
+        </div>
+    </section>
+
+    <section class="rp-table-card">
+        <h5>Últimos Documentos del Mes</h5>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Folio</th>
+                        <th>Tipo de Documento</th>
+                        <th>Fecha de Subida</th> {# <-- CORREGIDO #}
+                        <th>Monto Total</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="{% static 'reportes/js/reportes.js' %}"></script>
 {% endblock %}

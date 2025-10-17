@@ -1,213 +1,118 @@
-/* Paleta consistente con el resto (sin verdes) */
-:root {
-  --top: #111827; /* gradiente superior */
-  --bottom: #1e293b; /* gradiente inferior */
-  --accent: #374151; /* gris oscuro para bordes/detalles */
-  --card: #ffffff;
-  --bg: #f5f7fb;
-  --text: #0f172a;
-  --muted: #64748b;
-  --b-200: #e5e7eb;
-  --b-300: #cbd5e1;
-  --shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  --radius: 16px;
-}
-
-/* Página */
-.rp-page {
-  padding: 24px;
-}
+/* Contenedor principal y encabezado */
 .rp-container {
-  max-width: 1200px;
-  margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
+    padding: 2rem;
+    color: #333;
 }
 
-/* Encabezado con degradado oscuro */
-.rp-head {
-  background: linear-gradient(135deg, var(--top), var(--bottom));
-  color: #fff;
-  border-radius: var(--radius);
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-end;
-  padding: 22px;
-  box-shadow: var(--shadow);
-  margin-bottom: 18px;
+.rp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
+
 .rp-title {
-  margin: 0;
-  font-size: clamp(22px, 3vw, 28px);
-  font-weight: 800;
-  letter-spacing: -0.01em;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
 }
+
 .rp-subtitle {
-  margin: 0.25rem 0 0;
-  font-size: 14px;
-  opacity: 0.9;
+    font-size: 1rem;
+    color: #6c757d;
+    margin: 0;
 }
 
-/* Controles */
-.rp-controls {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
+/* Filtros y botones de exportación */
+.rp-filters {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
 }
-.rp-label {
-  font-weight: 700;
-  font-size: 13px;
-  opacity: 0.95;
-}
+
 .rp-select {
-  padding: 10px 12px;
-  border: 1px solid var(--b-300);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--text);
+    padding: 0.5rem 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    background-color: #fff;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
 }
+
 .rp-select:focus {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.12);
+    outline: none;
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-/* Botones reutilizados */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--b-300);
-  background: #fff;
-  color: var(--text);
-  text-decoration: none;
-  font-weight: 700;
-  transition: transform 0.05s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-}
-.btn:hover {
-  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
-}
-.btn:active {
-  transform: translateY(1px);
-}
-.btn-ghost {
-  background: #fff;
-  color: var(--text);
+/* Cuadrícula de KPIs (Indicadores Clave de Rendimiento) */
+.rp-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
 }
 
-/* Grid principal */
-.rp-grid {
-  display: grid;
-  gap: 14px;
-}
-@media (min-width: 960px) {
-  .rp-grid {
-    grid-template-columns: 0.9fr 1.1fr;
-  }
+.rp-kpi-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    text-align: center;
 }
 
-/* Tarjetas */
-.card {
-  background: var(--card);
-  border: 1px solid var(--b-200);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  padding: 16px 18px;
-}
-.card-title {
-  margin: 0 0 12px;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text);
+.rp-kpi-card h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #495057;
+    font-weight: 600;
 }
 
-/* Resumen financiero */
-.rp-summary {
-  display: grid;
-  gap: 12px;
-}
-.sum-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  border: 1px solid var(--b-200);
-  border-radius: 12px;
-  background: #fff;
-}
-.sum-label {
-  color: var(--muted);
-  font-weight: 700;
-}
-.sum-value {
-  font-weight: 900;
-  color: var(--text);
-}
-.sum-value.positive {
-  color: #0b3b70;
-} /* azul para positivo */
-.sum-value.negative {
-  color: #7f1d1d;
-} /* rojo suave para negativo */
-
-/* Tabla */
-.rp-tablewrap {
-  border: 1px solid var(--b-200);
-  border-radius: 12px;
-  overflow: auto;
-}
-.rp-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-.rp-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #f1f5f9;
-  color: var(--text);
-  text-align: left;
-  font-weight: 800;
-  white-space: nowrap;
-  padding: 12px;
-  border-bottom: 1px solid var(--b-200);
-}
-.rp-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--b-200);
-  vertical-align: middle;
-}
-.rp-table tbody tr:nth-child(even) {
-  background: #fafafa;
-}
-.rp-table tbody tr:hover {
-  background: #f8fafc;
+.rp-kpi-card p {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #212529;
 }
 
-/* Badge de resultado */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  border: 1px solid var(--b-300);
+/* Cuadrícula de Gráficos */
+.rp-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
 }
-.badge.ok {
-  background: #e0f2fe;
-  color: #0369a1;
-} /* azul suave */
-.badge.off {
-  background: #fee2e2;
-  color: #991b1b;
-} /* rojo suave */
 
-/* Utilidades */
-i {
-  opacity: 0.95;
+.rp-chart-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.rp-chart-card h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+/* Tarjeta de la Tabla de Documentos */
+.rp-table-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.rp-table-card h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 1rem;
 }
