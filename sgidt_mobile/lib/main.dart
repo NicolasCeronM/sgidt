@@ -3,9 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-// <-- 1. IMPORTAR EL PAQUETE DE LOCALIZACIONES -->
 import 'package:flutter_localizations/flutter_localizations.dart'; 
-
 import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
 import 'screens/splash_screen.dart';
@@ -17,6 +15,8 @@ import 'screens/preview_screen.dart';
 import 'screens/document_detail_screen.dart';
 import 'screens/profile_screen.dart';
 import 'services/documents_service.dart';
+import 'screens/recover_password_screen.dart';
+import 'screens/reset_password_screen.dart'; // <-- 1. IMPORTAR LA NUEVA PANTALLA
 
 
 Future<void> main() async {
@@ -67,7 +67,7 @@ class SGIDTApp extends StatelessWidget {
           // Usa el modo de tema (claro/oscuro/sistema) del controlador
           themeMode: ThemeController.instance.mode,
 
-          // --- 2. AÑADE ESTOS PARÁMETROS PARA EL CALENDARIO ---
+          // --- Localizaciones para el calendario ---
           locale: const Locale('es'), // Define español como el idioma por defecto
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
@@ -78,7 +78,7 @@ class SGIDTApp extends StatelessWidget {
             Locale('es'), // Tu idioma principal
             Locale('en'), // Un idioma de respaldo (buena práctica)
           ],
-          // --- FIN DE LAS LÍNEAS AÑADIDAS ---
+          // --- Fin de Localizaciones ---
 
           // Define la ruta inicial basada en si se vio el onboarding
           initialRoute: hasSeenOnboarding ? '/splash' : '/onboarding',
@@ -91,7 +91,8 @@ class SGIDTApp extends StatelessWidget {
             '/home': (_) => const MainScreen(), // La ruta principal ahora es MainScreen
             '/capture': (_) => const CaptureScreen(),
             '/profile': (_) => const ProfileScreen(),
-            // Las rutas '/preview' y '/document' se manejan con onGenerateRoute
+            '/recover-password': (_) => const RecoverPasswordScreen(),
+            // La ruta '/reset-password' se maneja en 'onGenerateRoute' porque usa argumentos
           },
 
           // Maneja rutas generadas dinámicamente (con argumentos)
@@ -103,6 +104,17 @@ class SGIDTApp extends StatelessWidget {
                 builder: (_) => PreviewScreen(filePath: path),
               );
             }
+
+            // --- 2. AÑADIR LÓGICA PARA LA RUTA DE RESETEO ---
+            if (settings.name == '/reset-password') {
+              // Extrae el email que pasamos como argumento
+              final email = settings.arguments as String?;
+              return MaterialPageRoute(
+                // Construye la pantalla de reseteo y le pasa el email
+                builder: (_) => ResetPasswordScreen(email: email ?? ''),
+              );
+            }
+            // --- FIN DE LA LÓGICA AÑADIDA ---
 
             // Ruta para ver el detalle de un documento
             if (settings.name == '/document') {
@@ -186,7 +198,7 @@ class _DocumentDetailByIdScreenState extends State<DocumentDetailByIdScreen> {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        // Muestra un mensaje de error si la carga falla
+        // MBuestra un mensaje de error si la carga falla
         if (snap.hasError) {
           return Scaffold(
             appBar: AppBar(title: Text('Documento #${widget.id}')),

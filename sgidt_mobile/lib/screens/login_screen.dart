@@ -141,10 +141,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          // TODO: Implementar lógica de recuperación de contraseña
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Funcionalidad sera implementada en la V2.')),
-                          );
+                          // Navega a la pantalla de recuperación
+                          Navigator.of(context).pushNamed('/recover-password');
                         },
                         child: const Text('¿Olvidaste tu contraseña?'),
                       ),
