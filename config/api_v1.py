@@ -3,6 +3,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path("documentos/", include("apps.documentos.api.v1.urls")),
+    path("panel/", include("apps.panel.api.v1.urls")),
     # path("empresas/", include("apps.empresas.api.v1.urls")),          # crear si aplica
     # path("proveedores/", include("apps.proveedores.api.v1.urls")),    # crear si aplica
     path("usuarios/", include("apps.usuarios.api.v1.urls")),          # crear (auth/profile)
