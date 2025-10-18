@@ -1,53 +1,54 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../widgets/document_card.dart';
-import '../widgets/empty_state.dart';
+import 'documentos_screen.dart'; // Para navegar a la lista de documentos
 import '../services/documents_service.dart';
-import '../theme/theme_controller.dart';
+import '../theme/theme_controller.dart'; // <-- 1. Importa el controlador del tema
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int tab = 0; // 0 = Inicio, (1 = Capturar con FAB), 2 = Perfil
-  List<Map<String, String>> docs = [];
-  bool loading = true;
+  bool _isLoading = true;
+  List<Map<String, String>> _recentDocs = [];
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _loadData();
   }
 
-  Future<void> _load() async {
-    setState(() => loading = true);
+  Future<void> _loadData() async {
     try {
-      final data = await DocumentsService.fetchRecent();
-      if (kDebugMode && data.isNotEmpty) {
-        debugPrint('🔎 Claves primer doc: ${data.first.keys.toList()}');
+      final allDocs = await DocumentsService.fetchRecent();
+      if (mounted) {
+        setState(() {
+          _recentDocs = allDocs.take(3).toList();
+          _isLoading = false;
+        });
       }
-      docs = data;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Error cargando documentos: $e');
-      docs = [];
-    } finally {
-      if (mounted) setState(() => loading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudieron cargar los documentos recientes.')),
+        );
+      }
     }
   }
 
-  void _goCapture() => Navigator.pushNamed(context, '/capture');
-
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
 
-    // ✅ LÓGICA MEJORADA: Determina el ícono y tooltip para los TRES modos.
+    // --- 2. Lógica para el botón del tema ---
     final IconData themeIcon;
     final String themeTooltip;
-
     switch (ThemeController.instance.mode) {
       case ThemeMode.light:
         themeIcon = Icons.light_mode_outlined;
@@ -58,18 +59,18 @@ class _HomeScreenState extends State<HomeScreen> {
         themeTooltip = 'Usar tema del sistema';
         break;
       case ThemeMode.system:
-        themeIcon = Icons.brightness_auto_outlined; // Ícono para "Automático"
+        themeIcon = Icons.brightness_auto_outlined;
         themeTooltip = 'Cambiar a modo claro';
         break;
     }
+    // --------------------------------------------------------------------
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SGIDT – Documentos'),
-        centerTitle: false,
-        elevation: 0,
+        title: const Text('SGIDT - Inicio'),
+        centerTitle: true,
         actions: [
-          // ✅ ACCIÓN MEJORADA: Llama al nuevo método cycleTheme()
+          // --- 3. El IconButton para cambiar el tema ---
           IconButton(
             onPressed: () {
               ThemeController.instance.cycleTheme();
@@ -77,227 +78,192 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(themeIcon),
             tooltip: themeTooltip,
           ),
-          IconButton(
-            onPressed: _load,
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Actualizar',
-          ),
+          // ---------------------------------------------
         ],
       ),
-      body: SafeArea(child: _buildDocs()),
-      floatingActionButton: CaptureFab(onPressed: _goCapture),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: CurvedBottomNav(
-        index: tab,
-        onTap: (i) {
-          if (i == 2) {
-            Navigator.pushNamed(context, '/profile');
-            return;
-          }
-          setState(() => tab = i);
-        },
-        onCentralTap: _goCapture,
-        bgColor: scheme.surface,
-        activeColor: scheme.primary,
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            // Saludo Personalizado
+            Text(
+              'Bienvenido de vuelta, Benjamín',
+              style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Aquí tienes un resumen de tu actividad.',
+              style: textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 24),
+
+            // Sección de Menú
+            _MenuCard(
+              icon: Icons.folder_copy_outlined,
+              title: 'Mis Documentos',
+              subtitle: 'Revisa todas tus facturas y archivos',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DocumentosScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            _MenuCard(
+              icon: Icons.bar_chart_outlined,
+              title: 'Reportes',
+              subtitle: 'Analiza tus datos y gastos mensuales',
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('La sección de Reportes estará disponible próximamente.'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 32),
+
+            // Sección de Documentos Recientes
+            Text(
+              'Actividad Reciente',
+              style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            _buildRecentDocs(),
+          ],
+        ),
       ),
     );
   }
-  
-  // --- El resto de los métodos y widgets (buildDocs, _pickFirst, CurvedBottomNav, etc.) se mantienen sin cambios ---
 
-  String? _pickFirst(Map<String, String> m, List<String> keys) {
-    for (final k in keys) {
-      final v = m[k];
-      if (v != null && v.trim().isNotEmpty) return v.trim();
+  Widget _buildRecentDocs() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
     }
-    return null;
-  }
 
-  Widget _buildDocs() {
-    if (loading) return const Center(child: CircularProgressIndicator());
-    if (docs.isEmpty) {
-      return EmptyState(
-        icon: Icons.receipt_long_outlined,
-        title: 'Sin documentos',
-        subtitle: 'Toma una foto y envíala a SGIDT para empezar.',
-        action: FilledButton.icon(
-          onPressed: _goCapture,
-          icon: const Icon(Icons.camera_alt),
-          label: const Text('Tomar foto'),
+    if (_recentDocs.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24.0),
+          child: Text('No hay documentos recientes para mostrar.'),
         ),
       );
     }
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-      itemCount: docs.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
-      itemBuilder: (_, i) {
-        final d = docs[i];
-        final id = d['id'] ?? d['uuid'] ?? d['pk'] ?? '';
-        final proveedor = _pickFirst(d, ['proveedor', 'prov', 'supplier', 'emisor', 'emisor_nombre', 'emisor_razon_social', 'razon_social_emisor', 'razon_social', 'receptor', 'company', 'nombre',]) ??
-            [
-              _pickFirst(d, ['tipo', 'document_type', 'tipo_dte']),
-              _pickFirst(d, ['folio', 'numero', 'nro']),
-            ].whereType<String>().join(' #');
-        final fecha = _pickFirst(d, ['fecha', 'fecha_emision', 'fecha_recepcion', 'created', 'created_at', 'date',]) ?? '';
-        final totalRaw = d['total'] ?? d['monto'] ?? d['amount'] ?? '';
-        final total = _formatAmountCLP(totalRaw);
-        final estado = _pickFirst(d, ['estado', 'status', 'estado_desc', 'resultado', 'status_label',]) ?? '—';
-        return DocumentCard(
-          id: id,
-          proveedor: proveedor.isEmpty ? '—' : proveedor,
-          fecha: fecha,
+
+    return Column(
+      children: _recentDocs.map((doc) {
+        final proveedor = doc['proveedor'] ?? doc['emisor'] ?? 'Proveedor Desconocido';
+        final total = doc['total'] ?? doc['monto'] ?? 'S/I';
+        final estado = doc['estado'] ?? 'Pendiente';
+        return _RecentDocTile(
+          proveedor: proveedor,
           total: total,
           estado: estado,
-          onTap: () {
-            if (id.isNotEmpty) {
-              Navigator.pushNamed(context, '/document', arguments: id);
-            }
-          },
         );
-      },
-    );
-  }
-
-  static String _formatAmountCLP(dynamic v) {
-    final n = _parseAmountSmart(v);
-    if (n == null) return (v ?? '').toString();
-    return _formatCLP(n);
-  }
-
-  static num? _parseAmountSmart(dynamic v) {
-    if (v == null) return null;
-    if (v is num) return v;
-    String s = v.toString().trim();
-    if (s.isEmpty) return null;
-    s = s.replaceAll(RegExp(r'[^\d,.\-]'), '');
-    final hasDot = s.contains('.');
-    final hasComma = s.contains(',');
-    if (hasDot && hasComma) {
-      s = s.replaceAll('.', '').replaceAll(',', '.');
-    } else if (hasComma && !hasDot) {
-      s = s.replaceAll(',', '.');
-    } else if (hasDot && !hasComma) {
-      final dotCount = '.'.allMatches(s).length;
-      final last = s.lastIndexOf('.');
-      final digitsRight = s.length - last - 1;
-      final looksThousands = dotCount > 1 || digitsRight == 3;
-      if (looksThousands) {
-        s = s.replaceAll('.', '');
-      }
-    }
-    return num.tryParse(s);
-  }
-
-  static String _formatCLP(num value) {
-    final s = value.toStringAsFixed(0);
-    final buf = StringBuffer();
-    for (int i = 0; i < s.length; i++) {
-      final idx = s.length - 1 - i;
-      buf.write(s[idx]);
-      if (i % 3 == 2 && idx != 0) buf.write('.');
-    }
-    final miles = buf.toString().split('').reversed.join();
-    return '\$$miles';
-  }
-}
-
-class CurvedBottomNav extends StatelessWidget {
-  final int index;
-  final ValueChanged<int> onTap;
-  final VoidCallback onCentralTap;
-  final Color bgColor;
-  final Color activeColor;
-
-  const CurvedBottomNav({
-    super.key,
-    required this.index,
-    required this.onTap,
-    required this.onCentralTap,
-    required this.bgColor,
-    required this.activeColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final inactive = Theme.of(context).colorScheme.onSurface.withOpacity(.6);
-    
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8,
-      color: bgColor,
-      elevation: 10,
-      height: 68,
-      padding: EdgeInsets.zero,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _NavIcon(
-            icon: Icons.home_outlined,
-            isActive: index == 0,
-            activeColor: activeColor,
-            inactiveColor: inactive,
-            onTap: () => onTap(0),
-          ),
-          const SizedBox(width: 48),
-          _NavIcon(
-            icon: Icons.person_outline,
-            isActive: index == 2,
-            activeColor: activeColor,
-            inactiveColor: inactive,
-            onTap: () => onTap(2),
-          ),
-        ],
-      ),
+      }).toList(),
     );
   }
 }
 
-class _NavIcon extends StatelessWidget {
+
+// --- WIDGETS PERSONALIZADOS ---
+
+class _MenuCard extends StatelessWidget {
   final IconData icon;
-  final bool isActive;
-  final Color activeColor, inactiveColor;
+  final String title;
+  final String subtitle;
   final VoidCallback onTap;
 
-  const _NavIcon({
+  const _MenuCard({
     required this.icon,
-    required this.isActive,
-    required this.activeColor,
-    required this.inactiveColor,
+    required this.title,
+    required this.subtitle,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkResponse(
-      onTap: onTap,
-      radius: 28,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isActive ? activeColor.withOpacity(.10) : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0.5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              Icon(icon, size: 40, color: theme.colorScheme.primary),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: theme.textTheme.titleLarge),
+                    const SizedBox(height: 4),
+                    Text(subtitle, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded, size: 18),
+            ],
+          ),
         ),
-        child: Icon(icon, color: isActive ? activeColor : inactiveColor, size: 26),
       ),
     );
   }
 }
 
-class CaptureFab extends StatelessWidget {
-  final VoidCallback onPressed;
-  const CaptureFab({super.key, required this.onPressed});
+class _RecentDocTile extends StatelessWidget {
+  final String proveedor;
+  final String total;
+  final String estado;
+
+  const _RecentDocTile({
+    required this.proveedor,
+    required this.total,
+    required this.estado,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 64,
-      width: 64,
-      child: FloatingActionButton(
-        onPressed: onPressed,
-        elevation: 6,
-        child: const Icon(Icons.document_scanner_outlined, size: 30),
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.dividerColor, width: 0.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(Icons.receipt_long_outlined, color: theme.colorScheme.secondary),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(proveedor, style: theme.textTheme.titleMedium, overflow: TextOverflow.ellipsis),
+                  Text('Total: $total', style: theme.textTheme.bodySmall),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Chip(
+              label: Text(estado),
+              labelStyle: TextStyle(fontSize: 12, color: theme.colorScheme.onSecondaryContainer),
+              backgroundColor: theme.colorScheme.secondaryContainer,
+              side: BorderSide.none,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -5,7 +5,7 @@ import 'theme/theme_controller.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_screen.dart'; 
 import 'screens/capture_screen.dart';
 import 'screens/preview_screen.dart';
 import 'screens/document_detail_screen.dart';
@@ -16,16 +16,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ThemeController.instance.init();
 
-  // 2. Lógica para determinar la ruta inicial
   final prefs = await SharedPreferences.getInstance();
-  // Busca el valor 'hasSeenOnboarding'. Si no existe, el valor por defecto es `false`.
   final bool hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
 
-  runApp(SGIDTApp(hasSeenOnboarding: hasSeenOnboarding)); // 3. Pasa el valor a la app
+  runApp(SGIDTApp(hasSeenOnboarding: hasSeenOnboarding));
 }
 
 class SGIDTApp extends StatelessWidget {
-  // 4. Recibe el valor en el constructor
   final bool hasSeenOnboarding;
   const SGIDTApp({super.key, required this.hasSeenOnboarding});
 
@@ -41,15 +38,18 @@ class SGIDTApp extends StatelessWidget {
           darkTheme: AppTheme.dark(),
           themeMode: ThemeController.instance.mode,
           
-          // 5. Usa el valor para decidir la ruta inicial de la app
           initialRoute: hasSeenOnboarding ? '/splash' : '/onboarding',
 
           routes: {
-            // Asegúrate de que la ruta '/onboarding' esté definida
             '/onboarding': (_) => const OnboardingScreen(),
             '/splash': (_) => const SplashScreen(),
             '/login': (_) => const LoginScreen(),
-            '/home': (_) => const HomeScreen(),
+            
+            // --- ¡ESTE ES EL CAMBIO CLAVE! ---
+            // La ruta /home ahora carga nuestra nueva pantalla contenedora.
+            '/home': (_) => const MainScreen(),
+            // ------------------------------------
+
             '/capture': (_) => const CaptureScreen(),
             '/profile': (_) => const ProfileScreen(),
           },
@@ -90,7 +90,7 @@ class SGIDTApp extends StatelessWidget {
   }
 }
 
-// --- El resto de tu main.dart (DocumentDetailByIdScreen) se mantiene igual ---
+// --- Widget para cargar un documento por su ID (se mantiene igual) ---
 class DocumentDetailByIdScreen extends StatefulWidget {
   final String id;
   const DocumentDetailByIdScreen({super.key, required this.id});
