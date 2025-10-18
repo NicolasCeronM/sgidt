@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'documentos_screen.dart'; // Para navegar a la lista de documentos
+import 'documentos_screen.dart'; 
+import 'reportes_screen.dart';
 import '../services/documents_service.dart';
-import '../theme/theme_controller.dart'; // <-- 1. Importa el controlador del tema
+import '../theme/theme_controller.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -110,17 +111,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-            const SizedBox(height: 16),
+const SizedBox(height: 16),
             _MenuCard(
               icon: Icons.bar_chart_outlined,
               title: 'Reportes',
               subtitle: 'Analiza tus datos y gastos mensuales',
+              // --- 2. Reportes---
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('La sección de Reportes estará disponible próximamente.'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
+                // Navega a ReportesScreen usando MaterialPageRoute
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ReportesScreen()),
                 );
               },
             ),
