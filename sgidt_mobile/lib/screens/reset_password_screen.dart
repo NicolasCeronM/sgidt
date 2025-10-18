@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:sgidt_mobile/core/api/api_result.dart';
+import 'package:sgidt_mobile/services/password_reset_service.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  // Recibirá el email de la pantalla anterior
   final String email;
   const ResetPasswordScreen({super.key, required this.email});
 
@@ -12,223 +11,156 @@ class ResetPasswordScreen extends StatefulWidget {
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  // --- INTERRUPTOR ---
-  final bool _useMockData = true;
-  // ---
-
+  final _passwordResetService = PasswordResetService();
   final _formKey = GlobalKey<FormState>();
   final _codeController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _isPasswordHidden = true;
-  
-  // <-- 1. NUEVA VARIABLE DE ESTADO -->
   bool _isPasswordEnabled = false;
+  bool _isCodeVerifying = false;
 
   @override
   void initState() {
     super.initState();
-    // <-- 2. AÑADIR UN LISTENER AL CAMPO DE CÓDIGO -->
-    // Cada vez que el usuario escriba en el campo de código,
-    // se llamará a la función _updatePasswordState
-    _codeController.addListener(_updatePasswordState);
-  }
-
-  /// Actualiza el estado del campo de contraseña
-  void _updatePasswordState() {
-    // Comprueba si el campo de código tiene texto
-    final bool hasText = _codeController.text.isNotEmpty;
-    
-    // Si el estado actual es diferente al nuevo, actualiza la UI
-    if (hasText != _isPasswordEnabled) {
-      setState(() {
-        _isPasswordEnabled = hasText;
-      });
-    }
+    _codeController.addListener(_onCodeChanged);
   }
 
   @override
   void dispose() {
-    // <-- 3. LIMPIAR EL LISTENER AL SALIR DE LA PANTALLA -->
-    _codeController.removeListener(_updatePasswordState);
+    _codeController.removeListener(_onCodeChanged);
     _codeController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  /// Lógica para enviar el código y la nueva contraseña
-  Future<void> _submitReset() async {
-    // (La lógica de _submitReset se mantiene exactamente igual)
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-    FocusScope.of(context).unfocus();
-    setState(() => _isLoading = true);
-
-    try {
-      final code = _codeController.text;
-      final newPassword = _passwordController.text;
-
-      if (_useMockData) {
-        // --- LÓGICA DE SIMULACIÓN (MOCK) ---
-        await Future.delayed(const Duration(seconds: 2));
-        if (code != "123456") { // Código simulado
-          throw Exception("Código de verificación incorrecto");
-        }
-      } else {
-        // --- LÓGICA DE ENDPOINT (REAL) ---
-        final url = Uri.parse('https://api.tu-dominio.com/auth/reset-password'); // <-- TU ENDPOINT 2
-        
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json; charset=UTF-8'},
-          body: jsonEncode({
-            'email': widget.email,
-            'code': code,
-            'new_password': newPassword,
-          }),
-        ).timeout(const Duration(seconds: 10));
-
-        if (!mounted) return;
-        if (response.statusCode != 200) {
-          String errorMessage = "Error (${response.statusCode})";
-          try {
-            final responseBody = jsonDecode(response.body);
-            errorMessage = responseBody['error'] ?? responseBody['message'] ?? "Código o email inválido";
-          } catch (_) {}
-          throw Exception(errorMessage);
-        }
-      }
-
-      // --- ÉXITO (COMÚN A AMBOS) ---
-      if (!mounted) return;
-      _showFeedback("Contraseña actualizada con éxito.", isError: false);
-      
-      await Future.delayed(const Duration(seconds: 1));
-      
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login',
-          (route) => false,
-        );
-      }
-
-    } catch (e) {
-      if (mounted) {
-        _showFeedback("Error: ${e.toString()}", isError: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+  void _onCodeChanged() {
+    if (_codeController.text.length == 6) {
+      _verifyCode();
+    } else {
+      if (_isPasswordEnabled) setState(() => _isPasswordEnabled = false);
     }
   }
 
-  void _showFeedback(String message, {bool isError = false}) {
-    // (Esta función se mantiene igual)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError
-            ? Theme.of(context).colorScheme.error
-            : Colors.green[700],
-      ),
+  Future<void> _verifyCode() async {
+    FocusScope.of(context).unfocus();
+    setState(() => _isCodeVerifying = true);
+
+    final result = await _passwordResetService.verifyPasswordResetCode(widget.email, _codeController.text.trim());
+
+    if (!mounted) return;
+    
+    switch (result) {
+      case Success():
+        setState(() => _isPasswordEnabled = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Código verificado. Ingresa tu nueva contraseña."), backgroundColor: Colors.green),
+        );
+        break;
+      case Failure(error: final e):
+        setState(() => _isPasswordEnabled = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+        );
+        break;
+    }
+
+    setState(() => _isCodeVerifying = false);
+  }
+
+  Future<void> _submitResetPassword() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    final result = await _passwordResetService.setNewPassword(
+      email: widget.email,
+      code: _codeController.text.trim(),
+      newPassword: _passwordController.text,
     );
+
+    if (!mounted) return;
+    
+    switch (result) {
+      case Success():
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("¡Contraseña actualizada con éxito!"), backgroundColor: Colors.green),
+        );
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        break;
+      case Failure(error: final e):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+        );
+        break;
+    }
+    
+    setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Restablecer Contraseña"),
-      ),
+      appBar: AppBar(title: const Text("Restablecer Contraseña")),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(16.0),
           children: [
-            // (Textos de cabecera se mantienen igual)
-            Text(
-              "Verifica tu identidad",
-              style: textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              "Ingresa el código que enviamos a:",
-              style: textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              widget.email,
-              style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-
-            // --- Campo de Código ---
+            Text("Se envió un código a ${widget.email}.", textAlign: TextAlign.center),
+            const SizedBox(height: 24),
             TextFormField(
-              controller: _codeController, // El listener está adjunto a este
-              decoration: const InputDecoration(
-                labelText: "Código de Verificación",
-                prefixIcon: Icon(Icons.pin_outlined),
-                border: OutlineInputBorder(),
+              controller: _codeController,
+              decoration: InputDecoration(
+                labelText: 'Código de 6 dígitos',
+                prefixIcon: const Icon(Icons.pin_outlined),
+                border: const OutlineInputBorder(),
+                suffixIcon: _isCodeVerifying
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: CircularProgressIndicator(strokeWidth: 3),
+                      )
+                    : null,
               ),
               keyboardType: TextInputType.number,
+              maxLength: 6,
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Ingresa el código';
+                if (value == null || value.length != 6) {
+                  return 'Ingresa el código de 6 dígitos';
                 }
                 return null;
               },
             ),
-            const SizedBox(height: 24),
-
-            // --- Campo de Nueva Contraseña ---
+            const SizedBox(height: 16),
             TextFormField(
-              // <-- 4. USAR LA VARIABLE DE ESTADO AQUÍ -->
-              enabled: _isPasswordEnabled, // Se habilita/deshabilita
               controller: _passwordController,
+              enabled: _isPasswordEnabled,
               obscureText: _isPasswordHidden,
               decoration: InputDecoration(
-                labelText: "Nueva Contraseña",
+                labelText: 'Nueva Contraseña',
                 prefixIcon: const Icon(Icons.lock_outline),
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
-                  // También deshabilita el botón de "ojo" si el campo está inactivo
-                  icon: Icon(
-                    _isPasswordHidden
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                  ),
-                  onPressed: _isPasswordEnabled 
+                  icon: Icon(_isPasswordHidden ? Icons.visibility_off : Icons.visibility),
+                  onPressed: _isPasswordEnabled
                       ? () => setState(() => _isPasswordHidden = !_isPasswordHidden)
                       : null,
                 ),
               ),
               validator: (value) {
-                // La validación solo corre si el campo está habilitado
-                if (!_isPasswordEnabled) return null; 
-                
-                if (value == null || value.isEmpty) {
-                  return 'Ingresa tu nueva contraseña';
-                }
-                if (value.length < 8) {
+                if (!_isPasswordEnabled) return null;
+                if (value == null || value.length < 8) {
                   return 'Debe tener al menos 8 caracteres';
                 }
                 return null;
               },
             ),
             const SizedBox(height: 24),
-            
-            // --- Botón de Envío ---
             FilledButton(
-              // <-- 5. DESHABILITAR EL BOTÓN SI LA CONTRASEÑA NO ESTÁ HABILITADA -->
-              onPressed: _isLoading || !_isPasswordEnabled ? null : _submitReset,
+              onPressed: _isLoading || !_isPasswordEnabled ? null : _submitResetPassword,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
               child: _isLoading
                   ? const SizedBox(
                       width: 24,
@@ -236,9 +168,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
                     )
                   : const Text("Restablecer Contraseña"),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
             ),
           ],
         ),

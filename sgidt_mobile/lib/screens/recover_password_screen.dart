@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:convert'; 
-import 'package:http/http.dart' as http; 
+import 'package:sgidt_mobile/core/api/api_result.dart';
+import 'package:sgidt_mobile/services/password_reset_service.dart';
+import 'reset_password_screen.dart';
 
 class RecoverPasswordScreen extends StatefulWidget {
   const RecoverPasswordScreen({super.key});
@@ -10,11 +11,7 @@ class RecoverPasswordScreen extends StatefulWidget {
 }
 
 class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
-  // --- ¡INTERRUPTOR PRINCIPAL! ---
-  // Cambia esto a 'false' para conectar al endpoint real.
-  final bool _useMockData = true; 
-  // ---
-  
+  final _passwordResetService = PasswordResetService();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isLoading = false;
@@ -26,101 +23,47 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
   }
 
   Future<void> _submitRecoveryRequest() async {
-    if (!_formKey.currentState!.validate()) {
-      return; 
-    }
+    if (!_formKey.currentState!.validate()) return;
+
     FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
 
-    try {
-      if (_useMockData) {
-        // --- LÓGICA DE SIMULACIÓN (MOCK) ---
-        await Future.delayed(const Duration(seconds: 2));
-        if (_emailController.text == "error@test.com") {
-          throw Exception("Email no encontrado");
-        }
-      } else {
-        // --- LÓGICA DE ENDPOINT (REAL) ---
-        final url = Uri.parse('https://api.tu-dominio.com/auth/recover-password'); // <-- TU ENDPOINT 1
-        
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json; charset=UTF-8'},
-          body: jsonEncode({'email': _emailController.text}),
-        ).timeout(const Duration(seconds: 10));
+    final result = await _passwordResetService.requestPasswordReset(_emailController.text.trim());
 
-        if (!mounted) return;
+    if (!mounted) return;
 
-        if (response.statusCode != 200) {
-          String errorMessage = "Error (${response.statusCode})";
-          try {
-            final responseBody = jsonDecode(response.body);
-            // Ajusta 'error' o 'message' a la clave que usa tu API
-            errorMessage = responseBody['error'] ?? responseBody['message'] ?? errorMessage;
-          } catch (_) {}
-          throw Exception(errorMessage);
-        }
-      }
-
-      // --- ¡CAMBIO IMPORTANTE AQUÍ! ---
-      // En lugar de volver al login, navegamos a la pantalla de reseteo.
-      // Usamos 'pushReplacementNamed' para que el usuario no pueda "volver"
-      // a esta pantalla de email.
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(
-        '/reset-password',
-        arguments: _emailController.text, // <-- Pasamos el email a la siguiente pantalla
-      );
-      // ------------------------------------
-
-    } catch (e) {
-      if (mounted) {
-        _showFeedback("Error: ${e.toString()}", isError: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+    switch (result) {
+      case Success():
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) => ResetPasswordScreen(email: _emailController.text.trim()),
+          ),
+        );
+        break; // Añadido para claridad
+      case Failure(error: final e):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+        );
+        break; // Añadido para claridad
     }
-  }
 
-  void _showFeedback(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError
-            ? Theme.of(context).colorScheme.error
-            : Theme.of(context).colorScheme.primary,
-      ),
-    );
+    setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Recuperar Contraseña"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Recuperar Contraseña")),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(16.0),
           children: [
-            Text(
-              "Ingresa tu email registrado",
-              style: textTheme.headlineSmall,
+            const Text(
+              "Ingresa tu email y te enviaremos un código para restablecer tu contraseña.",
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            Text(
-              "Te enviaremos un código de 6 dígitos para restablecer tu contraseña.", // <-- Texto actualizado
-              style: textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             TextFormField(
               controller: _emailController,
               decoration: const InputDecoration(
@@ -131,10 +74,7 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, ingresa tu email';
-                }
-                if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+                if (value == null || value.isEmpty || !value.contains('@')) {
                   return 'Por favor, ingresa un email válido';
                 }
                 return null;
@@ -150,7 +90,7 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
                       height: 24,
                       child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
                     )
-                  : const Text("Enviar código"), // <-- Texto actualizado
+                  : const Text("Enviar código"),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
