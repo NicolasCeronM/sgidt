@@ -49,7 +49,7 @@ class Documento(models.Model):
 
     # --- Extracción (OCR/parse) ---
     estado = models.CharField(max_length=20, choices=ESTADOS, default="pendiente")
-    tipo_documento = models.CharField(max_length=20, choices=TIPOS, default="desconocido")
+    tipo_documento = models.CharField(max_length=50, choices=TIPOS, default="desconocido")
 
     folio = models.CharField(max_length=30, blank=True)
     fecha_emision = models.DateField(null=True, blank=True)

@@ -1,3 +1,4 @@
+# apps/documentos/ocr/utils/rut.py
 # -*- coding: utf-8 -*-
 import re
 
@@ -23,3 +24,13 @@ def is_valid(rut: str) -> bool:
     if not m: return False
     num, dv = int(m.group(1)), m.group(2)
     return dv == dv_calc(num)
+
+def format_rut(rut: str) -> str:
+    rut_limpio = clean_rut(rut)
+    if not rut_limpio or not is_valid(rut_limpio): return ""
+    cuerpo, dv = rut_limpio.split('-')
+    try:
+        cuerpo_formateado = f"{int(cuerpo):,}".replace(",", ".")
+        return f"{cuerpo_formateado}-{dv}"
+    except (ValueError, TypeError):
+        return rut_limpio

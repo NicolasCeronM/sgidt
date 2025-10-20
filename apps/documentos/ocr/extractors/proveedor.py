@@ -1,61 +1,55 @@
+# apps/documentos/ocr/extractors/proveedor.py
 import re
-
-# --- INICIO: Funciones de utilidad integradas ---
-
-def clean_rut(rut: str) -> str:
-    if not isinstance(rut, str): return ""
-    return rut.replace(".", "").replace("-", "").upper()
-
-def validate_rut(rut: str) -> bool:
-    rut = clean_rut(rut)
-    if not rut or not rut[:-1].isdigit() or len(rut) < 2: return False
-    cuerpo, dv = rut[:-1], rut[-1]
-    try:
-        suma = sum(int(d) * (2 + i % 6) for i, d in enumerate(reversed(cuerpo)))
-        dv_calculado = str(11 - (suma % 11))
-        if dv_calculado == '11': dv_esperado = '0'
-        elif dv_calculado == '10': dv_esperado = 'K'
-        else: dv_esperado = dv_calculado
-        return dv == dv_esperado
-    except (ValueError, TypeError): return False
-
-def format_rut(rut: str) -> str:
-    rut = clean_rut(rut)
-    if not rut: return ""
-    cuerpo, dv = rut[:-1], rut[-1]
-    cuerpo_formateado = f"{int(cuerpo):,}".replace(",", ".")
-    return f"{cuerpo_formateado}-{dv}"
-
-def normalize_text(text: str) -> str:
-    if not isinstance(text, str): return ""
-    return ' '.join(text.split()).strip()
-
-# --- FIN: Funciones de utilidad integradas ---
+from ..utils.rut import is_valid, clean_rut, format_rut
 
 RUT_PATTERNS = [
     re.compile(r'(?:R\.?U\.?T\.?|RUT|ROL)[\s:.]*(\d{1,2}\.\d{3}\.\d{3}-[\dkK])'),
     re.compile(r'(\d{1,2}\.\d{3}\.\d{3}-[\dkK])')
 ]
+RECEPTOR_KEYWORDS = re.compile(r'SEÑOR\(ES\)|RECEPTOR|CLIENTE', re.I)
+COMPANY_KEYWORDS = re.compile(r'\b(SpA|Spa|LTDA|Ltda|EIRL|S\.A\.)\b', re.I)
 
 def extract_emisor_receptor(texto_general: str) -> tuple[dict, dict]:
     emisor, receptor = {}, {}
-    if not texto_general:
-        return emisor, receptor
-
-    rut_matches = []
-    for pattern in RUT_PATTERNS:
-        for match in pattern.finditer(texto_general):
-            rut_str = match.group(1)
-            if validate_rut(clean_rut(rut_str)):
-                rut_matches.append(format_rut(rut_str))
+    lines = texto_general.split('\n')
     
-    unique_ruts = list(dict.fromkeys(rut_matches))
-    if len(unique_ruts) > 0: emisor['rut'] = unique_ruts[0]
-    if len(unique_ruts) > 1: receptor['rut'] = unique_ruts[1]
+    # Dividir el texto en antes y después de la sección del cliente
+    receptor_section_start = -1
+    for i, line in enumerate(lines):
+        if RECEPTOR_KEYWORDS.search(line):
+            receptor_section_start = i
+            break
+            
+    emisor_text = "\n".join(lines[:receptor_section_start]) if receptor_section_start != -1 else texto_general
+    receptor_text = "\n".join(lines[receptor_section_start:]) if receptor_section_start != -1 else ""
 
-    razon_social_pattern = re.compile(r'([A-Z\s.,]+(?:S\.A\.|LTDA\.|E\.I\.R\.L\.|SpA))', re.IGNORECASE)
-    rs_match = razon_social_pattern.search(texto_general)
-    if rs_match:
-        emisor['nombre'] = normalize_text(rs_match.group(1).strip())
-        
+    # --- Búsqueda del Emisor (Proveedor) ---
+    emisor_ruts = [format_rut(m.group(1)) for p in RUT_PATTERNS for m in p.finditer(emisor_text) if is_valid(m.group(1))]
+    if emisor_ruts:
+        emisor['rut'] = emisor_ruts[0]
+
+    # Estrategia de nombre del emisor: buscar en las primeras líneas
+    for line in emisor_text.split('\n')[:6]:
+        line = line.strip()
+        # Un buen nombre no es un RUT, ni un giro, ni una dirección
+        if len(line) > 5 and not is_valid(line) and "GIRO" not in line.upper() and "DIRECCION" not in line.upper():
+             # Si es un nombre de empresa o parece un nombre de persona (mayúsculas)
+             if COMPANY_KEYWORDS.search(line) or (line.isupper() and len(line.split()) > 1):
+                emisor['razon_social'] = line
+                break
+    
+    # --- Búsqueda del Receptor (Cliente) ---
+    if receptor_text:
+        receptor_ruts = [format_rut(m.group(1)) for p in RUT_PATTERNS for m in p.finditer(receptor_text) if is_valid(m.group(1))]
+        if receptor_ruts:
+            receptor['rut'] = receptor_ruts[0]
+            
+    # Si no se encontró el RUT del emisor, tomar el que no es del receptor
+    if not emisor.get('rut'):
+        all_ruts = {format_rut(m.group(1)) for p in RUT_PATTERNS for m in p.finditer(texto_general) if is_valid(m.group(1))}
+        receptor_rut_set = {receptor.get('rut')}
+        possible_emisor_ruts = all_ruts - receptor_rut_set
+        if possible_emisor_ruts:
+            emisor['rut'] = possible_emisor_ruts.pop()
+            
     return emisor, receptor

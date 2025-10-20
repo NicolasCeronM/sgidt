@@ -1,19 +1,34 @@
-# -*- coding: utf-8 -*-
-from decimal import Decimal, ROUND_HALF_UP
+# apps/documentos/ocr/utils/numbers.py
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import re
 
-def to_int_money(s: str) -> int | None:
-    if not s: return None
-    s = s.strip().replace("$","").replace(" ","")
-    s = s.replace(".", "").replace(",", ".")
-    try:
-        val = Decimal(s)
-        return int(val.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
-    except:
+def clean_and_parse_amount(text: str) -> Decimal | None:
+    """Converts an amount string to a Decimal object, removing symbols and dots."""
+    if not text:
         return None
+    
+    # Removes everything that is not a digit
+    cleaned_text = re.sub(r'[^\d]', '', text)
+    if not cleaned_text:
+        return None
+        
+    try:
+        amount = Decimal(cleaned_text)
+        # Only return the amount if it's greater than zero
+        if amount > 0:
+            return amount.quantize(Decimal("0"), rounding=ROUND_HALF_UP)
+    except InvalidOperation:
+        return None
+    return None
 
-def safe_rate(iva_text: str) -> float | None:
-    m = re.search(r"(\d{1,2})(?:[.,](\d))?\s*%", iva_text or "", re.I)
-    if not m: return None
-    ent = int(m.group(1)); dec = int(m.group(2)) if m.group(2) else 0
-    return (ent + dec/10) / 100.0
+def extract_iva_rate(text: str) -> Decimal | None:
+    """Extracts an IVA rate (e.g., '19%') and returns it as a Decimal (19.00)."""
+    match = re.search(r'\(?\s*(\d{1,2}(?:[\.,]\d+)?)\s*%\s*\)?', text, re.I)
+    if match:
+        rate_str = match.group(1).replace(",", ".")
+        try:
+            rate = Decimal(rate_str)
+            return rate.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        except InvalidOperation:
+            return None
+    return None
