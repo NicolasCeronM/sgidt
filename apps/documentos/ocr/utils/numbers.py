@@ -3,18 +3,16 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import re
 
 def clean_and_parse_amount(text: str) -> Decimal | None:
-    """Converts an amount string to a Decimal object, removing symbols and dots."""
+    """Convierte un texto de monto a un objeto Decimal, eliminando símbolos y puntos."""
     if not text:
         return None
     
-    # Removes everything that is not a digit
     cleaned_text = re.sub(r'[^\d]', '', text)
     if not cleaned_text:
         return None
         
     try:
         amount = Decimal(cleaned_text)
-        # Only return the amount if it's greater than zero
         if amount > 0:
             return amount.quantize(Decimal("0"), rounding=ROUND_HALF_UP)
     except InvalidOperation:
@@ -22,10 +20,14 @@ def clean_and_parse_amount(text: str) -> Decimal | None:
     return None
 
 def extract_iva_rate(text: str) -> Decimal | None:
-    """Extracts an IVA rate (e.g., '19%') and returns it as a Decimal (19.00)."""
-    match = re.search(r'\(?\s*(\d{1,2}(?:[\.,]\d+)?)\s*%\s*\)?', text, re.I)
+    """
+    Extrae una tasa de IVA (ej: '19%' o '(1 9%)') y la devuelve como Decimal (19.00).
+    """
+    # Regex MEJORADA: Tolera espacios opcionales entre los dígitos y el '%'
+    match = re.search(r'\(?\s*(\d{1,2})\s*(\d?)\s*%\s*\)?', text, re.I)
     if match:
-        rate_str = match.group(1).replace(",", ".")
+        # Une los dígitos si están separados por un espacio (ej: '1' y '9')
+        rate_str = match.group(1) + (match.group(2) or '')
         try:
             rate = Decimal(rate_str)
             return rate.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
