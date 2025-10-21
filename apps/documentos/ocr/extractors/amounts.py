@@ -4,45 +4,63 @@ from decimal import Decimal
 from ..utils import patterns
 from ..utils.numbers import clean_and_parse_amount, extract_iva_rate
 
-def find_amount_on_line(line: str) -> Decimal | None:
-    """Encuentra el primer monto válido en una sola línea."""
-    match = patterns.AMOUNT.search(line)
-    if match:
-        return clean_and_parse_amount(match.group(0))
-    return None
-
 def extract_amounts(text: str) -> dict:
     """
-    Extrae todos los montos con alta precisión, evitando la contaminación entre líneas.
+    Extrae los montos de forma contextual, funcionando para múltiples diseños de factura.
     """
     results = {
         'monto_neto': None, 'monto_exento': None, 'iva': None,
         'total': None, 'iva_tasa': None
     }
-    lines = text.split('\n')
     
-    for i, line in enumerate(lines):
-        # Para cada etiqueta, buscamos el monto prioritariamente en su propia línea.
-        if patterns.ANCHOR_NETO.search(line) and results['monto_neto'] is None:
-            results['monto_neto'] = find_amount_on_line(line)
+    # 1. Aislar la sección de totales del documento (generalmente las últimas 15-20 líneas)
+    summary_lines = text.split('\n')[-20:]
 
-        elif patterns.ANCHOR_IVA.search(line) and results['iva'] is None:
-            results['iva'] = find_amount_on_line(line)
-            if results['iva_tasa'] is None:
-                results['iva_tasa'] = extract_iva_rate(line)
+    # 2. Encontrar todas las etiquetas y montos en esa sección
+    found_labels = {}
+    found_amounts = {}
+    for i, line in enumerate(summary_lines):
+        # Buscar etiquetas y guardar su número de línea
+        if patterns.ANCHOR_NETO.search(line) and 'neto' not in found_labels: found_labels['neto'] = i
+        if patterns.ANCHOR_IVA.search(line) and 'iva' not in found_labels: found_labels['iva'] = i
+        if patterns.ANCHOR_TOTAL.search(line) and 'total' not in found_labels: found_labels['total'] = i
+        
+        # Buscar montos y guardar su valor y número de línea
+        for match in patterns.AMOUNT.finditer(line):
+            amount = clean_and_parse_amount(match.group(0))
+            if amount:
+                if i not in found_amounts:
+                    found_amounts[i] = []
+                found_amounts[i].append(amount)
 
-        elif patterns.ANCHOR_TOTAL.search(line) and results['total'] is None:
-            results['total'] = find_amount_on_line(line)
+    # 3. Asignar montos a etiquetas de forma inteligente
+    for label, line_idx in found_labels.items():
+        value = None
+        # Prioridad 1: Buscar monto en la misma línea que la etiqueta
+        if line_idx in found_amounts:
+            value = found_amounts[line_idx][0]
+        # Prioridad 2: Si no, buscar en las líneas cercanas (hacia abajo), saltando las vacías
+        else:
+            closest_line = min(found_amounts.keys(), key=lambda k: abs(k - line_idx) if k > line_idx else 999, default=None)
+            if closest_line:
+                value = found_amounts[closest_line][0]
+        
+        if label == 'neto': results['monto_neto'] = value
+        elif label == 'iva': results['iva'] = value
+        elif label == 'total': results['total'] = value
 
-    # Lógica de Reconciliación Simple: Si falta un valor, lo calculamos.
-    neto, iva, total = results['monto_neto'], results['iva'], results['total']
+    # 4. Extraer la tasa de IVA de cualquier parte del documento
+    results['iva_tasa'] = extract_iva_rate(text)
+
+    # 5. Reconciliación final para asegurar consistencia
+    neto, iva, total = results.get('monto_neto'), results.get('iva'), results.get('total')
     if neto and iva and not total:
         results['total'] = neto + iva
     elif neto and total and not iva:
-        calculated_iva = total - neto
-        if abs(calculated_iva - (neto * Decimal('0.19'))) < 2: # Verificación de consistencia
-            results['iva'] = calculated_iva
+        if total > neto:
+            results['iva'] = total - neto
     elif total and iva and not neto:
-        results['monto_neto'] = total - iva
-        
+        if total > iva:
+            results['monto_neto'] = total - iva
+            
     return results

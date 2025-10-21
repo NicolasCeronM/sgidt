@@ -19,20 +19,7 @@ RUT_STRICT = r'\b\d{1,2}\.?\d{3}\.?\d{3}\s*-\s*[0-9Kk]\b'
 RE_RUT_STRICT = re.compile(RUT_STRICT)
 
 
-# apps/documentos/ocr/utils/patterns.py
-import re
-
-
-
-
-
-
-
-
-# apps/documentos/ocr/utils/patterns.py
-import re
-
-# Regex MEJORADA: Captura montos con '$' o con puntos de miles (evita cantidades como '1')
+# La expresión para encontrar montos ya es robusta, la mantenemos
 AMOUNT = re.compile(r'(\$\s*[\d\.]+\d)|(\b\d{1,3}(?:\.\d{3})+\b)')
 
 # Anclas MEJORADAS para incluir los nuevos formatos de etiquetas
