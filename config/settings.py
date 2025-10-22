@@ -255,3 +255,10 @@ CELERY_BEAT_SCHEDULE = {
 SII_USE_MOCK = True        # En desarrollo
 SII_TIMEOUT = 15
 SII_BASE_URL = "https://api.sii.cl"   # placeholder para el real
+
+# =====================================================================
+# Chatbot AI
+# =====================================================================
+import os
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
