@@ -7,54 +7,63 @@ from ..utils.numbers import clean_and_parse_amount, extract_iva_rate
 def extract_amounts(text: str) -> dict:
     """
     Extrae los montos de forma contextual, funcionando para múltiples diseños de factura.
+    Utiliza una heurística basada en la magnitud de los montos.
     """
     results = {
         'monto_neto': None, 'monto_exento': None, 'iva': None,
         'total': None, 'iva_tasa': None
     }
-    
-    # 1. Aislar la sección de totales del documento (generalmente las últimas 15-20 líneas)
+
+    # 1. Aislar la sección de totales del documento y buscar todos los montos.
     summary_lines = text.split('\n')[-20:]
+    summary_text = '\n'.join(summary_lines)
+    
+    all_amounts = [
+        amount for match in patterns.AMOUNT.finditer(summary_text)
+        if (amount := clean_and_parse_amount(match.group(0)))
+    ]
+    
+    # Ordenar montos únicos de mayor a menor.
+    unique_amounts = sorted(list(set(all_amounts)), reverse=True)
+    
+    if not unique_amounts:
+        return results
 
-    # 2. Encontrar todas las etiquetas y montos en esa sección
-    found_labels = {}
-    found_amounts = {}
-    for i, line in enumerate(summary_lines):
-        # Buscar etiquetas y guardar su número de línea
-        if patterns.ANCHOR_NETO.search(line) and 'neto' not in found_labels: found_labels['neto'] = i
-        if patterns.ANCHOR_IVA.search(line) and 'iva' not in found_labels: found_labels['iva'] = i
-        if patterns.ANCHOR_TOTAL.search(line) and 'total' not in found_labels: found_labels['total'] = i
+    # 2. Buscar la presencia de etiquetas para guiar la asignación.
+    has_neto_label = bool(patterns.ANCHOR_NETO.search(summary_text))
+    has_iva_label = bool(patterns.ANCHOR_IVA.search(summary_text))
+    has_total_label = bool(patterns.ANCHOR_TOTAL.search(summary_text))
+
+    # 3. Asignar montos por magnitud (Total > Neto > IVA).
+    # Asignar Total (casi siempre el más grande).
+    if has_total_label and unique_amounts:
+        results['total'] = unique_amounts.pop(0)
+
+    # Asignar Neto (el siguiente más grande).
+    if has_neto_label and unique_amounts:
+        results['monto_neto'] = unique_amounts.pop(0)
         
-        # Buscar montos y guardar su valor y número de línea
-        for match in patterns.AMOUNT.finditer(line):
-            amount = clean_and_parse_amount(match.group(0))
-            if amount:
-                if i not in found_amounts:
-                    found_amounts[i] = []
-                found_amounts[i].append(amount)
+    # Asignar IVA (lo que queda).
+    if has_iva_label and unique_amounts:
+        results['iva'] = unique_amounts.pop(0)
 
-    # 3. Asignar montos a etiquetas de forma inteligente
-    for label, line_idx in found_labels.items():
-        value = None
-        # Prioridad 1: Buscar monto en la misma línea que la etiqueta
-        if line_idx in found_amounts:
-            value = found_amounts[line_idx][0]
-        # Prioridad 2: Si no, buscar en las líneas cercanas (hacia abajo), saltando las vacías
-        else:
-            closest_line = min(found_amounts.keys(), key=lambda k: abs(k - line_idx) if k > line_idx else 999, default=None)
-            if closest_line:
-                value = found_amounts[closest_line][0]
-        
-        if label == 'neto': results['monto_neto'] = value
-        elif label == 'iva': results['iva'] = value
-        elif label == 'total': results['total'] = value
-
-    # 4. Extraer la tasa de IVA de cualquier parte del documento
+    # 4. Extraer la tasa de IVA de cualquier parte del documento.
     results['iva_tasa'] = extract_iva_rate(text)
 
-    # 5. Reconciliación final para asegurar consistencia
+    # 5. Reconciliación final para asegurar consistencia (esta parte es clave).
     neto, iva, total = results.get('monto_neto'), results.get('iva'), results.get('total')
-    if neto and iva and not total:
+    
+    # Si después de la asignación, la suma no cuadra, podemos intentar corregirla.
+    if neto and iva and total and abs((neto + iva) - total) > 2: # Tolerancia de 2
+         # La heurística pudo fallar. Si tenemos 3 montos, los reasignamos forzando la suma.
+         amounts = sorted([neto, iva, total], reverse=True)
+         if len(amounts) == 3 and abs((amounts[1] + amounts[2]) - amounts[0]) <= 2:
+              results['total'] = amounts[0]
+              results['monto_neto'] = amounts[1]
+              results['iva'] = amounts[2]
+    
+    # Calcular valores faltantes si es posible
+    elif neto and iva and not total:
         results['total'] = neto + iva
     elif neto and total and not iva:
         if total > neto:
