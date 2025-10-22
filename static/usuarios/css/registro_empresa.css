@@ -1,0 +1,267 @@
+/* --- Separación respecto al header fijo (ajusta la altura real) --- */
+:root {
+  --header-h: 20px;
+}
+.main-content {
+  padding-top: calc(var(--header-h) + 24px);
+}
+
+/* --- Tarjeta contenedora con la misma sombra/borde que el login --- */
+.login-container {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-top: 0; /* evita doble margen si el base ya da spacing */
+}
+
+/* =========================================================
+   Títulos de sección y grilla de 2 columnas
+   ========================================================= */
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.75rem;
+  color: #1e293b;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.form-section-title::before,
+.form-section-title::after {
+  content: "";
+  height: 1px;
+  background: #e5e7eb;
+  flex: 1;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 768px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Si divider y links quedan dentro de grid-2, ocupar toda la fila */
+.grid-2 > .divider,
+.grid-2 > .register-link {
+  grid-column: 1 / -1;
+}
+
+/* =========================================================
+   Inputs, selects y labels (mismo look del login)
+   ========================================================= */
+.login-container form input[type="text"],
+.login-container form input[type="email"],
+.login-container form input[type="tel"],
+.login-container form input[type="password"],
+.login-container form input[type="number"],
+.login-container form input[type="date"],
+.login-container form textarea,
+.login-container form select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 1rem;
+  outline: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  appearance: none;
+}
+.login-container form input:focus,
+.login-container form select:focus,
+.login-container form textarea:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+/* Select con “chevron” dibujado con CSS */
+.login-container form select {
+  background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+  background-position: calc(100% - 22px) calc(1em + 2px),
+    calc(100% - 16px) calc(1em + 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.25rem;
+}
+
+.login-title {
+  text-align: center;
+}
+
+.login-subtitle {
+  text-align: center;
+}
+
+/* Labels / grupos / hints */
+.form-group {
+  margin-bottom: 1rem;
+}
+.form-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.form-label small {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Errores coherentes con el login */
+.field-error {
+  margin-top: 0.4rem;
+  color: #b91c1c;
+  font-size: 0.82rem;
+}
+.login-container form input[aria-invalid="true"],
+.login-container form select[aria-invalid="true"] {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+}
+
+/* Checkbox y spacing antes del botón */
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0 1.25rem;
+}
+
+/* =========================================================
+   Ojo “mostrar/ocultar” contraseña (SVG via mask)
+   ========================================================= */
+/* Envolver el input con .input-with-icon en el HTML */
+.input-with-icon {
+  position: relative;
+}
+.input-with-icon input {
+  padding-right: 2.75rem;
+}
+
+/* Botón del ojo: minimal, centrado verticalmente dentro del input */
+.input-with-icon .toggle-password {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #64748b;
+  width: auto;
+  height: auto;
+  padding: 0;
+}
+.input-with-icon .toggle-password:hover {
+  color: #3498db;
+}
+
+/* Icono ojo ON (cuando el input está en tipo password) */
+.input-with-icon .toggle-password::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  display: block;
+  background: currentColor;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5c5.23 0 9.17 3.11 10.69 6.62a1.5 1.5 0 010 1.16C21.17 16.31 17.23 19.42 12 19.42S2.83 16.31 1.31 12.78a1.5 1.5 0 010-1.16C2.83 8.11 6.77 5 12 5Zm0 2C7.78 7 4.52 9.34 3.21 12c1.31 2.66 4.57 5 8.79 5s7.48-2.34 8.79-5C19.48 9.34 16.22 7 12 7Zm0 2.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5Z"/></svg>')
+    no-repeat center/contain;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5c5.23 0 9.17 3.11 10.69 6.62a1.5 1.5 0 010 1.16C21.17 16.31 17.23 19.42 12 19.42S2.83 16.31 1.31 12.78a1.5 1.5 0 010-1.16C2.83 8.11 6.77 5 12 5Zm0 2C7.78 7 4.52 9.34 3.21 12c1.31 2.66 4.57 5 8.79 5s7.48-2.34 8.79-5C19.48 9.34 16.22 7 12 7Zm0 2.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5Z"/></svg>')
+    no-repeat center/contain;
+}
+
+/* Icono ojo OFF (cuando alternas a tipo text) -> agrega .is-on al botón vía JS */
+.input-with-icon .toggle-password.is-on::before {
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2.1 3.51 3.51 2.1l18.39 18.39-1.41 1.41-2.5-2.5A12.8 12.8 0 0 1 12 19.5C6.77 19.5 2.83 16.39 1.31 12.86a1.5 1.5 0 0 1 0-1.16c.78-1.85 2.23-3.54 4.09-4.83L2.1 3.51Zm6.24 6.24 1.54 1.54a2.5 2.5 0 0 0 3.04 3.04l1.54 1.54A4.5 4.5 0 0 1 8.34 9.75ZM12 5c5.23 0 9.17 3.11 10.69 6.62.2.39.2.85 0 1.24a12.1 12.1 0 0 1-3.04 4.03l-1.42-1.42A10.2 10.2 0 0 0 20.79 12C19.48 9.34 16.22 7 12 7c-.7 0-1.37.06-2 .18L8.3 5.48A12.7 12.7 0 0 1 12 5Z"/></svg>')
+    no-repeat center/contain;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2.1 3.51 3.51 2.1l18.39 18.39-1.41 1.41-2.5-2.5A12.8 12.8 0 0 1 12 19.5C6.77 19.5 2.83 16.39 1.31 12.86a1.5 1.5 0 0 1 0-1.16c.78-1.85 2.23-3.54 4.09-4.83L2.1 3.51Zm6.24 6.24 1.54 1.54a2.5 2.5 0 0 0 3.04 3.04l1.54 1.54A4.5 4.5 0 0 1 8.34 9.75ZM12 5c5.23 0 9.17 3.11 10.69 6.62.2.39.2.85 0 1.24a12.1 12.1 0 0 1-3.04 4.03l-1.42-1.42A10.2 10.2 0 0 0 20.79 12C19.48 9.34 16.22 7 12 7c-.7 0-1.37.06-2 .18L8.3 5.48A12.7 12.7 0 0 1 12 5Z"/></svg>')
+    no-repeat center/contain;
+}
+
+/* =========================================================
+   Botón principal (idéntico al del login)
+   ========================================================= */
+.btn-login {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: #10b981;
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+  transition: background 0.15s, transform 0.02s, box-shadow 0.15s;
+  margin-top: 0.5rem;
+}
+.btn-login:hover {
+  background: #059669;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.32);
+}
+.btn-login:active {
+  transform: translateY(1px);
+}
+
+/* =========================================================
+   Divider y link inferior (centrados como en login)
+   ========================================================= */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1.25rem 0;
+  color: #64748b;
+}
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+.divider span {
+  font-size: 0.9rem;
+}
+
+.register-link {
+  color: #64748b;
+  font-size: 0.9rem;
+  text-align: center;
+}
+.register-link a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 600;
+}
+.register-link a:hover {
+  text-decoration: underline;
+}
+/* ===== Barra de fuerza de contraseña ===== */
+.pwd-meter {
+  margin-top: 0.4rem;
+}
+.pwd-meter-bar {
+  height: 8px;
+  background: #eef2f7;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+.pwd-meter-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: #ef4444; /* cambia por JS según score */
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+.pwd-meter-text {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}

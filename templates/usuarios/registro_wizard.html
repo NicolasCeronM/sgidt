@@ -1,0 +1,73 @@
+{% extends "base_public.html" %}
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'usuarios/css/registro_wizard.css' %}">
+{% endblock css %}
+
+{% block content %}
+<section class="reg-page">
+  <div class="reg-wrap">
+    <div class="reg-card" id="wizard" data-step="{{ step|add:1 }}" data-total="{{ total }}">
+      <h1 class="reg-title">
+        <i class="fa-solid fa-clipboard-check"></i>
+        Registro (Paso {{ step|add:1 }} de {{ total }})
+      </h1>
+      <p class="reg-sub">Completa la información para activar tu cuenta en SGIDT.</p>
+
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="step-line">
+          <div class="step-progress" id="progress-bar"></div>
+        </div>
+      </div>
+      <div class="step-labels">
+        {% for k in steps %}
+          <span class="{% if forloop.counter0 == step %}active{% endif %}">{{ k }}</span>
+        {% endfor %}
+      </div>
+
+      <!-- Mensajes -->
+      {% if messages %}
+        <ul class="reg-messages">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <!-- Formulario -->
+      <form method="post" class="reg-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="reg-actions">
+          {% if step > 0 %}
+            <a class="btn btn-secondary" href="{% url 'empresas:registro_wizard' step|add:-1 %}">Anterior</a>
+          {% endif %}
+          <button type="submit" class="btn btn-primary">
+            {% if step|add:1 == total %}Finalizar{% else %}Siguiente{% endif %}
+          </button>
+        </div>
+      </form>
+
+      {% if data %}
+      <!--  
+        <details class="reg-details">
+          <summary>Ver resumen parcial</summary>
+          <pre>{{ data|safe }}</pre>
+        </details>-->
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock content %}
+
+<script>
+  const tipoActual = "{{ tipo_actual|default:'' }}";
+</script>
+
+{% block js %}
+  {{ block.super }}
+  <script src="{% static 'usuarios/js/registro_wizard.js' %}"></script>
+{% endblock js %}

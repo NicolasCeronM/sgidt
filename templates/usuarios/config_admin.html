@@ -1,0 +1,209 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% block title %}Configuración de Administrador{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'usuarios/css/config_admin.css' %}">
+
+<div class="cfg container">
+
+  <!-- Header -->
+  <header class="header">
+    <h1 class="header-title">Configuración de Administrador</h1>
+    <p class="header-subtitle">
+      Empresa activa:
+      <span class="company-badge">
+        {% if empresa.logo %}
+        <img src="{{ empresa.logo.url }}" alt="Logo" class="company-logo">
+        {% else %}
+        <i class="fa-regular fa-building"></i>
+        {% endif %}
+        <strong>{{ empresa.razon_social }}</strong> ({{ empresa.rut }})
+      </span>
+    </p>
+  </header>
+
+  <!-- Grid 2 columnas -->
+  <div class="grid">
+    <!-- ===== Card: Empresa ===== -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-header-content">
+          <i class="fa-regular fa-building card-icon" aria-hidden="true"></i>
+          <h2 class="card-title">Datos de la Empresa</h2>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          {{ f_empresa.non_field_errors }}
+
+          <!-- Logo -->
+          <div class="form-group">
+            <label class="form-label">Logo de la empresa</label>
+
+            {% if empresa.logo %}
+            <div class="preview">
+              <img src="{{ empresa.logo.url }}" alt="Logo actual" class="preview-image">
+              <span class="preview-text">Logo actual</span>
+            </div>
+            {% endif %}
+
+            <div class="form-file">{{ f_empresa.logo }}</div>
+            <div class="form-help">Formatos: JPG, PNG. Tamaño recomendado ≤ 1MB.</div>
+          </div>
+
+          <!-- Resto de campos de empresa (excepto logo) -->
+          {% for field in f_empresa %}
+          {% if field.name != "logo" %}
+          <div class="form-group">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="form-help">{{ field.help_text }}</div>{% endif %}
+            {% for e in field.errors %}<div class="form-help error">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+          {% endfor %}
+
+          <div class="button-group">
+            <button type="submit" name="guardar_empresa" class="button button--primary">
+              <i class="fa-regular fa-floppy-disk" aria-hidden="true"></i>
+              Guardar Empresa
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== Card: Usuario/Admin ===== -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-header-content">
+          <i class="fa-regular fa-user card-icon" aria-hidden="true"></i>
+          <h2 class="card-title">Perfil del Administrador</h2>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          {{ f_usuario.non_field_errors }}
+
+          <!-- Foto -->
+          <div class="form-group">
+            <label class="form-label">Foto de perfil</label>
+
+            {% if request.user.foto %}
+            <div class="preview">
+              <img src="{{ request.user.foto.url }}" alt="Foto actual" class="preview-image preview-image--circle">
+              <span class="preview-text">Foto actual</span>
+            </div>
+            {% endif %}
+
+            <div class="form-file">{{ f_usuario.foto }}</div>
+            <div class="form-help">Formatos: JPG, PNG. Tamaño recomendado ≤ 1MB.</div>
+          </div>
+
+          <!-- Resto de campos de usuario (excepto foto) -->
+          {% for field in f_usuario %}
+          {% if field.name != "foto" %}
+          <div class="form-group">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% for e in field.errors %}<div class="form-help error">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+          {% endfor %}
+
+          <div class="button-group">
+            <button type="submit" name="guardar_usuario" class="button button--secondary">
+              <i class="fa-regular fa-floppy-disk" aria-hidden="true"></i>
+              Guardar Perfil
+            </button>
+          </div>
+
+          <!-- Divider suave -->
+          <hr class="section-divider">
+
+          <!-- Resumen del administrador -->
+          <div class="admin-summary">
+            <img
+              src="{% if request.user.foto %}{{ request.user.foto.url }}{% else %}{% static 'img/avatar-placeholder.png' %}{% endif %}"
+              alt="Foto de {{ request.user.get_full_name|default:request.user.username }}"
+              class="admin-summary__avatar" />
+            <div class="admin-summary__info">
+              <div class="admin-summary__name">{{ request.user.get_full_name|default:request.user.username }}</div>
+              <div class="admin-summary__role">Administrador</div>
+              <div class="admin-summary__meta">
+                <span>Miembro desde: {{ request.user.date_joined|date:"d/m/Y" }}</span>
+                <span>&middot;</span>
+                <span>Último acceso: {{ request.user.last_login|date:"d/m/Y H:i" }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones rápidas -->
+          <div class="quick-actions">
+            <a href="{% url 'usuarios:password_reset_request' %}" class="button button--secondary">
+              <i class="fa-solid fa-key"></i> Cambiar contraseña
+            </a>
+            <a href="{% url 'usuarios:config_admin' %}?refresh_sessions=1" class="button button--secondary">
+              <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesiones en otros dispositivos
+            </a>
+            <a href="{% url 'usuarios:config_admin' %}?view=activity" class="button button--secondary">
+              <i class="fa-solid fa-list"></i> Ver actividad
+            </a>
+          </div>
+
+          <!-- Seguridad y acceso -->
+          <div class="security-card">
+            <div class="security-card__title">
+              <i class="fa-solid fa-shield-halved"></i> Seguridad y acceso
+            </div>
+            <ul class="meta-list">
+              <li><span>Usuario:</span> {{ request.user.username }}</li>
+              <li><span>Email verificado:</span> {% if request.user.is_active %}Sí{% else %}No{% endif %}</li>
+              <li><span>Grupos:</span>
+                {% if request.user.groups.all %}
+                {% for g in request.user.groups.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                {% else %}
+                (sin grupos)
+                {% endif %}
+              </li>
+              <li><span>Permisos:</span> {% if request.user.is_superuser %}Superusuario{% else %}Estándar{% endif %}
+              </li>
+            </ul>
+          </div>
+
+        </form>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Toast Django messages -->
+{% if messages %}
+<div class="toast-stack" id="toastStack">
+  {% for message in messages %}
+  <div class="toast toast--{{ message.tags|default:'info' }}">
+    <i
+      class="fa-regular {% if 'success' in message.tags %}fa-circle-check{% elif 'error' in message.tags %}fa-circle-xmark{% elif 'warning' in message.tags %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+    <span>{{ message }}</span>
+    <button class="toast-close" aria-label="Cerrar">&times;</button>
+  </div>
+  {% endfor %}
+</div>
+<script>
+  // auto-cerrar toasts y botón cerrar
+  document.querySelectorAll('.toast').forEach(t => {
+    const close = t.querySelector('.toast-close');
+    if (close) close.addEventListener('click', () => t.remove());
+    setTimeout(() => t.remove(), 4500);
+  });
+</script>
+{% endif %}
+
+{% endblock %}

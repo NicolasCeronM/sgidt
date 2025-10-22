@@ -1,0 +1,95 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% block title %}Google Drive · Documentos{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'configuraciones/css/google_files.css' %}?v=1" />
+
+<section class="section">
+    <div class="container">
+        <h1 class="page-title">Google Drive</h1>
+
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="gd-card">
+            <div class="gd-card__header">
+                <div class="gd-card__title">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Drive" />
+                    <div>
+                        <h3>Archivos recientes</h3>
+                        <small>Mostrando hasta 50 ítems ordenados por fecha de modificación.</small>
+                    </div>
+                </div>
+
+                <div class="gd-actions">
+                    <div class="gd-search">
+                        <input id="gdSearch" type="text" placeholder="Buscar por nombre..." />
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="gd-buttons">
+                        {% if files %}
+                        <button class="btn btn-light" type="button" id="gdRefreshBtn">
+                            <i class="fas fa-rotate-right"></i> Refrescar
+                        </button>
+                        {% endif %}
+                        <a class="btn btn-secondary" href="{% url 'panel:configuraciones' %}">
+                            <i class="fas fa-arrow-left"></i> Volver a Configuración
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gd-card__body">
+                {% if files %}
+                <div class="gd-table-wrap">
+                    <table class="gd-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%">Nombre</th>
+                                <th style="width: 22%">Tipo</th>
+                                <th style="width: 22%">Modificado</th>
+                                <th style="width: 16%">Link</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gdTableBody">
+                            {% for f in files %}
+                            <tr>
+                                <td data-col="name">
+                                    <i class="far fa-file" aria-hidden="true"></i>
+                                    {{ f.name }}
+                                </td>
+                                <td><span class="mime-tag" title="{{ f.mimeType }}">{{ f.mimeType }}</span></td>
+                                <td><span class="date-chip">{{ f.modifiedTime }}</span></td>
+                                <td>
+                                    <a href="{{ f.webViewLink }}" class="link-open" target="_blank" rel="noopener">
+                                        Abrir <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="gd-empty">
+                    <i class="far fa-folder-open"></i>
+                    <h4>No hay archivos para mostrar</h4>
+                    <p>Cuando tengas documentos en Drive, aparecerán aquí.</p>
+                    <div class="gd-empty__actions">
+                        <a class="btn btn-secondary" href="{% url 'panel:configuraciones' %}">
+                            <i class="fas fa-arrow-left"></i> Volver a Configuración
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="{% static 'configuraciones/js/google_files.js' %}?v=1"></script>
+{% endblock %}

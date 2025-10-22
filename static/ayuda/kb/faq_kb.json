@@ -1,0 +1,46 @@
+[
+  {
+    "q": ["conectar google drive", "vincular drive", "autorizar drive", "drive no conecta"],
+    "a": "Ve a **Configuración → Integraciones** y presiona **Conectar Google Drive**. Inicia sesión, acepta permisos y vuelve a SGIDT. Si ya estaba conectado, prueba **Desconectar** y volver a conectar."
+  },
+  {
+    "q": ["conectar dropbox", "vincular dropbox", "autorizar dropbox", "dropbox no conecta"],
+    "a": "En **Configuración → Integraciones**, haz clic en **Conectar** bajo **Dropbox** y completa la autorización. Luego podrás listar/descargar archivos."
+  },
+  {
+    "q": ["cambiar datos empresa", "modificar razon social", "actualizar rut", "editar datos empresa", "cambiar correo empresa"],
+    "a": "Ve a **Configuración → Ajustes de la Empresa**. Completa el formulario (RUT, Razón Social, correo) y presiona **Guardar**."
+  },
+  {
+    "q": ["respaldo automatico", "backup", "frecuencia de respaldos"],
+    "a": "En **Configuración → Ajustes de la Empresa**, selecciona la frecuencia en **Respaldo Automático** (Diario, Semanal o Mensual) y **Guarda**."
+  },
+  {
+    "q": ["subir documento", "cargar pdf", "no puedo subir archivo", "tamano maximo pdf", "error al subir pdf"],
+    "a": "En **Documentos**, usa **Subir** y elige tu PDF. Recomendado < **10MB** y sin caracteres especiales en el nombre. Si falla, verifica conexión y reintenta."
+  },
+  {
+    "q": ["validar con sii", "simpleapi", "validacion sii", "resultado validacion"],
+    "a": "En **Validación SII**, carga el XML/JSON del DTE, ejecuta la validación y revisa el estado y detalles de observaciones."
+  },
+  {
+    "q": ["roles", "permisos", "accesos", "invitar usuario", "crear usuario"],
+    "a": "La gestión de usuarios/roles está en **Configuración** del administrador. Define permisos por módulo y registra nuevos usuarios."
+  },
+  {
+    "q": ["seguridad", "contrasena", "cambiar contrasena", "olvide mi clave"],
+    "a": "Usa **¿Olvidaste tu contraseña?** en el login para restablecerla. Desde tu perfil puedes cambiarla manualmente cuando estés autenticado."
+  },
+  {
+    "q": ["manual usuario", "manual", "documentacion", "ayuda pdf"],
+    "a": "Descarga el **Manual de Usuario** desde **Ayuda → Manual de Usuario**. Incluye recorridos y ejemplos prácticos."
+  },
+  {
+    "q": ["contacto", "soporte", "correo soporte", "ayuda rapida"],
+    "a": "Puedes usar **este chat**, el formulario de **Contacto Rápido** o escribirnos a **soporte@sgidt.cl**."
+  },
+  {
+    "q": ["navegacion", "donde encuentro", "no encuentro opcion", "menu"],
+    "a": "Los módulos principales están en la barra lateral: **Dashboard**, **Documentos**, **Proveedores**, **Reportes**, **Validación SII** y **Configuración**."
+  }
+]

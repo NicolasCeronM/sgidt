@@ -1,0 +1,112 @@
+[
+  {
+    "nombre": "Sesión vencida",
+    "patrones": ["sesión vencida", "vuelva a intentarlo", "no autorizado", "expiró la sesión", "403"],
+    "titulo": "Tu sesión se cerró por inactividad.",
+    "pasos": [
+      "Cierra sesión y vuelve a entrar.",
+      "Abre nuevamente la pantalla donde estabas trabajando.",
+      "Si estabas en un formulario abierto hace mucho, vuelve a cargarlo y completa de nuevo."
+    ],
+    "nota": "Esto ayuda a proteger tu cuenta. Si persiste, avísanos."
+  },
+  {
+    "nombre": "Archivo demasiado grande",
+    "patrones": ["archivo demasiado grande", "peso del archivo", "no se pudo subir por tamaño", "413"],
+    "titulo": "El archivo que intentas subir es muy pesado.",
+    "pasos": [
+      "Prueba con un PDF más liviano (idealmente menor a 10 MB).",
+      "Si puedes, comprímelo o divídelo en dos archivos.",
+      "Evita caracteres extraños en el nombre del archivo."
+    ],
+    "nota": "Si necesitas subir archivos más grandes, cuéntanos para evaluar el aumento del límite."
+  },
+  {
+    "nombre": "Formato no permitido",
+    "patrones": ["formato no permitido", "tipo de archivo inválido", "no es pdf"],
+    "titulo": "El tipo de archivo no es compatible.",
+    "pasos": [
+      "Usa un **PDF** en lugar de otros formatos.",
+      "Verifica que el archivo no esté dañado abriéndolo en tu computador.",
+      "Intenta renombrarlo sin acentos ni símbolos (ejemplo: factura_001.pdf)."
+    ],
+    "nota": "En Documentos se recomienda PDF para asegurar una lectura correcta."
+  },
+  {
+    "nombre": "Documento duplicado",
+    "patrones": ["ya existe", "duplicado", "repetido", "registro existente"],
+    "titulo": "Parece que ese documento ya fue cargado.",
+    "pasos": [
+      "Busca en la lista por número de documento o fecha.",
+      "Si ya está, evita volver a subirlo.",
+      "Si no aparece, cuéntanos el número exacto para revisarlo."
+    ],
+    "nota": "Esto previene que registres la misma información dos veces."
+  },
+  {
+    "nombre": "Conexión inestable",
+    "patrones": ["sin conexión", "no conecta", "tiempo de espera agotado", "lento", "timeout"],
+    "titulo": "Hay un problema de conexión.",
+    "pasos": [
+      "Revisa tu internet o cambia de red.",
+      "Vuelve a intentar y, si puedes, prueba en otro navegador.",
+      "Si el problema aparece solo aquí, indícanos desde qué pantalla ocurre."
+    ],
+    "nota": "A veces una recarga resuelve cortes breves de conexión."
+  },
+  {
+    "nombre": "No se pudo conectar con Google Drive",
+    "patrones": ["google vencido", "vuelva a conectar google", "no se pudo acceder a google", "token google caducado"],
+    "titulo": "Tu vínculo con Google Drive necesita renovarse.",
+    "pasos": [
+      "Ve a **Configuración → Integraciones**.",
+      "En Google Drive, presiona **Desconectar** y luego **Conectar** otra vez.",
+      "Autoriza con tu cuenta de Google y regresa a SGIDT."
+    ],
+    "nota": "Esto puede pasar si cambiaste tu clave o quitaste permisos en Google."
+  },
+  {
+    "nombre": "No se pudo conectar con Dropbox",
+    "patrones": ["dropbox vencido", "vuelva a conectar dropbox", "no se pudo acceder a dropbox", "token dropbox caducado"],
+    "titulo": "Tu vínculo con Dropbox necesita renovarse.",
+    "pasos": [
+      "Ve a **Configuración → Integraciones**.",
+      "En Dropbox, presiona **Desconectar** y luego **Conectar** nuevamente.",
+      "Completa la autorización y vuelve a SGIDT."
+    ],
+    "nota": "Suele pasar si revocaste permisos o no usabas la conexión hace tiempo."
+  },
+  {
+    "nombre": "No se encontró lo solicitado",
+    "patrones": ["no se encontró", "no existe", "no hay resultados", "no se halló"],
+    "titulo": "No pudimos encontrar ese registro.",
+    "pasos": [
+      "Verifica el dato con el que estás buscando (nombre, número o fecha).",
+      "Vuelve a la lista y usa un filtro más amplio.",
+      "Si crees que debería estar, indícanos un ejemplo para ayudarte a ubicarlo."
+    ],
+    "nota": "A veces el dato existe con un nombre levemente diferente."
+  },
+  {
+    "nombre": "Datos incompletos",
+    "patrones": ["campo obligatorio", "falta completar", "dato requerido", "formulario incompleto"],
+    "titulo": "Faltan datos para continuar.",
+    "pasos": [
+      "Revisa que los campos marcados como obligatorios estén completos.",
+      "Corrige los mensajes que aparecen bajo cada campo.",
+      "Vuelve a presionar **Guardar**."
+    ],
+    "nota": "Si un campo no corresponde a tu caso, cuéntanos para ayudarte a completarlo."
+  },
+  {
+    "nombre": "Validación con SII: datos inconsistentes",
+    "patrones": ["folios repetidos", "rut inválido", "fecha fuera de rango", "total no coincide", "error de validación sii"],
+    "titulo": "La validación detectó datos que no calzan.",
+    "pasos": [
+      "Revisa que el **RUT**, **folio** y **fecha** sean correctos.",
+      "Confirma que el **total** coincide con el detalle del documento.",
+      "Si el archivo viene de otro sistema, asegúrate de exportarlo nuevamente."
+    ],
+    "nota": "Si no logras corregirlo, indícanos el número de documento para revisarlo contigo."
+  }
+]

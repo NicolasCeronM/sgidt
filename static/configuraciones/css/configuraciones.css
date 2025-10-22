@@ -1,0 +1,578 @@
+/* ===== Paleta consistente ===== */
+:root {
+  --top: #111827;
+  --bottom: #1e293b;
+  --accent: #374151;
+  --card: #fff;
+  --bg: #f5f7fb;
+  --text: #0f172a;
+  --muted: #64748b;
+  --b-100: #f1f5f9;
+  --b-200: #e5e7eb;
+  --b-300: #cbd5e1;
+  --shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  --radius: 16px;
+}
+
+/* ===== Página ===== */
+.section {
+  padding: 24px;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.page-title {
+  margin: 0 0 16px;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* ===== Grid principal (Integraciones) ===== */
+.settings-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .settings-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ===== Tarjeta base ===== */
+.settings-card {
+  background: var(--card);
+  border: 1px solid var(--b-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.settings-card > h3 {
+  margin: 0;
+  padding: 18px 22px;
+  font-size: 18px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--top), var(--bottom));
+  border-bottom: 3px solid rgba(255, 255, 255, 0.08);
+}
+.settings-card .card-body {
+  padding: 16px;
+}
+
+/* ===== Badges estado ===== */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--b-300);
+  line-height: 1;
+}
+.status-badge.connected {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+.status-badge.disconnected {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+/* ===== Service Cards (Google Drive / Dropbox) ===== */
+.service-card {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 22px;
+}
+.service-inner {
+  max-width: 280px;
+}
+.service-art {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+  font-size: 32px;
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+.service-art.brand-google {
+  background: linear-gradient(135deg, #0f172a, #1f2937);
+}
+.service-art.brand-dropbox {
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+}
+.service-title {
+  margin: 6px 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+.service-text {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.service-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ===== Feedback Card ===== */
+.feedback-card {
+  margin-top: 20px;
+  padding: 22px;
+}
+.feedback-inner {
+  text-align: center;
+}
+.feedback-art {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+  font-size: 28px;
+  background: linear-gradient(135deg, #1e3a8a, #0f172a);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+.feedback-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.feedback-text {
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.feedback-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  max-width: 420px;
+  margin: 0 auto;
+  display: grid;
+  gap: 8px;
+}
+.feedback-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+.feedback-list li i {
+  color: var(--accent);
+}
+
+/* ===== Formulario general / Empresa ===== */
+.company-card {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.settings-card form {
+  padding: 18px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 900px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.form-group label {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+}
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--b-300);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+}
+
+/* ===== Botones ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--b-300);
+  background: #fff;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.05s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  cursor: pointer;
+}
+.btn:hover {
+  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn[aria-disabled="true"],
+.btn:disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--top), var(--bottom));
+  color: #fff;
+  border: none;
+}
+.btn-secondary {
+  background: #fff;
+  color: var(--text);
+}
+.btn-danger {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+.btn-danger:hover {
+  box-shadow: 0 0 0 4px rgba(153, 27, 27, 0.12);
+}
+.btn-small {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+}
+.btn-ghost {
+  background: #f8fafc;
+  border-color: var(--b-200);
+  color: #0f172a;
+}
+
+/* ===== Tabs ===== */
+.settings-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 20px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  border: 1px solid var(--b-300);
+  background: #fff;
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 800;
+}
+.tab-btn:hover {
+  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
+}
+.tab-btn.active {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+.tab-panel {
+  display: none;
+}
+.tab-panel.active {
+  display: block;
+}
+
+/* ===== Mensajes / alerts ===== */
+.messages-stack {
+  margin-bottom: 12px;
+}
+.alert {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--b-300);
+  background: #fff;
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+.alert-success {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #065f46;
+}
+.alert-info {
+  border-color: var(--b-300);
+  background: #f8fafc;
+  color: #0f172a;
+}
+.alert-error {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #991b1b;
+}
+
+/* ===== Toast (fallback) ===== */
+.toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  background: #0f172a;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.toast.success {
+  background: #0b3b70;
+}
+.toast.error {
+  background: #7f1d1d;
+}
+
+/* ===== Accesibilidad ===== */
+:where(.btn, .form-input, .form-select):focus-visible {
+  outline: 3px solid rgba(55, 65, 81, 0.35);
+  outline-offset: 2px;
+}
+
+/* ===== Reduce motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ====== Company card  ====== */
+.company-card.v2 {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Encabezado */
+.company-card.v2 .company-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--b-200);
+  background: linear-gradient(135deg, var(--top), var(--bottom));
+  color: #fff;
+}
+.company-card.v2 .company-head h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.company-card.v2 .company-head p {
+  margin: 0;
+  opacity: 0.85;
+  font-size: 13px;
+}
+
+/* Grid de campos */
+.company-card.v2 .company-grid {
+  padding: 20px 22px 8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px 18px;
+}
+@media (min-width: 900px) {
+  .company-card.v2 .company-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.company-card.v2 .fg {
+  display: grid;
+  gap: 8px;
+}
+.company-card.v2 .fg.span-2 {
+  grid-column: 1 / -1;
+}
+
+.company-card.v2 label {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* Input con icono */
+.company-card.v2 .input-wrap {
+  position: relative;
+}
+.company-card.v2 .input-wrap > i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+.company-card.v2 .control {
+  width: 100%;
+  height: 44px;
+  padding: 10px 12px 10px 38px;
+  border: 1px solid var(--b-300);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.company-card.v2 .control::placeholder {
+  color: #a3afc0;
+}
+.company-card.v2 .control:focus {
+  outline: none;
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.18);
+}
+.company-card.v2 .select {
+  appearance: none;
+}
+
+/* Hint */
+.company-card.v2 .hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: -2px;
+}
+
+/* Footer */
+.company-card.v2 .company-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 22px 20px;
+  border-top: 1px solid var(--b-200);
+  background: #fff;
+}
+
+/* Botón grande */
+.btn-lg {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+/* Ayuda y soporte */
+.help-grid {
+  display: grid;                     
+  grid-template-columns: 1fr;        
+  gap: 12px;                         
+}
+
+@media (min-width: 900px) {
+  .help-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Tarjetas individuales de ayuda */
+.help-card {
+  display: grid;                     
+  grid-template-columns: auto 1fr auto; 
+  gap: 12px;                         
+  align-items: center;               
+  border: 1px solid var(--b-200);    
+  border-radius: 12px;               
+  padding: 12px;                     
+  background: #fff;                  
+}
+
+/* Página del Centro de Estado  */
+.status-list {
+  list-style: none;                  
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;                         
+}
+
+/* Fila de servicio */
+.status-row {
+  display: grid;
+  grid-template-columns: 1.2fr auto 1.6fr; 
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--b-200);    
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+
+/* Nombre del servicio */
+.status-name {
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* Nota o detalle del estado */
+.status-note {
+  color: var(--muted);
+}
+
+/* Chip de estado */
+.status-chip {
+  border: 1px solid var(--b-300);    
+  border-radius: 999px;              
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* Servicio operativo */
+.status-chip.operational {
+  background: #ecfdf5;               
+  border-color: #a7f3d0;
+  color: #065f46;                    
+}
+
+/* Servicio degradado */
+.status-chip.degraded {
+  background: #fffbeb;               
+  border-color: #fde68a;
+  color: #92400e;                    
+}
+
+/* Servicio en mantenimiento */
+.status-chip.maintenance {
+  background: #eff6ff;               
+  border-color: #bfdbfe;
+  color: #1e3a8a;                    
+}

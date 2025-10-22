@@ -1,0 +1,65 @@
+{% extends 'base_app.html' %} {% block title %}Validaciones · SGIDT{% endblock%}
+
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'validaciones/css/validaciones.css' %}?v=1">
+<section class="section">
+  <div class="container">
+    <h1 class="page-title">Validación de Documentos SII</h1>
+
+    <div class="validation-container">
+      <!-- Formulario de validación -->
+      <div class="validation-form">
+        <h3>Ingrese datos del documento</h3>
+        <form id="validationForm" onsubmit="validateDocument(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="docType">Tipo de Documento</label>
+              <select id="docType" class="form-select" required>
+                <option value="">Seleccione</option>
+                <option value="factura">Factura de compra</option>
+                <option value="factura">Factura de venta</option>
+                <option value="factura">Factura de exportacion</option>
+                <option value="boleta">Boleta compra</option>
+                <option value="boleta">Boleta venta</option>
+                <option value="nota_credito">Nota de Crédito compra</option>
+                <option value="nota_credito">Nota de Credito venta</option>
+                <option value="nota_debito">Nota de débito compra</option>
+                <option value="nota_debito">Nota de débito venta</option>
+                <option value="Guia_de_despacho">Guia de despacho</option>
+                <option value="Declaracion_de_ingraso">Declaracion de ingreso (DNI)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="docNumber">Número de Documento</label>
+              <input type="text" id="docNumber" class="form-input" placeholder="Ej: 123456" required />
+            </div>
+
+            <div class="form-group">
+              <label for="emissionDate">Fecha de Emisión</label>
+              <input type="date" id="emissionDate" class="form-input" required />
+            </div>
+
+            <div class="form-group">
+              <label for="totalAmount">Monto Total</label>
+              <input type="number" id="totalAmount" class="form-input" placeholder="Ej: 250000" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-check-circle"></i> Validar Documento
+          </button>
+        </form>
+      </div>
+
+      <!-- Resultado de validación -->
+      <div class="validation-result" id="validationResult">
+        Complete el formulario y presione "Validar Documento" para ver el
+        resultado aquí.
+      </div>
+    </div>
+  </div>
+</section>
+<script src="{% static 'validaciones/js/validaciones.js' %}?v=1"></script>
+{% endblock %}

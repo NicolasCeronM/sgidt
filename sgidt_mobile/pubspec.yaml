@@ -1,0 +1,60 @@
+name: sgidt_mobile
+description: "Aplicación móvil de SGIDT."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  # Dependencias de Flutter
+  flutter:
+    sdk: flutter
+  
+  flutter_localizations:
+    sdk: flutter
+
+  # Dependencias de paquetes
+  shared_preferences: ^2.3.2
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.3.2
+  image_picker: ^1.2.0
+  http: ^1.5.0
+  flutter_secure_storage: ^9.2.2
+  dio: ^5.7.0
+  pretty_dio_logger: ^1.3.1
+  flutter_cached_pdfview: ^0.4.2
+  url_launcher: ^6.3.0
+  
+  # --- LÍNEA CORREGIDA PARA COINCIDIR CON FLUTTER_LOCALIZATIONS ---
+  intl: ^0.20.2 
+  # -----------------------------------------------------------------
+
+  # --- 1. PAQUETE PARA GRÁFICOS ---
+  fl_chart: ^0.68.0 
+  # -------------------------------------------
+
+  camera: ^0.10.6
+  camera_windows: ^0.2.1+1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.6   
+
+flutter:
+  uses-material-design: true
+
+  # 📦 Archivos incluidos (logo para splash)
+  assets:
+    - assets/logo.png
+
+# ⚙️ Configuración de splash nativo
+flutter_native_splash:
+  color: "#FFFFFF"            # Fondo claro
+  color_dark: "#232323"       # Fondo oscuro
+  # Ajustes para Android 12+
+  android_12:
+    color: "#FFFFFF"
+    color_dark: "#232323"

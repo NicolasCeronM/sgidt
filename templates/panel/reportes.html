@@ -1,0 +1,88 @@
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}Reportes · SGIDT{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'reportes/css/reportes.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="rp-container">
+    <header class="rp-header">
+        <div>
+            <h1 class="rp-title">Reportes Mensuales</h1>
+            <p class="rp-subtitle">Visualización detallada y exportación de indicadores tributarios clave.</p>
+        </div>
+        <div class="rp-filters">
+            <select id="monthSelector" class="rp-select"></select>
+            <select id="yearSelector" class="rp-select"></select>
+            
+            <button id="exportCsvBtn" class="rp-btn btn-primary"><i class="fas fa-file-csv"></i> Exportar a CSV</button>
+            <button id="exportExcelBtn" class="rp-btn btn-secondary"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
+        </div>
+    </header>
+
+    <section class="rp-kpi-grid">
+        <div class="rp-kpi-card kpi-ingresos">
+            <h4>Total Ingresos</h4>
+            <p id="kpiIngresos">$0</p>
+        </div>
+        <div class="rp-kpi-card kpi-gastos">
+            <h4>Total Gastos</h4>
+            <p id="kpiGastos">$0</p>
+        </div>
+        <div class="rp-kpi-card kpi-resultado">
+            <h4>Resultado Neto</h4>
+            <p id="kpiResultado">$0</p>
+        </div>
+    </section>
+
+    <section class="rp-charts-grid">
+        <div class="rp-chart-card">
+            <h5>Ingresos vs. Gastos (Periodo)</h5>
+            <div id="ingresosVsGastosChart"></div>
+        </div>
+        <div class="rp-chart-card">
+            <h5>Análisis de IVA (Crédito y Débito)</h5>
+            <div id="analisisIvaChart"></div>
+        </div>
+        <div class="rp-chart-card">
+            <h5>Distribución de Ingresos por Tipo</h5>
+            <div id="distribucionIngresosChart"></div>
+        </div>
+        <div class="rp-chart-card">
+            <h5>Distribución de Gastos por Proveedor</h5>
+            <div id="distribucionGastosChart"></div>
+        </div>
+    </section>
+
+    <section class="rp-table-card">
+        <h5>Detalle de Documentos Recientes</h5>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Folio</th>
+                        <th>Tipo de Documento</th>
+                        <th>Fecha de Emisión</th> 
+                        <th>Monto Total</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center;">Cargando datos del periodo...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="{% static 'reportes/js/reportes.js' %}"></script>
+{% endblock %}

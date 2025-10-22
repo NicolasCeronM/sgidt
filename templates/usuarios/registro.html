@@ -1,0 +1,206 @@
+{% extends "base_public.html" %} {% load static %} {% block title %}Registrar
+PyME - SGIDT{% endblock %} {% block css %}
+<link
+  rel="stylesheet"
+  href="{% static 'usuarios/css/registro_empresa.css' %}"
+/>
+{% endblock %} {% block content %}
+
+<div class="container py-5" style="max-width: 880px">
+  <div class="card shadow">
+    <div class="card-body p-4 p-md-5">
+      <div class="main-content">
+        <div class="login-container" style="padding: 50px; margin-bottom: 20px;">
+          <h1 class="login-title">Crear cuenta para tu PyME</h1>
+          <p class="login-subtitle">
+            Completa los datos de tu empresa y del usuario administrador.
+          </p>
+
+          <form id="registroEmpresaForm" method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="form-section-title">Datos de la Empresa</div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">RUT de la empresa</label>
+                {{ form.empresa_rut }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nombre o razón social</label>
+                {{ form.razon_social }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tipo societario</label>
+                {{ form.tipo_societario }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Régimen tributario</label>
+                {{ form.regimen_tributario }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Giro <small>(opcional)</small></label>
+                {{ form.giro }}
+              </div>
+              <div class="form-group">
+                <label class="form-label"
+                  >Código actividad SII <small>(opcional)</small></label
+                >
+                {{ form.codigo_actividad }}
+              </div>
+              <div class="form-group">
+                <label class="form-label"
+                  >Email empresa <small>(opcional)</small></label
+                >
+                {{ form.email_empresa }}
+              </div>
+              <div class="form-group">
+                <label class="form-label"
+                  >Teléfono <small>(opcional)</small></label
+                >
+                {{ form.telefono }}
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1">
+                <label class="form-label"
+                  >Dirección <small>(opcional)</small></label
+                >
+                {{ form.direccion }}
+              </div>
+              <div class="form-group">
+                <label class="form-label"
+                  >Comuna <small>(opcional)</small></label
+                >
+                {{ form.comuna }}
+              </div>
+              <div class="form-group">
+                <label class="form-label"
+                  >Región <small>(opcional)</small></label
+                >
+                {{ form.region }}
+              </div>
+            </div>
+
+            <div class="form-section-title">Usuario Administrador</div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Nombre</label>
+                {{ form.first_name }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Apellido</label>
+                {{ form.last_name }}
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1">
+                <label class="form-label">Email de acceso</label>
+                {{ form.user_email }}
+              </div>
+
+              <div class="form-group" style="grid-column: 1 / -1">
+                <label class="form-label"
+                  >RUT representante </label
+                >
+                {{ form.user_rut }}
+              </div>  
+
+              <div class="form-group">
+                <label class="form-label">Contraseña</label>
+                <div class="input-with-icon">
+                  {{ form.password1 }}
+                  <button type="button" class="toggle-password" data-target="id_password1" aria-label="Mostrar/ocultar contraseña"></button>
+                </div>
+                <!-- Medidor de fuerza -->
+                <div id="pwd-meter" class="pwd-meter" aria-hidden="true">
+                  <div class="pwd-meter-bar"><span class="pwd-meter-fill"></span></div>
+                  <div class="pwd-meter-text">Fuerza: —</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Repite la contraseña</label>
+                <div class="input-with-icon">
+                  {{ form.password2 }}
+                  <button type="button" class="toggle-password" data-target="id_password2" aria-label="Mostrar/ocultar contraseña"></button>
+                </div>
+              </div>
+
+              <div class="form-checkbox">
+                {{ form.aceptar_terminos }} <label for="id_aceptar_terminos">Acepto términos y condiciones</label>
+              </div>
+
+            <div class="form-group" style="grid-column:1 / -1;">
+              <button type="submit" id="submitBtn" class="btn-login">
+                <span id="btnText">Crear mi PyME</span>
+                <span id="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none;"></span>
+              </button>
+            </div>
+
+            <div class="divider col-12"><span>o</span></div>
+
+            <div class="register-link">
+              <span>¿Ya tienes cuenta?</span>
+              <a href="{% url 'usuarios:login' %}">Inicia sesión</a>
+            </div>
+            
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 
+
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  // 🔹 URL fija (en duro)
+  const buscar_empresa_url = "/empresas/buscar_empresa/";
+ 
+  // 🔹 Lógica de consulta por RUT
+  $(document).ready(function () {
+    console.log("✅ JS en duro cargado correctamente");
+ 
+    const input = $('#id_empresa_rut');
+    if (input.length === 0) {
+      console.warn("⚠️ No se encontró el input #id_empresa_rut");
+      return;
+    }
+ 
+    input.on('blur', function () {
+      const rut = $(this).val().trim();
+      console.log("🎯 Evento blur detectado:", rut);
+ 
+      if (rut === '') return;
+ 
+      $.ajax({
+        url: buscar_empresa_url,
+        type: 'GET',
+        data: { rut: rut },
+        beforeSend: function () {
+          $('#id_razon_social').val('Consultando...');
+        },
+        success: function (data) {
+          console.log("📦 Respuesta recibida:", data);
+          if (data.result) {
+            $('#id_razon_social').val(data.razon_social || '');
+            $('#id_email_empresa').val(data.dte_email || '');
+            $('#id_giro').val(data.glosa_giro || '');
+            $('#id_codigo_actividad').val((data.actecos && data.actecos[0]) || '');
+            $('#id_region').val(data.region || '');
+            $('#id_comuna').val(data.comuna || '');
+            $('#id_direccion').val(data.direccion || '');
+          } else {
+            alert('No se encontró información para este RUT.');
+            $('#id_razon_social').val('');
+          }
+        },
+        error: function (xhr) {
+          console.error("❌ Error al consultar:", xhr.responseText);
+          alert('Error al consultar la empresa.');
+        }
+      });
+    });
+  });
+</script>
+
+<script src="{% static 'usuarios/js/registro_empresa.js' %}"></script>
+{% endblock %}

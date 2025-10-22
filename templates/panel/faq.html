@@ -1,0 +1,298 @@
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}FAQ · SGIDT{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=5">
+
+<section class="section">
+  <div class="container">
+    <h1 class="page-title">Preguntas Frecuentes</h1>
+    <p class="muted max-w-760">Guía rápida con respuestas a los problemas y dudas más comunes al usar
+      <strong>SGIDT</strong>.</p>
+
+    <div class="settings-card">
+      <h3>FAQ</h3>
+      <div class="card-body">
+
+        <!-- ========================= -->
+        <!-- ACCESO Y CUENTA           -->
+        <!-- ========================= -->
+        <details class="faq-item" open>
+          <summary>
+            <i class="fas fa-right-to-bracket" aria-hidden="true"></i>
+            No puedo iniciar sesión, ¿qué reviso primero?
+          </summary>
+          <div class="faq-content">
+            <ul>
+              <li>Confirma que tu <strong>email</strong> esté bien escrito.</li>
+              <li>Si olvidaste tu contraseña, usa <em>“Recuperar contraseña”</em> en la pantalla de login.</li>
+              <li>Si tu cuenta fue creada recién, espera el correo de activación o consulta a tu administrador.</li>
+              <li>Si tu organización usa varios dominios, verifica que sea el correcto.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-user-shield" aria-hidden="true"></i>
+            ¿Qué roles existen y qué permisos tienen?
+          </summary>
+          <div class="faq-content">
+            <ul>
+              <li><strong>Administrador:</strong> acceso total (configuración, integraciones, validaciones, documentos).
+              </li>
+              <li><strong>Operador:</strong> gestiona documentos/validaciones, lectura en reportes.</li>
+              <li><strong>Lectura:</strong> acceso de solo lectura a módulos permitidos.</li>
+            </ul>
+            La asignación de roles la realiza un administrador desde el panel correspondiente.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-building-user" aria-hidden="true"></i>
+            ¿Cómo cambio de empresa activa?
+          </summary>
+          <div class="faq-content">
+            Si manejas varias empresas, selecciona la empresa activa desde el selector del panel (o desde
+            <strong>Configuración → Empresa</strong>). Antes de subir o validar documentos, confirma que sea la
+            correcta.
+          </div>
+        </details>
+
+        <!-- ========================= -->
+        <!-- EMPRESAS / CONFIGURACIÓN -->
+        <!-- ========================= -->
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-building" aria-hidden="true"></i>
+            ¿Dónde edito los datos de la empresa (RUT, razón social, email, etc.)?
+          </summary>
+          <div class="faq-content">
+            En <strong>Configuración → Ajustes de la Empresa</strong>, completa los campos y presiona <em>Guardar</em>.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-id-card-clip" aria-hidden="true"></i>
+            El sistema me pide RUT y Razón Social, ¿por qué son obligatorios?
+          </summary>
+          <div class="faq-content">
+            Son la base de varias acciones (nomenclatura de documentos, reportes y validaciones). Por políticas de
+            calidad de datos, se solicitan siempre.
+          </div>
+        </details>
+
+        <!-- ========================= -->
+        <!-- DOCUMENTOS                -->
+        <!-- ========================= -->
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-file-arrow-up" aria-hidden="true"></i>
+            ¿Qué formatos de archivo puedo subir?
+          </summary>
+          <div class="faq-content">
+            Principalmente <strong>XML</strong> y <strong>JSON</strong> (DTE y afines). También se soportan
+            <strong>PDF</strong> como respaldo en algunos flujos.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+            La barra de carga queda pegada y no termina, ¿qué hago?
+          </summary>
+          <div class="faq-content">
+            <ul>
+              <li>Revisa la <strong>consola</strong> del navegador (F12) por errores de red (401/403/500).</li>
+              <li>Verifica que el archivo no exceda el tamaño permitido y que el formato sea válido.</li>
+              <li>Actualiza la página y reintenta; si persiste, reporta con captura de pantalla en <em>Ayuda → Contacto
+                  Rápido</em>.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-tag" aria-hidden="true"></i>
+            ¿Cómo debería nombrar mis archivos para encontrarlos rápido?
+          </summary>
+          <div class="faq-content">
+            Usa un patrón consistente, por ejemplo:<br>
+            <code>RUT_TipoDTE_Folio_Fecha.xml</code> (sin espacios ni caracteres especiales).
+          </div>
+        </details>
+
+        <!-- ========================= -->
+        <!-- VALIDACIONES              -->
+        <!-- ========================= -->
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-file-circle-check" aria-hidden="true"></i>
+            ¿Cómo valido un DTE?
+          </summary>
+          <div class="faq-content">
+            Ve a <strong>Validaciones</strong>, sube el archivo (XML/JSON), completa los campos requeridos y presiona
+            <em>Validar</em>. El resultado puede ser <strong>aceptado</strong>, <strong>observado</strong> o
+            <strong>rechazado</strong>.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+            ¿Qué significa “observado” y cómo lo soluciono?
+          </summary>
+          <div class="faq-content">
+            El documento fue recibido pero presenta advertencias. Revisa el detalle de observaciones,
+            corrige el origen (por ejemplo, campos faltantes o formato) y vuelve a validar.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-wifi" aria-hidden="true"></i>
+            La validación falla por tiempo de espera o error del servicio, ¿es normal?
+          </summary>
+          <div class="faq-content">
+            Puede suceder si el servicio externo está saturado o en mantenimiento. Intenta nuevamente en unos minutos.
+            Si se repite, revisa el <em>Centro de Estado</em> (si está habilitado) o reporta por <em>Ayuda → Contacto
+              Rápido</em>.
+          </div>
+        </details>
+
+        <!-- ========================= -->
+        <!-- INTEGRACIONES             -->
+        <!-- ========================= -->
+        <details class="faq-item">
+          <summary>
+            <i class="fab fa-google-drive" aria-hidden="true"></i>
+            ¿Cómo conecto Google Drive?
+          </summary>
+          <div class="faq-content">
+            En <strong>Configuración → Integraciones</strong>, presiona <em>Conectar Google Drive</em> y acepta
+            permisos.
+            Al conectar, verás el correo asociado y la fecha de conexión.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fab fa-dropbox" aria-hidden="true"></i>
+            ¿Cómo conecto Dropbox?
+          </summary>
+          <div class="faq-content">
+            En <strong>Configuración → Integraciones</strong>, presiona <em>Conectar Dropbox</em> y autoriza la app.
+            Si revocas los permisos desde Dropbox, tendrás que reconectar aquí.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-link-slash" aria-hidden="true"></i>
+            Me sale “Cuenta desconectada” en Drive/Dropbox, ¿por qué?
+          </summary>
+          <div class="faq-content">
+            El token pudo expirar o fue revocado. Desconecta y vuelve a conectar desde <strong>Configuración →
+              Integraciones</strong>.
+          </div>
+        </details>
+
+        <!-- ========================= -->
+        <!-- REPORTES / PANEL          -->
+        <!-- ========================= -->
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-chart-line" aria-hidden="true"></i>
+            ¿Dónde veo reportes y métricas?
+          </summary>
+          <div class="faq-content">
+            En <strong>Reportes</strong> (panel lateral). Dependiendo del rol, tendrás más o menos acceso.
+          </div>
+        </details>
+
+        <!-- ========================= -->
+        <!-- CORREO / SOPORTE          -->
+        <!-- ========================= -->
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+            Envié el formulario de “Contacto Rápido”, ¿cómo me responden?
+          </summary>
+          <div class="faq-content">
+            El equipo de soporte recibe tu mensaje por correo y te contactará al email indicado. Procura incluir
+            capturas de pantalla y, si aplica, el ID del documento.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-envelope-circle-check" aria-hidden="true"></i>
+            No me llegan correos del sistema, ¿qué hago?
+          </summary>
+          <div class="faq-content">
+            <ul>
+              <li>Revisa tu carpeta de <strong>Spam</strong>.</li>
+              <li>Confirma con tu área TI que el remitente/servidor no esté bloqueado.</li>
+              <li>Verifica que tu dirección de correo esté bien escrita.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- ========================= -->
+        <!-- BUENAS PRÁCTICAS          -->
+        <!-- ========================= -->
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-lightbulb" aria-hidden="true"></i>
+            Recomendaciones para trabajar más rápido y con menos errores
+          </summary>
+          <div class="faq-content">
+            <ul>
+              <li>Usa nombres de archivo claros y consistentes.</li>
+              <li>No cierres la pestaña mientras subes/validas un documento.</li>
+              <li>Verifica la empresa activa antes de iniciar un flujo.</li>
+              <li>Guarda capturas y mensajes de error al reportar un incidente.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- ========================= -->
+        <!-- SEGURIDAD / PRIVACIDAD    -->
+        <!-- ========================= -->
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-lock" aria-hidden="true"></i>
+            ¿Cómo protege SGIDT mis datos?
+          </summary>
+          <div class="faq-content">
+            Se aplican buenas prácticas de seguridad de aplicación y se respeta el principio de menor privilegio en
+            integraciones.
+            Usa HTTPS en producción y no compartas credenciales.
+          </div>
+        </details>
+
+        <!-- ========================= -->
+        <!-- ENLACES ÚTILES            -->
+        <!-- ========================= -->
+        <details class="faq-item">
+          <summary>
+            <i class="fas fa-book" aria-hidden="true"></i>
+            ¿Hay un Manual de Usuario descargable?
+          </summary>
+          <div class="faq-content">
+            Sí. Desde <strong>Ayuda</strong> puedes descargarlo con el botón <em>“Descargar Manual (PDF)”</em>.
+          </div>
+        </details>
+
+        <div class="faq-actions">
+          <a class="btn" href="{% url 'panel:ayuda' %}">← Volver a Ayuda</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

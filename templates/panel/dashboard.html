@@ -1,0 +1,103 @@
+{% extends 'base_app.html' %}{% load static %}
+{% block title %}Inicio · SGIDT{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=5"/>
+
+<section class="db-page" aria-labelledby="db-title">
+  <div class="db-container">
+    <!-- HERO -->
+    <header class="db-head">
+      <div>
+        <h1 id="db-title" class="db-title" data-summary-url="{% url 'panel:api_dashboard_summary' %}">…</h1>
+        <p class="db-subtitle">Resumen general de documentos tributarios</p>
+      </div>
+    </header>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <article class="kpi-card">
+        <div class="kpi-head">
+          <span>Documentos Procesados</span>
+          <i class="fas fa-file-invoice"></i>
+        </div>
+        <div class="kpi-body">
+          <p class="kpi-number" data-kpi="docs_mes">0</p>
+          <p class="kpi-delta" data-kpi-delta="docs_mes" hidden>+0% vs mes pasado</p>
+        </div>
+      </article>
+
+      <article class="kpi-card" data-type="iva">
+        <div class="kpi-head">
+          <span>IVA Total</span>
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="kpi-body">
+          <p class="kpi-number" data-kpi="iva_mes">$0</p>
+          <p class="kpi-delta" data-kpi-delta="iva_mes" hidden>+0% vs mes pasado</p>
+        </div>
+      </article>
+
+      <article class="kpi-card" data-type="gasto">
+        <div class="kpi-head">
+          <span>Gasto Mensual</span>
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="kpi-body">
+          <p class="kpi-number" data-kpi="gasto_mes">$0</p>
+          <p class="kpi-delta" data-kpi-delta="gasto_mes" hidden>+0% vs mes pasado</p>
+        </div>
+      </article>
+
+      <article class="kpi-card" data-type="alertas">
+        <div class="kpi-head">
+          <span>Alertas Pendientes</span>
+          <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="kpi-body">
+          <p class="kpi-number" data-kpi="alertas">0</p>
+          <p class="kpi-hint"><span data-kpi="alertas_prioritarias">0</span> requieren atención inmediata</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- GRID INFERIOR -->
+    <div class="cards-grid">
+      <!-- Gastos Mensuales (ApexCharts) -->
+      <section class="card" aria-labelledby="card-gastos">
+        <div class="card-head">
+          <h3 id="card-gastos" class="card-title">Gastos Mensuales</h3>
+          <small class="muted">Evolución de gastos en los últimos 6 meses</small>
+        </div>
+
+        <div class="chart-wrap">
+          <div id="gastosChart" data-chart-url="{% url 'panel:api_dashboard_gastos6m' %}"></div>
+          <div class="chart-skeleton"></div>
+        </div>
+      </section>
+
+      <!-- Documentos Recientes -->
+      <section class="card" aria-labelledby="card-recientes">
+        <div class="card-head">
+          <h3 id="card-recientes" class="card-title">Documentos Recientes</h3>
+          <small class="muted">Últimos documentos procesados</small>
+        </div>
+
+        <ul class="recent-list skeleton" aria-hidden="true"><li></li><li></li><li></li></ul>
+        <ul class="recent-list" data-latest-url="{% url 'panel:api_dashboard_latest' %}"></ul>
+
+        <div class="empty" hidden>
+          <p class="empty-text">Todavía no hay documentos recientes.</p>
+          <a href="{% url 'panel:documentos_page' %}" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Subir documento
+          </a>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- CDN de ApexCharts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<!-- Tu JS -->
+<script src="{% static 'panel/js/dashboard.js' %}?v=4"></script>
+{% endblock %}

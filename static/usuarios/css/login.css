@@ -1,0 +1,274 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter,
+    sans-serif;
+  background: #f8fafc; /* fondo más profesional */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Contenido principal ===== */
+.main-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* Tarjeta login centrada */
+.login-container {
+  background: #fff;
+  padding: 2.25rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 550px;
+  text-align: left;
+  border: 1px solid #e5e7eb;
+  margin-top: calc(var(--header-h, 64px) + 24px);
+}
+
+.login-title {
+  color: #1e293b;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+}
+.login-subtitle {
+  color: #64748b;
+  margin: 0.25rem 0 1.25rem;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* Formulario */
+.form-group {
+  margin-bottom: 1rem;
+}
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background: #fff;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.form-select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+  background-position: calc(100% - 20px) calc(1em + 2px),
+    calc(100% - 15px) calc(1em + 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.form-hint {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 0.4rem;
+}
+
+/* Checkbox + link olvidar */
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1.25rem;
+}
+.form-checkbox label {
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+.link-forgot {
+  color: #3498db;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+.link-forgot:hover {
+  text-decoration: underline;
+}
+
+/* Botón principal */
+.btn-login {
+  width: 100%;
+  background: #10b981;
+  color: #fff;
+  padding: 0.9rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.02s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.btn-login:hover {
+  background: #059669;
+}
+.btn-login:active {
+  transform: translateY(1px);
+}
+
+/* Icono candado */
+.btn-login .lock {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  position: relative;
+  display: inline-block;
+}
+.btn-login .lock:before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -8px;
+  width: 12px;
+  height: 8px;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+}
+
+/* Divider y links inferiores */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1.25rem 0;
+  color: #64748b;
+}
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+.divider span {
+  font-size: 0.9rem;
+}
+.register-link {
+  color: #64748b;
+  font-size: 0.9rem;
+  text-align: center;
+}
+.register-link a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 600;
+}
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* Errores */
+.error-message {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  display: none;
+}
+.field-error {
+  margin-top: 0.4rem;
+  color: #b91c1c;
+  font-size: 0.82rem;
+}
+.form-input[aria-invalid="true"] {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+}
+
+/* Agrupar contraseña con botón */
+.password-group {
+  position: relative;
+}
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper .form-input {
+  padding-right: 2.5rem;
+}
+.toggle-password {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #64748b;
+}
+.toggle-password:hover {
+  color: #3498db;
+}
+
+/* ===== Utilidades para el formulario de registro (reusa estilos del login) ===== */
+.form-section-title {
+  margin: 1.25rem 0 0.5rem;
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 768px) {
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ajustes para selects del form si alguno no hereda .form-select */
+select.form-input {
+  padding-right: 2.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 1.75rem;
+    margin: 1rem;
+  }
+}

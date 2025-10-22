@@ -1,0 +1,114 @@
+@page {
+  size: A4;
+  margin: 22mm 18mm;
+}
+* {
+  box-sizing: border-box;
+}
+body.doc {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+    "Helvetica Neue", Arial, sans-serif;
+  color: #111827;
+  line-height: 1.5;
+  font-size: 11.5pt;
+}
+
+/* Portada */
+.cover {
+  text-align: center;
+  margin: 12mm 0 16mm;
+}
+.cover h1 {
+  font-size: 26pt;
+  margin: 0 0 6px;
+}
+.cover .subtitle {
+  font-size: 13pt;
+  color: #374151;
+  margin: 0 0 6px;
+}
+.cover .muted {
+  color: #6b7280;
+}
+
+/* Índice */
+.toc {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12mm;
+}
+.toc h2 {
+  margin: 0 0 8px;
+  font-size: 14pt;
+}
+.toc ol {
+  margin: 0;
+  padding-left: 18px;
+}
+.toc a {
+  text-decoration: none;
+  color: #1d4ed8;
+}
+
+/* Secciones */
+.section {
+  page-break-inside: avoid;
+  margin-bottom: 12mm;
+}
+.section h2 {
+  font-size: 16pt;
+  margin: 0 0 8px;
+}
+.section h3 {
+  font-size: 13pt;
+  margin: 8px 0 4px;
+}
+.section p,
+.section li,
+.section dd {
+  color: #374151;
+}
+.section ul,
+.section ol {
+  margin: 0 0 4px;
+  padding-left: 18px;
+}
+.section pre {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px;
+  overflow: auto;
+}
+.section code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", monospace;
+}
+
+/* Elementos auxiliares */
+.note {
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+.tip {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+/* Footer con numeración */
+.doc__footer {
+  position: running(footer);
+  text-align: center;
+  color: #9ca3af;
+  font-size: 10pt;
+}
+@page {
+  @bottom-center {
+    content: "SGIDT · Manual — " counter(page) " / " counter(pages);
+  }
+}

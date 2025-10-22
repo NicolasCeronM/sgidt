@@ -1,0 +1,230 @@
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}Configuración · SGIDT{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'configuraciones/css/configuraciones.css' %}?v=6">
+
+<section class="section">
+  <div class="container">
+    <h1 class="page-title">Configuración</h1>
+
+    {% if messages %}
+    <div class="messages-stack">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Pestañas -->
+    <div class="settings-tabs">
+      <button class="tab-btn active" data-tab="tab-integraciones">
+        <i class="fas fa-cloud"></i> Integraciones
+      </button>
+      <!-- Ajuste empresa 
+      <button class="tab-btn" data-tab="tab-empresa">
+        <i class="fas fa-building"></i> Ajustes de la Empresa
+      </button>-->
+    </div>
+
+    <div class="tab-panels">
+
+      <!-- TAB INTEGRACIONES -->
+      <div id="tab-integraciones" class="tab-panel active">
+        <div class="settings-grid">
+
+          <!-- Google Drive -->
+          <div class="settings-card service-card">
+            <div class="service-inner">
+              <div class="service-art brand-google">
+                <i class="fab fa-google-drive"></i>
+              </div>
+              <h3 class="service-title">Google Drive</h3>
+              <p class="service-text">Sincroniza tus documentos tributarios con Google Drive.</p>
+
+              <div class="service-actions">
+                {% if drive_connected %}
+                <span class="status-badge connected">Conectado</span>
+                <a href="{% url 'integraciones:google_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
+                <a href="{% url 'integraciones:google_files' %}" class="btn btn-small btn-secondary">Ver</a>
+                {% else %}
+                <span class="status-badge disconnected">Desconectado</span>
+                <a href="{% url 'integraciones:google_connect' %}" class="btn btn-small btn-primary">
+                  <i class="fab fa-google-drive"></i> Conectar
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Dropbox -->
+          <div class="settings-card service-card">
+            <div class="service-inner">
+              <div class="service-art brand-dropbox">
+                <i class="fab fa-dropbox"></i>
+              </div>
+              <h3 class="service-title">Dropbox</h3>
+              <p class="service-text">Almacena y comparte archivos de tu empresa en Dropbox.</p>
+
+              <div class="service-actions">
+                {% if dropbox_connected %}
+                <span class="status-badge connected">Conectado</span>
+                <a href="{% url 'integraciones:dropbox_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
+                <a href="{% url 'integraciones:dropbox_files' %}" class="btn btn-small btn-secondary">Ver</a>
+                {% else %}
+                <span class="status-badge disconnected">Desconectado</span>
+                <a href="{% url 'integraciones:dropbox_connect' %}" class="btn btn-small btn-primary">
+                  <i class="fab fa-dropbox"></i> Conectar
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Card de Feedback -->
+        <div class="settings-card feedback-card">
+          <div class="feedback-inner">
+            <div class="feedback-art">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h3 class="feedback-title">Centro de Feedback</h3>
+            <p class="feedback-text">
+              Aquí verás información útil relacionada a tus integraciones:
+            </p>
+
+            <ul class="feedback-list">
+              {% if drive_connected %}
+              <li><i class="fas fa-check-circle"></i> Google Drive conectado correctamente.</li>
+              {% else %}
+              <li><i class="fas fa-times-circle"></i> Google Drive aún no está conectado.</li>
+              {% endif %}
+
+              {% if dropbox_connected %}
+              <li><i class="fas fa-check-circle"></i> Dropbox conectado correctamente.</li>
+              {% else %}
+              <li><i class="fas fa-times-circle"></i> Dropbox aún no está conectado.</li>
+              {% endif %}
+
+              <li><i class="fas fa-lightbulb"></i> Tip: Usa <strong>“Ver”</strong> para explorar tus archivos
+                sincronizados.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB AJUSTES EMPRESA 
+      <div id="tab-empresa" class="tab-panel">
+        <div class="settings-card company-card v2">
+          <div class="company-head">
+            <div class="head-left">
+              <h3><i class="fas fa-building"></i> Datos de la Empresa</h3>
+              <p>Se utilizan en documentos, validaciones y notificaciones.</p>
+            </div>
+          </div>
+
+          <form id="generalSettingsForm"
+            onsubmit="event.preventDefault(); showNotification('Configuración guardada con éxito', 'success');">
+
+            <div class="company-grid">
+               RUT 
+              <div class="fg">
+                <label for="companyRut">RUT de la Empresa</label>
+                <div class="input-wrap">
+                  <i class="fas fa-id-card"></i>
+                  <input type="text" id="companyRut" class="control" placeholder="76.123.456-7">
+                </div>
+                <small class="hint">Formato con dígito verificador (DV).</small>
+              </div>
+
+               Razón Social 
+              <div class="fg">
+                <label for="companyName">Razón Social</label>
+                <div class="input-wrap">
+                  <i class="fas fa-pen"></i>
+                  <input type="text" id="companyName" class="control" placeholder="Mi Empresa SpA">
+                </div>
+              </div>
+
+               Giro 
+              <div class="fg">
+                <label for="companyGiro">Giro</label>
+                <div class="input-wrap">
+                  <i class="fas fa-briefcase"></i>
+                  <input type="text" id="companyGiro" class="control" placeholder="Servicios Tributarios">
+                </div>
+              </div>
+
+               Email 
+              <div class="fg">
+                <label for="companyEmail">Correo de Contacto</label>
+                <div class="input-wrap">
+                  <i class="fas fa-envelope"></i>
+                  <input type="email" id="companyEmail" class="control" placeholder="contacto@empresa.cl">
+                </div>
+                <small class="hint">Recibirá avisos de validaciones y respaldos.</small>
+              </div>
+
+               Teléfono 
+              <div class="fg">
+                <label for="companyPhone">Teléfono</label>
+                <div class="input-wrap">
+                  <i class="fas fa-phone"></i>
+                  <input type="text" id="companyPhone" class="control" placeholder="+56 9 1234 5678">
+                </div>
+              </div>
+
+               Dirección 
+              <div class="fg">
+                <label for="companyAddress">Dirección</label>
+                <div class="input-wrap">
+                  <i class="fas fa-location-dot"></i>
+                  <input type="text" id="companyAddress" class="control" placeholder="Av. Principal 123, Santiago">
+                </div>
+              </div>
+
+               Respaldo automático
+              <div class="fg span-2">
+                <label for="autoBackup">Respaldo Automático</label>
+                <div class="input-wrap">
+                  <i class="fas fa-rotate"></i>
+                  <select id="autoBackup" class="control select">
+                    <option value="daily">Diario</option>
+                    <option value="weekly" selected>Semanal</option>
+                    <option value="monthly">Mensual</option>
+                  </select>
+                </div>
+                <small class="hint">Frecuencia con la que SGIDT respalda documentos en tu nube conectada.</small>
+              </div>
+            </div>
+
+            <div class="company-footer">
+              <button class="btn btn-primary btn-lg" type="submit">
+                <i class="fas fa-floppy-disk"></i> Guardar Configuración
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>-->
+
+
+    </div>
+  </div>
+</section>
+
+<script src="{% static 'configuraciones/js/configuraciones.js' %}?v=6"></script>
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const target = document.getElementById(btn.dataset.tab);
+      if (target) target.classList.add('active');
+    });
+  });
+
+</script>
+{% endblock %}

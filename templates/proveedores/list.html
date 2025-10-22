@@ -1,0 +1,99 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% block title %}Proveedores - SGIDT{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'proveedores/css/proveedor_list.css' %}?v=1">
+
+<div class="modern-card">
+  <!-- Header -->
+  <div class="modern-card-header">
+    <h2> Proveedores</h2>
+    <a href="{% url 'proveedores:proveedores_create' %}" class="modern-btn modern-btn-primary">
+      Nuevo Proveedor
+    </a>
+  </div>
+
+  <div class="modern-card-body">
+    <!-- Buscador -->
+    <div class="search-container">
+      <form method="get" class="search-form">
+        <input type="text" name="q" value="{{ q }}" placeholder=" Buscar por razón social, RUT, giro o email..."
+          class="search-input" />
+        <button type="submit" class="modern-btn modern-btn-secondary">Buscar</button>
+        {% if q %}
+        <a href="{% url 'proveedores:proveedores_list' %}" class="modern-btn modern-btn-light">✕ Limpiar</a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- Tabla -->
+    <div class="modern-table-container">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th> Razón Social</th>
+            <th> RUT</th>
+            <th> Giro</th>
+            <th> Email</th>
+            <th> Teléfono</th>
+            <th> Estado</th>
+            <th style="width:120px;"> Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in page_obj %}
+          <tr>
+            <td>
+              <a href="{% url 'proveedores:proveedores_detail' p.id %}" class="provider-link">
+                {{ p.razon_social }}
+              </a>
+            </td>
+            <td>{{ p.rut }}</td>
+            <td>{{ p.giro }}</td>
+            <td>{{ p.email }}</td>
+            <td>{{ p.telefono }}</td>
+            <td>
+              {% if p.activo %}
+              <span class="status-badge status-active">✓ Activo</span>
+              {% else %}
+              <span class="status-badge status-inactive">✗ Inactivo</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'proveedores:proveedores_update' p.id %}" class="action-link"> Editar</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="empty-state">
+              <div class="empty-state-icon">📭</div>
+              <div>No se encontraron proveedores.</div>
+              <div style="margin-top: .5rem; font-size: .9rem;">
+                Intenta ajustar los criterios de búsqueda o
+                <a href="{% url 'proveedores:proveedores_create' %}" class="provider-link">crear un nuevo proveedor</a>.
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination-container">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}" class="pagination-link">← Anterior</a>
+      {% endif %}
+
+      <span class="pagination-info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&q={{ q }}" class="pagination-link">Siguiente →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+/* ====== RESET & BASE ====== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  font-family: "Inter", sans-serif;
+  line-height: 1.6;
+  color: #0f172a; /* slate-900 */
+  background-color: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+:root {
+  --bg-sidebar: #0f172a; /* slate-900 */
+  --bg-sidebar-item: rgba(148, 163, 184, 0.12);
+  --bg-sidebar-active: rgba(12, 172, 120, 0.16); /* #0cac78 con opacidad */
+  --text-muted: #cbd5e1; /* slate-300 */
+  --text-strong: #e2e8f0; /* slate-200 */
+  --brand: #0cac78; /* color de acento */
+  --danger: #ef4444;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section {
+  padding: 2rem 0;
+}
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1.25rem;
+}
+
+/* ====== Botones utilitarios ====== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 0.875rem;
+}
+.btn-primary {
+  background: var(--brand);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #0a9a6b;
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  background: #e2e8f0;
+  color: #475569;
+}
+.btn-secondary:hover {
+  background: #cbd5e1;
+}
+.btn-ghost {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+.btn-ghost:hover {
+  background: #f9fafb;
+  color: #374151;
+}
+
+.main-content {
+  flex: 1 0 auto;
+  padding: 2rem 0;
+}
+@media (min-width: 901px) {
+  .main-content {
+    margin-left: 260px;
+  } /* ancho del sidebar */
+}
+
+/* ====== SIDEBAR (desktop) ====== */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  height: 100vh;
+  width: 260px;
+  background: var(--bg-sidebar);
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+  box-shadow: 2px 0 18px rgba(0, 0, 0, 0.18);
+}
+
+/* perfil */
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem 1rem;
+}
+.sidebar-profile .avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #1e293b;
+  color: #93c5fd;
+  font-size: 1.5rem;
+}
+.sidebar-profile .profile-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.sidebar-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0.75rem 0 1rem;
+}
+
+/* grupos */
+.sidebar-group {
+  padding: 0 0.5rem;
+}
+.sidebar-group-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0.25rem 0.35rem 0.35rem;
+}
+
+/* navegación */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.5rem;
+}
+.sidebar-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem 0.7rem 1rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 12px;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease;
+  outline: none;
+}
+.sidebar-link i {
+  width: 20px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+.sidebar-link span {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* barra de acento a la izquierda (hover/active) */
+.sidebar-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.18s ease, width 0.18s ease;
+}
+
+.sidebar-link:hover {
+  background: var(--bg-sidebar-item);
+  color: var(--text-strong);
+}
+.sidebar-link:hover::before {
+  background: rgba(12, 172, 120, 0.65);
+  width: 4px;
+}
+
+/* estado activo fuerte */
+.sidebar-link.is-active,
+.sidebar-link.active {
+  background: var(--bg-sidebar-active);
+  color: #ecfdf5; /* verde muy claro */
+}
+.sidebar-link.is-active::before,
+.sidebar-link.active::before {
+  background: var(--brand);
+  width: 4px;
+}
+
+/* variante peligrosa (cerrar sesión) */
+.sidebar-link--danger:hover {
+  color: #fee2e2;
+}
+.sidebar-link--danger.is-active {
+  background: rgba(239, 68, 68, 0.13);
+}
+.sidebar-link--danger.is-active::before {
+  background: var(--danger);
+}
+
+/* Oculta header móvil y botón cerrar en desktop */
+@media (min-width: 901px) {
+  .sidebar-mobile-header,
+  .sidebar-close {
+    display: none !important;
+  }
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 900px) {
+  .main-content {
+    margin-left: 0;
+  } /* El off-canvas se maneja con sidebar_mobile.css */
+}

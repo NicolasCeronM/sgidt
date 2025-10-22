@@ -1,0 +1,167 @@
+/* ======== LAYOUT GENERAL ======== */
+body {
+  background-color: #ffffff !important;
+}
+.reg-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 180px);
+  background: #ffffff;
+  padding: 40px 16px;
+}
+.reg-wrap {
+  width: 100%;
+  max-width: 680px;
+}
+.reg-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  padding: 32px 40px;
+}
+
+/* ======== TITULOS ======== */
+.reg-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #232323;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.reg-sub {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+/* ======== STEPPER ======== */
+.stepper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.step-line {
+  flex: 1;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+.step-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #e2261c;
+  transition: width 0.3s ease;
+}
+.step-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: capitalize;
+}
+.step-labels span.active {
+  color: #e2261c;
+  font-weight: 600;
+}
+
+/* ======== MENSAJES ======== */
+.reg-messages {
+  list-style: none;
+  margin: 10px 0 20px;
+  padding: 0;
+}
+.reg-messages li {
+  color: #e2261c;
+  font-size: 14px;
+}
+
+/* ======== FORMULARIO ======== */
+form.reg-form p {
+  margin-bottom: 16px;
+}
+form.reg-form label {
+  display: block;
+  margin-bottom: 6px;
+  color: #374151;
+  font-weight: 500;
+  font-size: 14px;
+}
+form.reg-form input,
+form.reg-form select,
+form.reg-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+form.reg-form input:focus,
+form.reg-form select:focus {
+  border-color: #e2261c;
+  box-shadow: 0 0 0 3px rgba(226, 38, 28, 0.15);
+  outline: none;
+}
+
+/* ======== BOTONES ======== */
+.reg-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  transition: 0.2s;
+}
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+.btn-primary {
+  background: #e2261c;
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #c81e15;
+}
+
+/* ======== RESUMEN ======== */
+details.reg-details {
+  margin-top: 20px;
+  font-size: 14px;
+}
+details.reg-details summary {
+  cursor: pointer;
+  color: #6b7280;
+}
+details.reg-details pre {
+  margin-top: 8px;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  overflow-x: auto;
+}
+
+@media (max-width: 600px) {
+  .reg-card {
+    padding: 24px;
+  }
+}

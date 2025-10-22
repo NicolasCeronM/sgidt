@@ -1,0 +1,88 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% block title %}{{ title }} - SGIDT{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'proveedores/css/proveedor_form.css' %}?v=3">
+
+<div class="vd-page">
+  <h1 class="vd-title">{{ title }}</h1>
+
+  <section class="vd-card">
+    <!-- Header de la tarjeta -->
+    <header class="vd-card__header">
+      <div class="vd-card__header-left">
+        <span class="vd-chip">Proveedor</span>
+        <h2 class="vd-card__title">Ingrese datos del proveedor</h2>
+        <p class="vd-subtitle">Completa los campos requeridos para registrar o actualizar el proveedor.</p>
+      </div>
+      <div class="vd-card__header-right">
+        <a href="{% url 'proveedores:proveedores_list' %}" class="vd-btn vd-btn--ghost">← Volver</a>
+      </div>
+    </header>
+
+    <div class="vd-card__body">
+      <form method="post" novalidate class="vd-form">
+        {% csrf_token %}
+
+        <!-- Sección: Datos del proveedor -->
+        <fieldset class="fieldset">
+          <legend class="fieldset__legend">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 7h18M3 12h18M3 17h18" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+            </svg>
+            Información del Proveedor
+          </legend>
+
+          <!-- Grid responsivo para form.as_p -->
+          <div class="form-as-p form-grid">
+            {{ form.as_p }}
+          </div>
+        </fieldset>
+
+        <!-- Sección: Contactos -->
+        <fieldset class="fieldset">
+          <legend class="fieldset__legend">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M16 11c1.66 0 3-1.57 3-3.5S17.66 4 16 4s-3 1.57-3 3.5 1.34 3.5 3 3.5Zm-8 0c1.66 0 3-1.57 3-3.5S9.66 4 8 4 5 5.57 5 7.5 6.34 11 8 11Zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.93 1.97 3.45V20h6v-3.5c0-2.33-4.67-3.5-7-3.5Z"
+                fill="currentColor" />
+            </svg>
+            Contactos del Proveedor (opcional)
+          </legend>
+
+          {{ formset.management_form }}
+          {% for f in formset %}
+          <div class="formset-row">
+            <div class="formset-field">{{ f.nombre.label_tag }}{{ f.nombre }}</div>
+            <div class="formset-field">{{ f.email.label_tag }}{{ f.email }}</div>
+            <div class="formset-field">{{ f.telefono.label_tag }}{{ f.telefono }}</div>
+            <div class="formset-field">{{ f.cargo.label_tag }}{{ f.cargo }}</div>
+            <div class="formset-field formset-field--full">{{ f.nota.label_tag }}{{ f.nota }}</div>
+          </div>
+
+          {% if f.DELETE %}<label class="delete-checkbox">{{ f.DELETE }} Eliminar</label>{% endif %}
+          {% if not forloop.last %}
+          <hr class="divider">{% endif %}
+          {% endfor %}
+
+          <small class="vd-hint"> Puedes dejar esta sección en blanco si no quieres registrar contactos ahora.</small>
+        </fieldset>
+
+        <!-- Acciones (sticky) -->
+        <div class="vd-actions vd-actions--sticky">
+          <button type="submit" class="vd-btn vd-btn--success">
+            <svg class="vd-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Guardar
+          </button>
+          <a href="{% url 'proveedores:proveedores_list' %}" class="vd-btn vd-btn--ghost">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

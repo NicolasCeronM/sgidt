@@ -1,0 +1,12 @@
+¡Bienvenido a SGIDT!
+
+Hola {{ user.first_name|default:user.username }},
+
+Gracias por registrarte. Desde ahora podrás subir, organizar y validar tus documentos tributarios desde tu panel.
+
+Ir al panel: {{ panel_url }}
+
+Si el botón no funciona, copia y pega el enlace de arriba en tu navegador.
+Si no reconoces este registro, ignora este mensaje.
+
+© {{ now|date:"Y" }} SGIDT — Sistema de Gestión Inteligente de Documentos Tributarios

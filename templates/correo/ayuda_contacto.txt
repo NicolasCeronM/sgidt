@@ -1,0 +1,7 @@
+SGIDT - Contacto de ayuda
+
+Nombre: {{ name }}
+Email: {{ email }}
+
+Mensaje:
+{{ message }}
