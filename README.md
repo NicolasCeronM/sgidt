@@ -6,7 +6,7 @@
 
 ---
 
-##  Descripción General
+## Descripción General
 
 **SGIDT** es una solución integral diseñada para optimizar y automatizar la gestión de documentos tributarios para Pequeñas y Medianas Empresas (PyMEs) en Chile. La plataforma combina una potente aplicación web de administración con una aplicación móvil para la captura y gestión de documentos en tiempo real.
 
@@ -18,7 +18,25 @@ Este proyecto se ha desarrollado como parte del proceso de titulación de la car
 
 ---
 
-##  Características Principales
+## ⚠️ Nota sobre Credenciales y Seguridad
+
+Es posible que durante la revisión del código fuente se encuentren algunas credenciales o claves de acceso (como las de la base de datos o claves secretas) directamente expuestas.
+
+**Aclaración importante:** Esta práctica se realizó de manera intencional y únicamente para cumplir con los requisitos de evaluación de la casa de estudios, facilitando la revisión y ejecución del proyecto por parte de los docentes. **Las credenciales expuestas son exclusivamente para entornos de prueba y no tienen validez ni acceso a ningún servicio productivo.**
+
+### ¿Cuál es la forma correcta de manejar las credenciales?
+
+En un entorno profesional y de producción, las credenciales **nunca** deben estar escritas directamente en el código (hardcodeadas). La práctica recomendada es utilizar **variables de entorno**.
+
+1.  **Centralizar:** Se crea un archivo en la raíz del proyecto, comúnmente llamado `.env`. Este archivo contiene todas las variables sensibles (claves de API, contraseñas de bases de datos, etc.).
+2.  **Ignorar:** El archivo `.env` **debe ser incluido** en el `.gitignore` para asegurar que nunca se suba al repositorio de código.
+3.  **Cargar:** La aplicación (en este caso, Django) utiliza una librería como `django-environ` para leer las variables de este archivo y cargarlas en la configuración en tiempo de ejecución.
+
+Este método asegura que el código fuente permanezca limpio de información sensible, permitiendo que cada desarrollador o entorno (desarrollo, pruebas, producción) utilice sus propias credenciales sin modificar el código. En la sección **"Cómo Ejecutar el Proyecto Localmente"** se detalla cómo implementar este método.
+
+---
+
+## Características Principales
 
 ### Backend y Plataforma Web
 * **Gestión Multi-Empresa:** Permite a un usuario administrar múltiples empresas desde una única cuenta.
@@ -37,7 +55,7 @@ Este proyecto se ha desarrollado como parte del proceso de titulación de la car
 
 ---
 
-##  Estado del Proyecto y Próximos Pasos
+## Estado del Proyecto y Próximos Pasos
 
 Este proyecto es un trabajo en progreso y continúa evolucionando. La base funcional está implementada, pero hay varias áreas clave que se están mejorando y desarrollando activamente.
 
@@ -74,7 +92,7 @@ El proyecto sigue una arquitectura de servicios dockerizados, facilitando un ent
 
 ---
 
-##  Cómo Ejecutar el Proyecto Localmente
+## Cómo Ejecutar el Proyecto Localmente
 
 La forma más sencilla de levantar todo el entorno de desarrollo es utilizando Docker y Docker Compose.
 
@@ -109,7 +127,7 @@ La forma más sencilla de levantar todo el entorno de desarrollo es utilizando D
     CELERY_BROKER_URL='redis://redis:6379/0'
     CELERY_RESULT_BACKEND='redis://redis:6379/1'
     ```
-    > **Nota:** Para que esto funcione, primero debes adaptar tu `settings.py` para leer estas variables de entorno usando una librería como `django-environ`.
+    > **Importante:** Para que esto funcione, primero debes adaptar tu `settings.py` para leer estas variables de entorno usando una librería como `django-environ`. Asegúrate también de que el archivo `.env` esté listado en tu `.gitignore`.
 
 3.  **Levanta los servicios con Docker Compose:**
     Desde la raíz del proyecto, ejecuta el siguiente comando. Esto construirá las imágenes de Docker y levantará los contenedores para la web, la base de datos, Redis y el worker de Celery.
@@ -149,7 +167,7 @@ La forma más sencilla de levantar todo el entorno de desarrollo es utilizando D
 
 ---
 
-##  Contexto Académico
+## Contexto Académico
 
 Este repositorio representa el esfuerzo, investigación y desarrollo realizados para el **Proyecto de Título de la carrera de Ingeniería en Informática de Duoc UC**. El proyecto busca no solo cumplir con los requisitos académicos, sino también proponer una solución tecnológica viable y de alto impacto para un problema real del mercado chileno.
 
