@@ -49,6 +49,8 @@ flutter:
   # 📦 Archivos incluidos (logo para splash)
   assets:
     - assets/logo.png
+    - assets/logo_2.png
+    - assets/logo_3.png
 
 # ⚙️ Configuración de splash nativo
 flutter_native_splash:
