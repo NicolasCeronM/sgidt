@@ -110,11 +110,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _userCtrl,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(
-                        labelText: 'Usuario o email',
+                        labelText: 'rut o email',
                         prefixIcon: Icon(Icons.person_outline_rounded),
                         border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Ingresa tu usuario o email' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Ingresa tu rut o email' : null,
                     ),
                     const SizedBox(height: 16),
 
@@ -192,7 +192,7 @@ class _Logo extends StatelessWidget {
   const _Logo();
 
   // ✅ CAMBIA ESTO A `true` PARA USAR UNA IMAGEN DE LOGO
-  static const bool _useImageAsset = false;
+  static const bool _useImageAsset = true;
 
   @override
   Widget build(BuildContext context) {
@@ -200,8 +200,8 @@ class _Logo extends StatelessWidget {
       // Si usas una imagen, asegúrate de haberla añadido en pubspec.yaml
       // y de que la ruta 'assets/logo.png' es correcta.
       return Image.asset(
-        'assets/logo.png', // Reemplaza con la ruta de tu logo
-        height: 80,
+        'assets/logo_2.png', // Reemplaza con la ruta de tu logo
+        height: 100,
       );
     } else {
       // Versión de texto como fallback o placeholder.
