@@ -6,452 +6,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}SGIDT{% endblock %}</title>
 
-  <!-- CSS -->
   <link rel="stylesheet" href="{% static 'panel/css/base.css' %}" />
   <link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=11">
+  <link rel="stylesheet" href="{% static 'panel/css/widgets.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   {% block css %}{% endblock %}
 
-  <style>
-/* Botón flotante calculadora */
-#civaFab {
-  position: fixed;
-  right: 96px;
-  bottom: 24px;
-  background: #000000;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 62px;
-  height: 62px;
-  font-size: 26px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s ease;
-  z-index: 2147483649 !important; /* Más alto que asistente */
-}
-#civaFab:hover {
-  background: #0056b3;
-}
-
-/* Modal calculadora */
-#civaModal.chatbot-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 360px;
-  max-width: 90vw;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  transform: translate(-50%, -50%) scale(0.9);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 2147483648;
-  font-family: 'Inter', sans-serif;
-  user-select: none;
-}
-
-#civaModal.active {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1);
-}
-
-/* Ventana interna */
-#civaModal .chatbot-window {
-  padding: 20px 25px;
-  display: flex;
-  flex-direction: column;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-sizing: border-box;
-}
-
-
-/* Botón cerrar */
-#civaModal .chatbot-close {
-  align-self: flex-end;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #555;
-  transition: color 0.3s ease;
-}
-#civaModal .chatbot-close:hover {
-  color: #d33;
-}
-
-/* Header */
-#civaModal header h3 {
-  margin: 0 0 15px;
-  font-weight: 700;
-  color: #222;
-  font-size: 1.4rem;
-  user-select: text;
-}
-
-/* Form */
-#civaForm {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-#civaForm label {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-#civaForm input,
-#civaForm select {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1.8px solid #ddd;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-#civaForm input:focus,
-#civaForm select:focus {
-  border-color: #007bff;
-  outline: none;
-}
-
-/* Botón calcular */
-#civaForm button.primary {
-  margin-top: 5px;
-  background: #007bff;
-  color: white;
-  font-weight: 700;
-  font-size: 1.1rem;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-#civaForm button.primary:hover {
-  background: #0056b3;
-}
-
-/* Resultado */
-#civaResult {
-  max-height: 200px; /* límite visual */
-  overflow-y: auto;
-  padding: 1em;
-  background: #f7f9fc;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  border: 1px solid #ddd;
-}
-
-  </style>
 </head>
-
-<!-- Primer chatbot existente -->
-<div class="chatbot-modal" id="chatbotModal" aria-hidden="true">
-  <div class="chatbot-backdrop" data-close="true"></div>
-
-  <div class="chatbot-window" role="dialog" aria-modal="true" aria-labelledby="chatbotTitle">
-    <div class="chatbot-header">
-      <div class="agent">
-        <span class="avatar">🤖</span>
-        <div class="titles">
-          <h3 id="chatbotTitle">Asistente de Soporte</h3>
-        </div>
-      </div>
-      <button class="chatbot-close" type="button" aria-label="Cerrar" data-close="true">x</button>
-    </div>
-
-    <div class="chatbot-body">
-      <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
-        <div class="msg bot">¡Hola! 👋 Soy tu asistente de SGIDT. ¿En qué puedo ayudarte?</div>
-      </div>
-      <div id="chatSuggest"></div>
-
-      <form class="chatbot-input" id="chatbotForm" data-endpoint="{% url 'panel:chatbot_ask' %}">
-        {% csrf_token %}
-        <input type="text" id="chatbotText" class="form-input" placeholder="Escribe tu mensaje…" autocomplete="off" required>
-        <button class="btn btn-primary" type="submit" aria-label="Enviar">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Botón flotante para primer chatbot -->
-<button id="chatFab" class="chat-fab" aria-label="Asistente de Soporte" data-tooltip="Asistente de Soporte">
-  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
-    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-3 7a1 1 0 110-2 1 1 0 010 2zm6 0a1 1 0 110-2 1 1 0 010 2zm-6.5 6h7a.75.75 0 010 1.5h-7a.75.75 0 010-1.5z"/>
-  </svg>
-</button>
-
-<!-- NUEVO: Modal para calculadora IVA -->
-<div class="chatbot-modal" id="civaModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="civaTitle">
-  <div class="chatbot-window" style="padding: 24px 28px;">
-    <button class="chatbot-close" type="button" aria-label="Cerrar calculadora" data-close="true">×</button>
-    <header>
-      <h3 id="civaTitle" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Calculadora</h3>
-    </header>
-
-    <main>
-      <form id="civaForm" autocomplete="off" style="display: flex; flex-direction: column; gap: 16px;">
-        <div>
-          <label for="expression" style="font-weight: 600;">Expresión / Monto</label>
-          <input id="expression" name="expression" type="text" placeholder="Ej: 10000 + 2000" required />
-        </div>
-
-        <div>
-          <label for="civaRate" style="font-weight: 600;">Tasa IVA %</label>
-          <input id="civaRate" name="rate" type="number" step="0.01" min="0" placeholder="Ej: 19" value="19" />
-        </div>
-
-        <div>
-          <label for="civaMode" style="font-weight: 600;">Modo de cálculo</label>
-          <select id="civaMode" name="mode">
-            <option value="none">Solo calcular expresión</option>
-            <option value="neto">Neto → IVA / Total</option>
-            <option value="total">Total → Base / IVA</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn primary" style="margin-top: 10px;">Calcular</button>
-      </form>
-
-      <div id="civaResult" class="result-message" style="margin-top: 1.5em; font-weight: 600; background: #f7f9fc; padding: 1em; border-radius: 10px; min-height: 60px;">
-        Ingresa la expresión y la tasa de IVA para comenzar.
-      </div>
-    </main>
-  </div>
-</div>
-
-<!-- Botón flotante para abrir la calculadora IVA -->
-<button id="civaFab" aria-label="Calculadora de IVA" title="Calculadora de IVA" data-civa-trigger>
-  <i class="fas fa-calculator"></i>
-</button>
-
-<!-- JS del chatbot -->
-<script src="{% static 'ayuda/js/chatbot.js' %}?v=7"></script>
-
-<script>
-(function () {
-  // Primer chatbot: abrir y cerrar
-  const fab    = document.getElementById('chatFab');
-  const modal  = document.getElementById('chatbotModal');
-  const closeB = modal?.querySelector('.chatbot-close');
-  const back   = modal?.querySelector('.chatbot-backdrop');
-  const input  = document.getElementById('chatbotText');
-  if (!fab || !modal) return;
-  if (fab.parentElement !== document.body) document.body.appendChild(fab);
-  Object.assign(fab.style, {
-    position: 'fixed', right: '24px', bottom: '24px',
-    left: 'auto', top: 'auto', transform: 'none', zIndex: '2147483647'
-  });
-
-  const openModal = () => {
-    modal.classList.add('active');
-    modal.setAttribute('aria-hidden', 'false');
-    if (input) setTimeout(() => input.focus(), 50);
-  };
-  const closeModal = () => {
-    modal.classList.remove('active');
-    modal.setAttribute('aria-hidden', 'true');
-  };
-
-  // Evitar duplicados si ya había listeners
-  const freshFab = fab.cloneNode(true);
-  fab.replaceWith(freshFab);
-
-  // Click FAB abre modal
-  freshFab.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
-
-  // Cierres
-  closeB?.addEventListener('click', closeModal);
-  back?.addEventListener('click', (e) => { if (e.target === back) closeModal(); });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
-  });
-})();
-
-// NUEVO: abrir y cerrar modal Calculadora IVA
-(function () {
-  const fab = document.getElementById('civaFab');
-  const modal = document.getElementById('civaModal');
-  const closeBtn = modal?.querySelector('.chatbot-close');
-  if (!fab || !modal) return;
-  if (fab.parentElement !== document.body) document.body.appendChild(fab);
-
-  const openModal = () => {
-    modal.classList.add('active');
-    modal.setAttribute('aria-hidden', 'false');
-  };
-  const closeModal = () => {
-    modal.classList.remove('active');
-    modal.setAttribute('aria-hidden', 'true');
-  };
-
-  // Evitar duplicados
-  const freshFab = fab.cloneNode(true);
-  fab.replaceWith(freshFab);
-
-  freshFab.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (modal.classList.contains('active')) closeModal();
-    else openModal();
-  });
-  closeBtn?.addEventListener('click', closeModal);
-
-  // Cerrar con Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
-  });
-})();
-
-// Funciones para calcular IVA
-// Función para evaluar expresiones básicas + %, validación sencilla
-function safeEval(expr) {
-  expr = expr.replace(/(\d+(\.\d+)?)\s*%/g, "($1/100)");
-  if (/[^-()\d/*+. \t]/.test(expr)) return null;
-
-  try {
-    let result = eval(expr);
-    return (typeof result === 'number' && !isNaN(result)) ? result : null;
-  } catch {
-    return null;
-  }
-}
-
-// Calculadora IVA
-function calcIVA(amount, rate, mode) {
-  const rateNum = parseFloat(rate);
-  if (isNaN(rateNum) || rateNum <= 0) return null;
-
-  if (mode === 'neto') {
-    const iva = amount * rateNum / 100;
-    return { base: amount, iva, total: amount + iva };
-  } else if (mode === 'total') {
-    const base = amount / (1 + rateNum / 100);
-    const iva = amount - base;
-    return { base, iva, total: amount };
-  }
-
-  return null;
-}
-
-// ...existing code...
-// Evento de envío del formulario
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('civaForm');
-  const resultDiv = document.getElementById('civaResult');
-
-  // Formateo: sin decimales, miles con punto
-  const fmt = (num) => {
-    if (typeof num !== 'number' || isNaN(num)) return '0';
-    const n = Math.round(num); // sin decimales
-    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  };
-
-  form?.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const expr = form.expression.value.trim();
-    const rate = form.rate.value.trim();
-    const mode = form.mode.value;
-
-    const baseAmount = safeEval(expr);
-    if (baseAmount === null) {
-      resultDiv.innerHTML = '<p style="color:red;">Expresión inválida</p>';
-      return;
-    }
-
-    // Si no se pide desglose (modo none) o no hay tasa, mostramos solo la base
-    if (mode === 'none' || !rate) {
-      resultDiv.innerHTML = `
-        <p><strong>Resultados:</strong></p>
-        <p>Total monto: ${fmt(baseAmount)}</p>
-        <p>Base imponible: ${fmt(baseAmount)}</p>
-      `;
-      return;
-    }
-
-    // Calcular IVA
-    const ivaData = calcIVA(baseAmount, rate, mode);
-    if (!ivaData) {
-      resultDiv.innerHTML = '<p style="color:red;">Tasa IVA inválida o modo incorrecto</p>';
-      return;
-    }
-
-    // Mostrar resultado (sin decimales)
-    resultDiv.innerHTML = `
-      <p><strong>Resultados:</strong></p>
-      <p>Base imponible: ${fmt(ivaData.base)}</p>
-      <p>IVA (${parseFloat(rate).toFixed(2)}%): ${fmt(ivaData.iva)}</p>
-      <p>Total: ${fmt(ivaData.total)}</p>
-    `;
-  });
-});
-// ...existing code...
-
-
-
-// Manejador formulario calculadora IVA
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('civaForm');
-  const resultDiv = document.getElementById('civaResult');
-
-  form?.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const amount = form.amount.value;
-    const rate = form.rate.value;
-    const mode = form.mode.value;
-
-    const result = calc(amount, rate, mode);
-    if (!result) {
-      resultDiv.innerHTML = '<p style="color:red;">Valores inválidos</p>';
-      return;
-    }
-    resultDiv.innerHTML = `
-      <p><strong>Resultado:</strong></p>
-      <p>Base: ${fmt(result.base)}</p>
-      <p>IVA (${rate}%): ${fmt(result.iva)}</p>
-      <p>Total: ${fmt(result.total)}</p>
-    `;
-  });
-});
-</script>
-
 <body>
-  <!-- Navbar / Sidebar -->
+
   {% include "includes/navbar_app.html" %}
 
-  <!-- Contenido principal -->
-  <main class="main-content">{% block content %}{% endblock %}</main>
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
 
-  <!-- JS -->
+  <!-- CHATBOT -->
+
+  <div class="chatbot-modal" id="chatbotModal" aria-hidden="true">
+    <div class="chatbot-backdrop" data-close="true"></div>
+    <div class="chatbot-window" role="dialog" aria-modal="true" aria-labelledby="chatbotTitle">
+      <div class="chatbot-header">
+        <div class="agent">
+          <span class="avatar">🤖</span>
+          <div class="titles">
+            <h3 id="chatbotTitle">Asistente de Soporte</h3>
+          </div>
+        </div>
+        <button class="chatbot-close" type="button" aria-label="Cerrar" data-close="true">x</button>
+      </div>
+      <div class="chatbot-body">
+        <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
+          <div class="msg bot">¡Hola! 👋 Soy tu asistente de SGIDT. ¿En qué puedo ayudarte?</div>
+        </div>
+        <div id="chatSuggest"></div>
+        <form class="chatbot-input" id="chatbotForm" data-endpoint="{% url 'panel:chatbot_ask' %}">
+          {% csrf_token %}
+          <input type="text" id="chatbotText" class="form-input" placeholder="Escribe tu mensaje…" autocomplete="off" required>
+          <button class="btn btn-primary" type="submit" aria-label="Enviar">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALCULADORA IVA -->
+
+  <div class="chatbot-modal" id="civaModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="civaTitle">
+    <div class="chatbot-window" style="padding: 24px 28px;">
+      <button class="chatbot-close" type="button" aria-label="Cerrar calculadora" data-close="true">×</button>
+      <header>
+        <h3 id="civaTitle" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Calculadora</h3>
+      </header>
+      <main>
+        <form id="civaForm" autocomplete="off">
+          <div>
+            <label for="expression">Expresión / Monto</label>
+            <input id="expression" name="expression" type="text" placeholder="Ej: 10000 + 2000" required />
+          </div>
+          <div>
+            <label for="civaRate">Tasa IVA %</label>
+            <input id="civaRate" name="rate" type="number" step="0.01" min="0" placeholder="Ej: 19" value="19" />
+          </div>
+          <div>
+            <label for="civaMode">Modo de cálculo</label>
+            <select id="civaMode" name="mode">
+              <option value="none">Solo calcular expresión</option>
+              <option value="neto">Neto → IVA / Total</option>
+              <option value="total">Total → Base / IVA</option>
+            </select>
+          </div>
+          <button type="submit" class="btn primary" style="margin-top: 10px;">Calcular</button>
+        </form>
+        <div id="civaResult" class="result-message" style="margin-top: 1.5em; min-height: 60px;">
+          Ingresa la expresión y la tasa de IVA para comenzar.
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="fab-container">
+    <button id="fab-main" class="fab" aria-label="Abrir menú de herramientas" title="Herramientas">
+      <i class="fas fa-plus"></i>
+    </button>
+    <div class="fab-options">
+      <div class="fab-option">
+        <span class="fab-label">Asistente</span>
+        <button id="fab-chat-trigger" class="fab-mini" aria-label="Asistente de Soporte">
+          <i class="fas fa-comment-dots"></i>
+        </button>
+      </div>
+      <div class="fab-option">
+        <span class="fab-label">Calculadora</span>
+        <button id="fab-calc-trigger" class="fab-mini" aria-label="Calculadora de IVA">
+          <i class="fas fa-calculator"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'ayuda/js/chatbot.js' %}?v=7"></script>
   <script src="{% static 'configuraciones/js/configuraciones.js' %}?v=1"></script>
-  <script>
-    // Marcar link activo 
-    (function () {
-      const here = location.pathname.replace(/\/+$/, "");
-      const all = document.querySelectorAll(".sidebar-link, .nav-link");
-      all.forEach((a) => {
-        const href = a.getAttribute("href")?.replace(/\/+$/, "");
-        if (href && (here === href || (href === "" && here === "/"))) {
-          a.classList.add("is-active");
-          a.setAttribute("aria-current", "page");
-        }
-      });
-    })();
-  </script>
+  <script src="{% static 'panel/js/app.js' %}"></script>
+
   {% block js %}{% endblock %}
+
 </body>
 </html>
-{% load static %}
