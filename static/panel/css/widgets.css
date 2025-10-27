@@ -108,54 +108,129 @@
        ESTILOS PARA EL CONTENIDO DEL MODAL DE LA CALCULADORA
     ================================================================= */
 
-#civaForm {
+/* --- Calculadora de IVA --- */
+.civa-window {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-width: 380px;
+  width: 90%;
+  overflow: hidden;
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease-out;
+  position: relative;
+  z-index: 1001;
+}
+
+.chatbot-modal.active .civa-window {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.civa-header {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
 }
 
-#civaForm label {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-#civaForm input,
-#civaForm select {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1.8px solid #ddd;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-#civaForm input:focus,
-#civaForm select:focus {
-  border-color: #007bff;
-  outline: none;
-}
-
-#civaForm button.primary {
-  margin-top: 5px;
-  background: #007bff;
-  color: white;
-  font-weight: 700;
+.civa-header h3 {
   font-size: 1.1rem;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-#civaForm button.primary:hover {
-  background: #0056b3;
+  font-weight: 600;
+  margin: 0;
+  flex-grow: 1;
+  color: #343a40;
 }
 
-#civaResult {
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 1em;
-  background: #f7f9fc;
-  border-radius: 10px;
+.civa-icon {
+  color: #0f172a; /* Color primario */
+  margin-right: 12px;
+  font-size: 1.2rem;
+}
+
+.civa-close {
+  background: transparent;
+  border: none;
+  font-size: 1.7rem;
+  font-weight: 300;
+  color: #adb5bd;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+.civa-close:hover {
+  color: #495057;
+}
+
+.civa-body {
+  padding: 24px;
+}
+
+.civa-body .form-group {
+  margin-bottom: 18px;
+}
+
+.civa-body .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.civa-submit {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.civa-submit i {
+  margin-right: 8px;
+}
+
+.civa-result {
+  margin-top: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  border-radius: 8px;
+  min-height: 125px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.civa-result .placeholder {
+  color: #6c757d;
+  text-align: center;
+  padding-top: 24px;
+  font-size: 0.9rem;
+}
+
+.civa-result p {
+  margin: 0 0 10px 0;
+  display: flex;
+  justify-content: space-between;
   font-size: 0.95rem;
-  border: 1px solid #ddd;
+  color: #495057;
+}
+.civa-result p:last-child {
+  margin-bottom: 0;
+}
+
+.civa-result .result-value {
+  font-weight: 600;
+  color: #212529;
+  font-family: monospace;
+}
+
+.civa-result .total-line {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed #ced4da;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0f172a; /* Color primario */
 }

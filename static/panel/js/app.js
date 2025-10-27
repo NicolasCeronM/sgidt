@@ -21,19 +21,25 @@
 
   if (!fabMain || !chatbotModal || !civaModal) return;
 
-  const openModal = (modal) => {
-    modal.classList.add("active");
-    modal.setAttribute("aria-hidden", "false");
-    const input = modal.querySelector("input, textarea");
-    if (input) setTimeout(() => input.focus(), 50);
-  };
-
+  // La función para cerrar se mantiene igual.
   const closeModal = () => {
     const activeModal = document.querySelector(".chatbot-modal.active");
     if (activeModal) {
       activeModal.classList.remove("active");
       activeModal.setAttribute("aria-hidden", "true");
     }
+  };
+  
+  // ¡CORRECCIÓN! Se llama a closeModal() antes de abrir uno nuevo.
+  const openModal = (modal) => {
+    // 1. Cierra cualquier modal que ya esté abierto.
+    closeModal();
+    
+    // 2. Abre el nuevo modal.
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    const input = modal.querySelector("input, textarea");
+    if (input) setTimeout(() => input.focus(), 50);
   };
 
   fabMain.addEventListener("click", () => {
@@ -64,6 +70,7 @@
 })();
 
 // --- LÓGICA ESPECÍFICA PARA LA CALCULADORA DE IVA ---
+// --- LÓGICA ESPECÍFICA PARA LA CALCULADORA DE IVA (CON NUEVO DISEÑO) ---
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("civaForm");
   const resultDiv = document.getElementById("civaResult");
@@ -107,27 +114,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const baseAmount = safeEval(expr);
 
     if (baseAmount === null) {
-      resultDiv.innerHTML = '<p style="color:red;">Expresión inválida</p>';
+      resultDiv.innerHTML = '<p class="placeholder" style="color: #e53e3e;">Expresión inválida</p>';
       return;
     }
+    
+    // Si solo se calcula la expresión
     if (mode === "none" || !rate) {
-      resultDiv.innerHTML = `<p><strong>Resultado:</strong></p><p>Monto final: ${fmt(
+      resultDiv.innerHTML = `<p class="total-line"><span>Total:</span> <span class="result-value">$ ${fmt(
         baseAmount
-      )}</p>`;
+      )}</span></p>`;
       return;
     }
+
     const ivaData = calcIVA(baseAmount, rate, mode);
     if (!ivaData) {
-      resultDiv.innerHTML = '<p style="color:red;">Tasa de IVA inválida</p>';
+      resultDiv.innerHTML = '<p class="placeholder" style="color: #e53e3e;">Tasa de IVA inválida</p>';
       return;
     }
+    
+    // Formateo del resultado final para el nuevo diseño
     resultDiv.innerHTML = `
-          <p><strong>Resultados:</strong></p>
-          <p>Base imponible: ${fmt(ivaData.base)}</p>
-          <p>IVA (${parseFloat(rate).toFixed(2).replace(".", ",")}%): ${fmt(
-      ivaData.iva
-    )}</p>
-          <p><strong>Total: ${fmt(ivaData.total)}</strong></p>
-        `;
+      <p><span>Monto Base:</span> <span class="result-value">$ ${fmt(ivaData.base)}</span></p>
+      <p><span>IVA (${parseFloat(rate).toFixed(2).replace(".", ",")} %):</span> <span class="result-value">$ ${fmt(ivaData.iva)}</span></p>
+      <p class="total-line"><span>Total:</span> <span class="result-value">$ ${fmt(ivaData.total)}</span></p>
+    `;
   });
 });
