@@ -44,22 +44,26 @@ class CustomColors extends ThemeExtension<CustomColors> {
 
 
 class AppTheme {
-  static const Color sgidtRed = Color(0xFFE2261C);
+  // ⛔️ Color rojo anterior (ya no se usa como primario)
+  // static const Color sgidtRed = Color(0xFFB71C1C);
 
-  // ------ LIGHT THEME (CON FONDOS NEUTROS) ------
+  // 💡 NUEVO COLOR PRIMARIO RECOMENDADO
+  static const Color sgidtBlue = Color(0xFF1565C0); // Colors.blue.shade800
+
+  // ------ LIGHT THEME (MODIFICADO) ------
   static ThemeData light() {
-    // 1. Usamos una semilla neutra (gris) para obtener fondos blancos/grises puros.
     final baseScheme = ColorScheme.fromSeed(
-      seedColor: Colors.grey, // Semilla neutra
+      // 💡 CAMBIO: Se usa el nuevo azul como 'seed'
+      seedColor: sgidtBlue, 
       brightness: Brightness.light,
     );
 
     return ThemeData(
       useMaterial3: true,
-      // 2. Sobrescribimos el color primario para mantener la identidad de marca.
       colorScheme: baseScheme.copyWith(
-        primary: sgidtRed,
-        secondary: sgidtRed,
+        // 💡 CAMBIO: Se define el primario y secundario con el azul
+        primary: sgidtBlue,
+        secondary: sgidtBlue,
       ),
       textTheme: GoogleFonts.latoTextTheme(ThemeData(brightness: Brightness.light).textTheme),
       appBarTheme: AppBarTheme(
@@ -74,7 +78,8 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: sgidtRed,
+        // 💡 CAMBIO: El FAB ahora usa el azul
+        backgroundColor: sgidtBlue,
         foregroundColor: Colors.white,
       ),
       extensions: const <ThemeExtension<dynamic>>[
@@ -83,18 +88,19 @@ class AppTheme {
     );
   }
 
-  // ------ DARK THEME (CON FONDOS NEUTROS) ------
+  // ------ DARK THEME (Con los cambios a blanco de la petición anterior) ------
   static ThemeData dark() {
     final baseScheme = ColorScheme.fromSeed(
-      seedColor: Colors.blueGrey,
+      seedColor: Colors.blueGrey, 
       brightness: Brightness.dark,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: baseScheme.copyWith(
-        primary: sgidtRed,
-        secondary: sgidtRed,
+        // Se mantiene en blanco como pediste
+        primary: Colors.white,
+        secondary: Colors.white,
       ),
       textTheme: GoogleFonts.latoTextTheme(ThemeData(brightness: Brightness.dark).textTheme),
       appBarTheme: AppBarTheme(
@@ -109,8 +115,9 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: sgidtRed,
-        foregroundColor: Colors.white,
+        // Se mantiene en blanco/negro como pediste
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black, 
       ),
       extensions: const <ThemeExtension<dynamic>>[
         CustomColors.dark,
