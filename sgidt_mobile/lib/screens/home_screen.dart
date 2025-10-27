@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'document_detail_screen.dart'; 
 import 'documentos_screen.dart'; 
 import 'reportes_screen.dart';
 import '../services/documents_service.dart';
 import '../theme/theme_controller.dart';
+import '../core/storage/token_storage.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,20 +15,36 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
+  String _userName = "Usuario"; // Valor por defecto
   List<Map<String, String>> _recentDocs = [];
 
   @override
   void initState() {
     super.initState();
+    // Cargar datos del usuario y de los documentos al iniciar
+    _loadUser();
     _loadData();
   }
 
+  /// Carga el nombre del usuario desde el storage
+  Future<void> _loadUser() async {
+    final user = await TokenStorage.getUser(); 
+    if (mounted && user != null) {
+      setState(() {
+        _userName = user['first_name']?.toString() ?? 'Usuario';
+      });
+    }
+  }
+
+  /// Carga los documentos recientes desde la API
   Future<void> _loadData() async {
+    if (mounted) setState(() => _isLoading = true);
+
     try {
       final allDocs = await DocumentsService.fetchRecent();
       if (mounted) {
         setState(() {
-          _recentDocs = allDocs.take(3).toList();
+          _recentDocs = allDocs.take(3).toList(); 
           _isLoading = false;
         });
       }
@@ -36,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudieron cargar los documentos recientes.')),
+          SnackBar(content: Text('Error al cargar documentos: ${e.toString()}')),
         );
       }
     }
@@ -45,172 +63,190 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-
-    // --- 2. Lógica para el botón del tema ---
-    final IconData themeIcon;
-    final String themeTooltip;
-    switch (ThemeController.instance.mode) {
-      case ThemeMode.light:
-        themeIcon = Icons.light_mode_outlined;
-        themeTooltip = 'Cambiar a modo oscuro';
-        break;
-      case ThemeMode.dark:
-        themeIcon = Icons.dark_mode_outlined;
-        themeTooltip = 'Usar tema del sistema';
-        break;
-      case ThemeMode.system:
-        themeIcon = Icons.brightness_auto_outlined;
-        themeTooltip = 'Cambiar a modo claro';
-        break;
-    }
-    // --------------------------------------------------------------------
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SGIDT - Inicio'),
-        centerTitle: true,
+        title: const Text('Inicio'),
         actions: [
-          // --- 3. El IconButton para cambiar el tema ---
+          // Botón para cambiar el tema
           IconButton(
-            onPressed: () {
-              ThemeController.instance.cycleTheme();
-            },
-            icon: Icon(themeIcon),
-            tooltip: themeTooltip,
+            icon: Icon(ThemeController.instance.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+            onPressed: () => ThemeController.instance.cycleTheme(),
           ),
-          // ---------------------------------------------
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadData,
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            // Saludo Personalizado
-            Text(
-              'Bienvenido de vuelta, Benjamín',
-              style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Aquí tienes un resumen de tu actividad.',
-              style: textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: 24),
+        onRefresh: _loadData, // Permite "tirar para recargar"
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- Header de Bienvenida ---
+                _WelcomeHeader(userName: _userName),
+                const SizedBox(height: 24),
 
-            // Sección de Menú
-            _MenuCard(
-              icon: Icons.folder_copy_outlined,
-              title: 'Mis Documentos',
-              subtitle: 'Revisa todas tus facturas y archivos',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DocumentosScreen()),
-                );
-              },
-            ),
-const SizedBox(height: 16),
-            _MenuCard(
-              icon: Icons.bar_chart_outlined,
-              title: 'Reportes',
-              subtitle: 'Analiza tus datos y gastos mensuales',
-              // --- 2. Reportes---
-              onTap: () {
-                // Navega a ReportesScreen usando MaterialPageRoute
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ReportesScreen()),
-                );
-              },
-            ),
-            const SizedBox(height: 32),
+                // --- 💡 CAMBIO: Fila de Acciones (en lugar de GridView) ---
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ActionCard(
+                        title: 'Ver Documentos',
+                        icon: Icons.article_outlined,
+                        color: theme.colorScheme.secondaryContainer,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const DocumentosScreen()),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16), // Espacio entre tarjetas
+                    Expanded(
+                      child: _ActionCard(
+                        title: 'Ver Reportes',
+                        icon: Icons.bar_chart_outlined,
+                        color: theme.colorScheme.secondaryContainer,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ReportesScreen()),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                // --- 💡 FIN DEL CAMBIO ---
 
-            // Sección de Documentos Recientes
-            Text(
-              'Actividad Reciente',
-              style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                const SizedBox(height: 24),
+
+                // --- Header de Documentos Recientes ---
+                _RecentDocsHeader(
+                  onSeeAll: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const DocumentosScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // --- Lista de Documentos Recientes ---
+                _RecentDocsList(isLoading: _isLoading, recentDocs: _recentDocs),
+              ],
             ),
-            const SizedBox(height: 12),
-            _buildRecentDocs(),
-          ],
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildRecentDocs() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_recentDocs.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 24.0),
-          child: Text('No hay documentos recientes para mostrar.'),
-        ),
-      );
-    }
-
-    return Column(
-      children: _recentDocs.map((doc) {
-        final proveedor = doc['proveedor'] ?? doc['emisor'] ?? 'Proveedor Desconocido';
-        final total = doc['total'] ?? doc['monto'] ?? 'S/I';
-        final estado = doc['estado'] ?? 'Pendiente';
-        return _RecentDocTile(
-          proveedor: proveedor,
-          total: total,
-          estado: estado,
-        );
-      }).toList(),
     );
   }
 }
 
+// --- WIDGETS MEJORADOS ---
 
-// --- WIDGETS PERSONALIZADOS ---
+class _WelcomeHeader extends StatelessWidget {
+  final String userName;
+  const _WelcomeHeader({required this.userName});
 
-class _MenuCard extends StatelessWidget {
-  final IconData icon;
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- 💡 CAMBIO: Texto de bienvenida actualizado ---
+                Text(
+                  'Hola, Bienvenido Nuevamente',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                // --- 💡 FIN DEL CAMBIO ---
+                Text(
+                  userName, // Nombre dinámico
+                  style: textTheme.headlineMedium?.copyWith(
+                    color: theme.colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: theme.colorScheme.primary,
+            child: Icon(
+              Icons.person_outline,
+              size: 30,
+              color: theme.colorScheme.onPrimary,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionCard extends StatelessWidget {
   final String title;
-  final String subtitle;
+  final IconData icon;
+  final Color color;
   final VoidCallback onTap;
 
-  const _MenuCard({
-    required this.icon,
+  const _ActionCard({
     required this.title,
-    required this.subtitle,
+    required this.icon,
+    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
     return Card(
-      elevation: 0.5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: color,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Row(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            // 💡 CAMBIO: Ajuste para que el contenido se alinee arriba
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(icon, size: 40, color: theme.colorScheme.primary),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: theme.textTheme.titleLarge),
-                    const SizedBox(height: 4),
-                    Text(subtitle, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-                  ],
+              Icon(
+                icon,
+                size: 32,
+                color: theme.colorScheme.onSecondaryContainer,
+              ),
+              const SizedBox(height: 16), // Espacio entre ícono y texto
+              Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSecondaryContainer,
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios_rounded, size: 18),
             ],
           ),
         ),
@@ -219,52 +255,115 @@ class _MenuCard extends StatelessWidget {
   }
 }
 
-class _RecentDocTile extends StatelessWidget {
-  final String proveedor;
-  final String total;
-  final String estado;
+class _RecentDocsHeader extends StatelessWidget {
+  final VoidCallback onSeeAll;
+  const _RecentDocsHeader({required this.onSeeAll});
 
-  const _RecentDocTile({
-    required this.proveedor,
-    required this.total,
-    required this.estado,
-  });
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'Documentos Recientes',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        TextButton(
+          onPressed: onSeeAll,
+          child: const Text('Ver todos'),
+        ),
+      ],
+    );
+  }
+}
+
+class _RecentDocsList extends StatelessWidget {
+  final bool isLoading;
+  final List<Map<String, String>> recentDocs;
+
+  const _RecentDocsList({required this.isLoading, required this.recentDocs});
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 32),
+        child: CircularProgressIndicator(),
+      ));
+    }
+
+    if (recentDocs.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 32),
+          child: Text('No hay documentos recientes.'),
+        )
+      );
+    }
+
+    return Column(
+      children: recentDocs.map((doc) {
+        return _RecentDocItem(doc: doc);
+      }).toList(),
+    );
+  }
+}
+
+class _RecentDocItem extends StatelessWidget {
+  final Map<String, String> doc;
+
+  const _RecentDocItem({required this.doc});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
+    final String docId = doc['id'] ?? '';
+    // Usar 'proveedor_nombre' si existe, si no, 'proveedor'
+    final String proveedor = doc['proveedor_nombre'] ?? doc['proveedor'] ?? 'Proveedor N/A';
+    final String total = doc['total'] ?? 'N/A';
+    final String estado = doc['estado'] ?? 'N/A';
+
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: theme.dividerColor, width: 0.5),
+        side: BorderSide(color: theme.dividerColor.withOpacity(0.5)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Icon(Icons.receipt_long_outlined, color: theme.colorScheme.secondary),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(proveedor, style: theme.textTheme.titleMedium, overflow: TextOverflow.ellipsis),
-                  Text('Total: $total', style: theme.textTheme.bodySmall),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Chip(
-              label: Text(estado),
-              labelStyle: TextStyle(fontSize: 12, color: theme.colorScheme.onSecondaryContainer),
-              backgroundColor: theme.colorScheme.secondaryContainer,
-              side: BorderSide.none,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            ),
-          ],
+      child: ListTile(
+        leading: Icon(Icons.receipt_long_outlined, color: theme.colorScheme.primary),
+        title: Text(
+          proveedor, 
+          style: textTheme.titleSmall, 
+          overflow: TextOverflow.ellipsis
         ),
+        subtitle: Text('Total: $total', style: textTheme.bodyMedium),
+        trailing: Chip(
+          label: Text(estado),
+          labelStyle: TextStyle(
+            fontSize: 12, 
+            fontWeight: FontWeight.w500,
+            color: theme.colorScheme.onTertiaryContainer
+          ),
+          backgroundColor: theme.colorScheme.tertiaryContainer,
+          side: BorderSide.none,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          visualDensity: VisualDensity.compact,
+        ),
+        onTap: () {
+          if (docId.isNotEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DocumentDetailScreen(documento: doc),
+              ),
+            );
+          }
+        },
       ),
     );
   }
