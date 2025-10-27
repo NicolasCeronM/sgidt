@@ -102,9 +102,16 @@ class AuthService {
       password: password,
     );
     if (r is Success) return;
+    
+    // Si falla, se obtiene el error original para el código de estado (statusCode).
     final err = (r as Failure).error;
+    
+    // 💡 MODIFICACIÓN: Usar mensaje estandarizado por seguridad 
+    // en lugar de err.message.
+    const customErrorMessage = 'Credenciales Incorrectas Reintente';
+    
     // Lanza AuthException para que tu LoginScreen lo capture
-    throw AuthException(err.message, statusCode: err.statusCode);
+    throw AuthException(customErrorMessage, statusCode: err.statusCode);
   }
 
   /// Antiguo: headers para http Multipart/etc.
