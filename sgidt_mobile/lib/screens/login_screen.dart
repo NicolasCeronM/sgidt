@@ -1,11 +1,7 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; 
-import 'dart:math' as math; 
-
 import '../services/auth_service.dart';
 import '../core/api/api_exceptions.dart';
-import '../widgets/primary_buttom.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -37,12 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
       _error = null;
     });
 
-    // No se necesita limpiar NADA.
-    // Enviamos el texto tal cual (ej. "20399064-2" o "user@mail.com")
-    // El backend (backend.py) se encarga de normalizar el RUT internamente.
     try {
       await AuthService.login(_userCtrl.text.trim(), _passCtrl.text);
-      
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/home');
     } on AuthException catch (e) {
@@ -89,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // --- Mensaje de Error ---
+                    // --- Mensaje de Error Mejorado ---
                     if (_error != null) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -113,21 +105,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 16),
                     ],
 
-                    // --- Campo de Rut o Email ---
+                    // --- Campo de Usuario ---
                     TextFormField(
                       controller: _userCtrl,
                       textInputAction: TextInputAction.next,
-                      autocorrect: false,
-                      keyboardType: TextInputType.visiblePassword, 
-                      inputFormatters: [
-                        RutGuionInputFormatter(), // 💡 CAMBIADO AL NUEVO FORMATEADOR
-                      ],
                       decoration: const InputDecoration(
-                        labelText: 'rut o email',
+                        labelText: 'Usuario o email',
                         prefixIcon: Icon(Icons.person_outline_rounded),
                         border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Ingresa tu rut o email' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Ingresa tu usuario o email' : null,
                     ),
                     const SizedBox(height: 16),
 
@@ -154,19 +141,40 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
+                          // Navega a la pantalla de recuperación
                           Navigator.of(context).pushNamed('/recover-password');
                         },
                         child: const Text('¿Olvidaste tu contraseña?'),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // --- Botón de Ingresar ---
-                    PrimaryButton(
-                      label: 'Ingresar',
-                      isLoading: _loading,
-                      onPressed: _submit,
+                    SizedBox(
+                      height: 52,
+                      child: FilledButton(
+                        onPressed: _loading ? null : _submit,
+                        style: FilledButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: _loading
+                            ? const SizedBox(
+                                width: 24, height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
+                              )
+                            : const Text('Ingresar', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
                     ),
+
+                    // --- Mensaje para Desarrolladores (solo en modo debug) ---
+                    //if (kDebugMode) ...[
+                      //const SizedBox(height: 24),
+                     // Text(
+                      //  'Si estás en dispositivo físico y tu API corre en el PC,\nrecuerda ejecutar:  adb reverse tcp:8000 tcp:8000',
+                      //  textAlign: TextAlign.center,
+                      //  style: textTheme.bodySmall?.copyWith(color: theme.hintColor), 
+                    //  ),
+                   // ],
                   ],
                 ),
               ),
@@ -178,19 +186,25 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// --- WIDGET DEL LOGO (Sin cambios) ---
+/// Widget para el logo. Edita aquí para cambiar entre un logo de texto
+/// o una imagen desde tus assets.
 class _Logo extends StatelessWidget {
   const _Logo();
+
+  // ✅ CAMBIA ESTO A `true` PARA USAR UNA IMAGEN DE LOGO
   static const bool _useImageAsset = true;
 
   @override
   Widget build(BuildContext context) {
     if (_useImageAsset) {
+      // Si usas una imagen, asegúrate de haberla añadido en pubspec.yaml
+      // y de que la ruta 'assets/logo.png' es correcta.
       return Image.asset(
-        'assets/logo_2.png', 
-        height: 100,
+        'assets/logo.png', // Reemplaza con la ruta de tu logo
+        height: 80,
       );
     } else {
+      // Versión de texto como fallback o placeholder.
       return CircleAvatar(
         radius: 48,
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -204,61 +218,5 @@ class _Logo extends StatelessWidget {
         ),
       );
     }
-  }
-}
-
-
-// 💡 INICIO NUEVO FORMATEADOR - RutGuionInputFormatter 💡
-/// Formateador que aplica automáticamente el guion (-) antes del dígito 
-/// verificador del RUT (XXXXXXXX-Y) mientras el usuario escribe.
-/// Ignora el formato si detecta un '@', asumiendo que es un email.
-class RutGuionInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    
-    final newText = newValue.text;
-
-    // Si es un email (contiene @), no hacer nada.
-    if (newText.contains('@')) {
-      return newValue;
-    }
-
-    // 1. Limpiar el texto: solo dígitos y k/K. Se eliminan también los guiones
-    //    que el usuario pueda haber escrito para evitar duplicados.
-    String cleanText = newText.replaceAll(RegExp(r'[^0-9kK]'), '').toUpperCase();
-
-    // 2. Limitar a 9 caracteres (8 para el cuerpo + 1 para el DV)
-    if (cleanText.length > 9) {
-      cleanText = cleanText.substring(0, 9);
-    }
-
-    // 3. Si está vacío, retornar vacío
-    if (cleanText.isEmpty) {
-      return newValue.copyWith(text: '');
-    }
-
-    String formattedText;
-
-    // 4. Lógica para añadir el guion
-    if (cleanText.length > 1) {
-      // Separar cuerpo y dígito verificador
-      String dv = cleanText.substring(cleanText.length - 1);
-      String body = cleanText.substring(0, cleanText.length - 1);
-      // Combinar con el guion
-      formattedText = '$body-$dv';
-    } else {
-      formattedText = cleanText;
-    }
-
-    // 5. Calcular la posición del cursor
-    int selectionIndex = newValue.selection.end + (formattedText.length - newText.length);
-    selectionIndex = math.max(0, math.min(selectionIndex, formattedText.length));
-
-    return TextEditingValue(
-      text: formattedText,
-      selection: TextSelection.collapsed(offset: selectionIndex),
-      composing: TextRange.empty,
-    );
   }
 }

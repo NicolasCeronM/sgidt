@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inicio'),
+        title: const Text('Home'),
         actions: [
           // Botón para cambiar el tema
           IconButton(
