@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:fl_chart/fl_chart.dart'; // <-- 1. IMPORTAR FL_CHART
+import 'package:fl_chart/fl_chart.dart';
 
-// import 'main_screen.dart';
+import '../services/reportes_service.dart';
+import '../core/api/api_result.dart';
 
 class ReportesScreen extends StatefulWidget {
   const ReportesScreen({super.key});
@@ -15,147 +14,114 @@ class ReportesScreen extends StatefulWidget {
 }
 
 class _ReportesScreenState extends State<ReportesScreen> {
-  // --- INTERRUPTOR ---
-  final bool _useMockData = true; 
-  // ---
-  
   bool _isLoading = true;
   String? _error;
 
-  String _totalGastado = "-\$";
-  String _documentosProcesados = "-";
-  late DateTimeRange _periodoSeleccionado;
+  // Estado para los datos de la API
+  String _totalIngresos = "-\$";
+  String _totalGastos = "-\$";
+  String _resultadoMes = "-\$";
+
+  late DateTime _selectedDate;
   String _textoPeriodo = "Cargando...";
 
-  // <-- 2. DATOS SIMULADOS PARA LOS GRÁFICOS -->
-  // (En el futuro, estos se cargarán desde la API en _loadData)
   List<BarChartGroupData> _barChartData = [];
   List<PieChartSectionData> _pieChartData = [];
-
+  final List<Color> _pieColors = [
+    Colors.blue.shade400,
+    Colors.green.shade400,
+    Colors.orange.shade400,
+    Colors.purple.shade400,
+    Colors.red.shade400,
+    Colors.teal.shade400,
+  ];
 
   @override
   void initState() {
     super.initState();
-    initializeDateFormatting('es'); 
-    
-    final now = DateTime.now();
-    final primerDiaMes = DateTime(now.year, now.month, 1);
-    final ultimoDiaMes = DateTime(now.year, now.month + 1, 0);
-    _periodoSeleccionado = DateTimeRange(start: primerDiaMes, end: ultimoDiaMes);
-    _textoPeriodo = _formatRange(_periodoSeleccionado, now);
-
+    initializeDateFormatting('es');
+    _selectedDate = DateTime.now();
+    _updatePeriodoText();
     _loadData();
   }
 
-  String _formatRange(DateTimeRange range, DateTime now) {
-    final DateFormat formatterDiaMes = DateFormat('d MMM', 'es');
-    final DateFormat formatterMesAnyo = DateFormat('MMMM yyyy', 'es');
-
-    if (range.start.year == now.year && range.start.month == now.month && range.start.day == 1 &&
-        range.end.month == now.month && range.end.day == DateTime(now.year, now.month + 1, 0).day) {
-      return "Este Mes";
-    }
-    
-    return "${formatterDiaMes.format(range.start)} - ${formatterDiaMes.format(range.end)}, ${range.end.year}";
+  void _updatePeriodoText() {
+    _textoPeriodo = DateFormat('MMMM yyyy', 'es').format(_selectedDate);
   }
 
-
+  /// Carga los datos desde el servicio de reportes.
   Future<void> _loadData() async {
     if (!_isLoading) {
       setState(() => _isLoading = true);
     }
     setState(() => _error = null);
 
-    try {
-      if (_useMockData) {
-        await _loadMockData(_periodoSeleccionado);
-      } else {
-        await _loadRealData(_periodoSeleccionado);
-      }
-    } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    final result = await ReportesService.instance.getReportData(
+      year: _selectedDate.year,
+      month: _selectedDate.month,
+    );
+
+    if (!mounted) return;
+
+    if (result is Success<Map<String, dynamic>>) {
+      _updateUIWithData(result.data);
+    } else if (result is Failure) {
+      setState(() {
+        _error = result.toString();
+        _isLoading = false;
+      });
     }
   }
 
-  /// Carga datos simulados (Frontend)
-  Future<void> _loadMockData(DateTimeRange periodo) async {
-    await Future.delayed(const Duration(milliseconds: 1500));
-    if (!mounted) return;
-    
-    setState(() {
-      // Datos KPI
-      _totalGastado = "\$639.617";
-      _documentosProcesados = "4";
+  /// Actualiza el estado de la UI con los datos de la API.
+  void _updateUIWithData(Map<String, dynamic> data) {
+    final kpis = data['kpis'] as Map<String, dynamic>? ?? {};
+    final charts = data['charts'] as Map<String, dynamic>? ?? {};
 
-      // <-- 3. GENERAR DATOS SIMULADOS PARA GRÁFICOS -->
-      _barChartData = _getMockBarData();
-      _pieChartData = _getMockPieData();
+    final currencyFormat = NumberFormat.currency(
+      locale: 'es_CL',
+      symbol: '\$',
+      decimalDigits: 0,
+    );
+
+    setState(() {
+      // Actualiza los KPIs
+      _totalIngresos = currencyFormat.format(kpis['total_ingresos'] ?? 0);
+      _totalGastos = currencyFormat.format(kpis['total_gastos'] ?? 0);
+      _resultadoMes = currencyFormat.format(kpis['resultado_mes'] ?? 0);
+
+      // Actualiza datos del gráfico de barras (Ingresos vs Gastos)
+      final ingresosData = (kpis['total_ingresos'] ?? 0).toDouble();
+      final gastosData = (kpis['total_gastos'] ?? 0).toDouble();
+      _barChartData = _createBarChartData(ingresosData, gastosData);
+
+      // Actualiza datos del gráfico circular (Distribución de Ingresos)
+      final distribucionIngresos = charts['distribucion_ingresos'] as Map<String, dynamic>? ?? {};
+      _pieChartData = _createPieChartData(distribucionIngresos);
+
+      _isLoading = false;
     });
   }
 
-  /// Carga datos reales desde el endpoint
-  Future<void> _loadRealData(DateTimeRange periodo) async {
-    try {
-      final String fechaInicio = periodo.start.toIso8601String().split('T').first;
-      final String fechaFin = periodo.end.toIso8601String().split('T').first;
-
-      final url = Uri.parse('https://api.tu-dominio.com/reportes').replace(
-        queryParameters: {
-          'fecha_inicio': fechaInicio,
-          'fecha_fin': fechaFin,
-        },
-      );
-      
-      final response = await http.get(url).timeout(const Duration(seconds: 10));
-      if (!mounted) return;
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          // Datos KPI
-          double total = (data['totalGastado'] ?? 0.0).toDouble();
-          int docs = (data['documentosProcesados'] ?? 0).toInt();
-          _totalGastado = "\$${total.toStringAsFixed(0)}";
-          _documentosProcesados = docs.toString();
-
-          // <-- 4. GENERAR DATOS REALES PARA GRÁFICOS (A FUTURO) -->
-          // (Aquí llamarías a funciones que parsen el JSON de la API)
-          // _barChartData = _parseBarDataFromApi(data['gastosCategoria']);
-          // _pieChartData = _parsePieDataFromApi(data['tiposDocumento']);
-
-          // Por ahora, usamos los simulados también en el modo real
-          _barChartData = _getMockBarData();
-          _pieChartData = _getMockPieData();
-        });
-      } else {
-        throw Exception("Error del servidor: ${response.statusCode}");
-      }
-    } catch (e) {
-      throw Exception("Error de conexión: $e");
-    }
-  }
-
-  // --- Funciones de selección de período (sin cambios) ---
+  /// Muestra el selector de fecha (mes y año).
   Future<void> _seleccionarPeriodo() async {
-    final DateTimeRange? newRange = await showDateRangePicker(
+    final DateTime? newDate = await showDatePicker(
       context: context,
-      initialDateRange: _periodoSeleccionado,
+      initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       locale: const Locale('es'),
+      initialDatePickerMode: DatePickerMode.year,
     );
 
-    if (newRange != null && newRange != _periodoSeleccionado) {
+    if (newDate != null && (newDate.month != _selectedDate.month || newDate.year != _selectedDate.year)) {
       setState(() {
-        _periodoSeleccionado = newRange;
-        _textoPeriodo = _formatRange(newRange, DateTime.now());
+        _selectedDate = newDate;
+        _updatePeriodoText();
       });
       _loadData();
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +141,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
     );
   }
 
-  /// Construye el cuerpo principal de la pantalla de reportes
+  /// Construye el cuerpo principal con los datos del reporte.
   Widget _buildReportBody() {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
@@ -184,56 +150,15 @@ class _ReportesScreenState extends State<ReportesScreen> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16.0),
       children: [
-        // --- Selector de Período ---
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
-          ),
-          child: ListTile(
-            title: const Text('Mostrando reporte de:'),
-            trailing: TextButton(
-              onPressed: _seleccionarPeriodo,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(_textoPeriodo, style: const TextStyle(fontSize: 16)),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.calendar_month_outlined),
-                ],
-              ),
-            ),
-          ),
-        ),
+        // Selector de Período
+        _buildPeriodoSelector(colorScheme),
         const SizedBox(height: 20),
 
-        // --- Tarjetas de Resumen (KPIs) ---
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.1,
-          children: [
-            _SummaryCard(
-              title: "Total Gastado",
-              value: _totalGastado,
-              icon: Icons.receipt_long_outlined,
-              color: colorScheme.primary,
-            ),
-            _SummaryCard(
-              title: "Documentos",
-              value: _documentosProcesados,
-              icon: Icons.folder_copy_outlined,
-              color: colorScheme.secondary,
-            ),
-          ],
-        ),
+        // Tarjetas de Resumen (KPIs)
+        _buildKpiGrid(colorScheme),
         const SizedBox(height: 32),
 
-        // <-- 5. SECCIÓN DE GRÁFICOS (REEMPLAZA EL PLACEHOLDER) -->
+        // Sección de Gráficos
         Text(
           "Análisis Detallado",
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -242,39 +167,166 @@ class _ReportesScreenState extends State<ReportesScreen> {
         
         // Gráfico de Barras
         _buildBarChart(context),
-
         const SizedBox(height: 32),
 
         // Gráfico Circular
         _buildPieChart(context),
-
       ],
     );
   }
 
-  // --- (Widget _buildErrorBody sin cambios) ---
+  // --- WIDGETS AUXILIARES (AQUÍ ESTABA EL ERROR) ---
+
+  Widget _buildPeriodoSelector(ColorScheme colorScheme) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
+      ),
+      child: ListTile(
+        title: const Text('Mostrando reporte de:'),
+        trailing: TextButton(
+          onPressed: _seleccionarPeriodo,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_textoPeriodo, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 4),
+              const Icon(Icons.calendar_month_outlined),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKpiGrid(ColorScheme colorScheme) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.1,
+      children: [
+        _SummaryCard(
+          title: "Total Ingresos",
+          value: _totalIngresos,
+          icon: Icons.arrow_upward_rounded,
+          color: Colors.green.shade600,
+        ),
+        _SummaryCard(
+          title: "Total Gastos",
+          value: _totalGastos,
+          icon: Icons.arrow_downward_rounded,
+          color: colorScheme.error,
+        ),
+        _SummaryCard(
+          title: "Resultado del Mes",
+          value: _resultadoMes,
+          icon: Icons.account_balance_wallet_outlined,
+          color: colorScheme.primary,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBarChart(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Ingresos vs Gastos", style: textTheme.titleMedium),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 200,
+          child: BarChart(
+            BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              barTouchData: BarTouchData(enabled: true),
+              borderData: FlBorderData(show: false),
+              gridData: const FlGridData(show: false),
+              titlesData: FlTitlesData(
+                show: true,
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (double value, TitleMeta meta) {
+                      String text = '';
+                      switch (value.toInt()) {
+                        case 0: text = 'Ingresos'; break;
+                        case 1: text = 'Gastos'; break;
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(text, style: textTheme.bodySmall),
+                      );
+                    },
+                    reservedSize: 30,
+                  ),
+                ),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 50,
+                    getTitlesWidget: (value, meta) {
+                      if (value == 0) return const Text('');
+                      return Text('${(value / 1000).round()}k', style: textTheme.bodySmall);
+                    },
+                  ),
+                ),
+              ),
+              barGroups: _barChartData,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPieChart(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Distribución de Ingresos", style: textTheme.titleMedium),
+        const SizedBox(height: 16),
+        if (_pieChartData.isEmpty)
+          const Center(child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 40.0),
+            child: Text("Sin datos de ingresos para este período."),
+          ))
+        else
+          SizedBox(
+            height: 200,
+            child: PieChart(
+              PieChartData(
+                sections: _pieChartData,
+                centerSpaceRadius: 60,
+                sectionsSpace: 2,
+                pieTouchData: PieTouchData(enabled: true),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildErrorBody(String error) {
     return Center(
-      // ... (código idéntico al anterior)
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.cloud_off_outlined,
-                size: 60, color: Theme.of(context).colorScheme.error),
+            Icon(Icons.cloud_off_outlined, size: 60, color: Theme.of(context).colorScheme.error),
             const SizedBox(height: 16),
-            Text(
-              'Ocurrió un error',
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
+            Text('Ocurrió un error', style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(
-              error,
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
+            Text(error, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
             const SizedBox(height: 24),
             FilledButton.icon(
               icon: const Icon(Icons.refresh),
@@ -287,120 +339,15 @@ class _ReportesScreenState extends State<ReportesScreen> {
     );
   }
 
+  // --- FUNCIONES DE DATOS PARA GRÁFICOS (AQUÍ ESTABA EL ERROR) ---
 
-  // --- <-- 6. NUEVOS WIDGETS PARA LOS GRÁFICOS --> ---
-
-  /// Construye el gráfico de barras
-  Widget _buildBarChart(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Gastos por Categoría", style: textTheme.titleMedium),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 200,
-          child: BarChart(
-            BarChartData(
-              alignment: BarChartAlignment.spaceAround,
-              barTouchData: BarTouchData(enabled: false), // Deshabilita tooltips por ahora
-              borderData: FlBorderData(show: false), // Sin bordes
-              gridData: FlGridData(show: false), // Sin grilla
-              
-              // Títulos del eje Y (izquierda)
-              titlesData: FlTitlesData(
-                show: true,
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                // Títulos del eje X (abajo)
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (double value, TitleMeta meta) {
-                      String text = '';
-                      switch (value.toInt()) {
-                        case 0: text = 'Combus.'; break;
-                        case 1: text = 'Peajes'; break;
-                        case 2: text = 'Mant.'; break;
-                        case 3: text = 'Otros'; break;
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(text, style: textTheme.bodySmall),
-                      );
-                    },
-                    reservedSize: 30,
-                  ),
-                ),
-                // Títulos del eje Y (izquierda)
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 40,
-                    getTitlesWidget: (value, meta) {
-                      if (value == 0) return const Text('');
-                      if (value % 100000 == 0) { // Muestra etiquetas cada 100k
-                        return Text('${(value / 1000).round()}k', style: textTheme.bodySmall);
-                      }
-                      return const Text('');
-                    },
-                  ),
-                ),
-              ),
-
-              // Datos de las barras
-              barGroups: _barChartData,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Construye el gráfico circular
-  Widget _buildPieChart(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Tipos de Documento", style: textTheme.titleMedium),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 200,
-          child: PieChart(
-            PieChartData(
-              sections: _pieChartData,
-              centerSpaceRadius: 60, // Radio del agujero central
-              sectionsSpace: 2, // Espacio entre secciones
-              pieTouchData: PieTouchData(enabled: false), // Sin interacción
-            ),
-          ),
-        ),
-        // (Opcional) Leyenda
-        // ... aquí podrías generar una leyenda basada en los datos ...
-      ],
-    );
-  }
-
-
-  // --- <-- 7. FUNCIONES PARA DATOS SIMULADOS --> ---
-
-  /// Genera datos simulados para el gráfico de barras
-  List<BarChartGroupData> _getMockBarData() {
-    final colorScheme = Theme.of(context).colorScheme;
+  List<BarChartGroupData> _createBarChartData(double ingresos, double gastos) {
     return [
-      _makeBarGroup(0, 310000, colorScheme.primary),
-      _makeBarGroup(1, 150000, colorScheme.secondary),
-      _makeBarGroup(2, 100000, colorScheme.tertiary),
-      _makeBarGroup(3, 79617, colorScheme.errorContainer),
+      _makeBarGroup(0, ingresos, Colors.green.shade600),
+      _makeBarGroup(1, gastos, Theme.of(context).colorScheme.error),
     ];
   }
 
-  /// Helper para crear una barra
   BarChartGroupData _makeBarGroup(int x, double y, Color color) {
     return BarChartGroupData(
       x: x,
@@ -408,51 +355,44 @@ class _ReportesScreenState extends State<ReportesScreen> {
         BarChartRodData(
           toY: y,
           color: color,
-          width: 16,
+          width: 32,
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(4),
-            topRight: Radius.circular(4),
+            topLeft: Radius.circular(6),
+            topRight: Radius.circular(6),
           ),
         ),
       ],
     );
   }
 
-  /// Genera datos simulados para el gráfico circular
-  List<PieChartSectionData> _getMockPieData() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+  List<PieChartSectionData> _createPieChartData(Map<String, dynamic> data) {
+    final List<PieChartSectionData> sections = [];
+    int colorIndex = 0;
     
-    return [
-      PieChartSectionData(
-        value: 40,
-        title: '40%',
-        color: colorScheme.primaryContainer,
-        radius: 50,
-        titleStyle: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)
-      ),
-      PieChartSectionData(
-        value: 30,
-        title: '30%',
-        color: colorScheme.secondaryContainer,
-        radius: 50,
-        titleStyle: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)
-      ),
-      PieChartSectionData(
-        value: 30,
-        title: '30%',
-        color: colorScheme.tertiaryContainer,
-        radius: 50,
-        titleStyle: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)
-      ),
-    ];
+    final total = data.values.fold(0.0, (sum, item) => sum + (item as num));
+    if (total == 0) return [];
+
+    data.forEach((key, value) {
+      final percentage = (value / total) * 100;
+      sections.add(
+        PieChartSectionData(
+          value: value.toDouble(),
+          title: '${percentage.toStringAsFixed(0)}%',
+          color: _pieColors[colorIndex % _pieColors.length],
+          radius: 50,
+          titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+        )
+      );
+      colorIndex++;
+    });
+
+    return sections;
   }
 }
 
+// --- WIDGET DE TARJETA DE RESUMEN ---
 
-// --- (Widget _SummaryCard sin cambios) ---
 class _SummaryCard extends StatelessWidget {
-  // ... (código idéntico al anterior)
   final String title;
   final String value;
   final IconData icon;
@@ -493,6 +433,7 @@ class _SummaryCard extends StatelessWidget {
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

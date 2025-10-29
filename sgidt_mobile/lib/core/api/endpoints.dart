@@ -12,4 +12,7 @@ class Endpoints {
   static const String passwordRequest = '/usuarios/password/request/';
   static const String passwordVerify = '/usuarios/password/verify/';
   static const String passwordSet = '/usuarios/password/set/';
+
+  // Reportes
+  static const String reportes = '/panel/reportes/kpis/';
 }
