@@ -5,7 +5,7 @@ from django.urls import path
 from apps.panel.views.dashboard import DashboardView, GastosUltimos6MesesAPI
 from apps.panel.views.docuemntos import DocsView
 from apps.panel.views.reportes import ReportsView, export_report_data, ValidationsView
-from apps.panel.views.configuracion import SettingsView
+from apps.panel.views.configuracion import SettingsView, check_email_sync_status, save_email_sync_config
 from apps.panel.views.ayuda import HelpView, FAQView, StatusView, help_contact, manual_usuario_pdf, chatbot_ask
 from apps.panel.views.api import DashboardSummaryApi, DashboardLatestDocsApi
 
@@ -28,6 +28,9 @@ urlpatterns = [
     path("configuraciones/", SettingsView.as_view(), name="configuraciones"),
     path('reportes/', ReportsView.as_view(), name='reportes'),
     path('reportes/exportar/<str:file_type>/', export_report_data, name='exportar_reporte'),
+    # --- NUEVAS URLS PARA LA API DEL POPUP ---
+    path('api/check-email-sync-status/', check_email_sync_status, name='check_email_sync_status'),
+    path('api/save-email-sync-config/', save_email_sync_config, name='save_email_sync_config'),
 
     # Ayuda / Soporte
     path("ayuda/", HelpView.as_view(), name="ayuda"),

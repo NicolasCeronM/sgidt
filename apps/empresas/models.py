@@ -118,6 +118,14 @@ class Empresa(models.Model):
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 
+    # Campos para la integración con el correo
+    email_host = models.CharField(max_length=255, blank=True, help_text="Ej: imap.gmail.com")
+    email_port = models.PositiveIntegerField(default=993, blank=True, null=True)
+    email_user = models.CharField(max_length=255, blank=True)
+    email_password = models.CharField(max_length=255, blank=True, help_text="Se recomienda usar una contraseña de aplicación")
+    email_use_ssl = models.BooleanField(default=True)
+    email_last_check = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         indexes = [
             models.Index(fields=["rut"]),

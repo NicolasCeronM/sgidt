@@ -39,6 +39,7 @@ class Documento(models.Model):
     nombre_archivo_original = models.CharField(max_length=255, blank=True)
     extension = models.CharField(max_length=10, blank=True)
     es_pdf = models.BooleanField(default=False)
+    origen = models.CharField(max_length=20, default='web', db_index=True)
 
     mime_type = models.CharField(max_length=120, blank=True)
     tamano_bytes = models.BigIntegerField(default=0)
