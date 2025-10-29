@@ -234,7 +234,7 @@ CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_RESULT_BACKEND = "redis://redis:6379/1"
 
 # En modo desarrollo: True (ejecuta las tareas sin worker)
-CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_ALWAYS_EAGER = False
 
 # Límites y concurrencia
 CELERY_TASK_TIME_LIMIT = 60 * 5
@@ -242,13 +242,7 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60 * 4
 CELERY_WORKER_CONCURRENCY = 1
 
 # Tareas periódicas
-CELERY_BEAT_SCHEDULE = {
-    "sii-refresh-lote-cada-2min": {
-        "task": "apps.sii.tasks.refresh_sii_estado_lote",
-        "schedule": 120.0,   # cada 120 segundos
-        "args": (180, 200),
-    },
-}
+
 
 # =====================================================================
 # CONFIGURACIÓN SII
