@@ -137,7 +137,15 @@ def process_single_email(mail_server, email_id, empresa: Empresa):
                 if filename:
                     logger.info(f"  > Adjunto encontrado: {filename}")
                     
-                    if filename.lower().endswith(('.pdf', '.xml')):
+                    # =================================================================
+                    # INICIO: MODIFICACIÓN PARA LA PRESENTACIÓN
+                    # Se ha eliminado '.xml' de la condición para que solo 
+                    # los archivos PDF sean procesados.
+                    # =================================================================
+                    if filename.lower().endswith('.pdf'):
+                    # =================================================================
+                    # FIN: MODIFICACIÓN
+                    # =================================================================
                         logger.info(f"    - Es un archivo de factura válido. Procesando...")
                         file_data = part.get_payload(decode=True)
                         
@@ -159,4 +167,5 @@ def process_single_email(mail_server, email_id, empresa: Empresa):
                         except Exception as e:
                             logger.error(f"    - ERROR al crear Documento desde adjunto {filename}: {e}", exc_info=True)
                     else:
-                        logger.info(f"    - Omitiendo adjunto (no es PDF ni XML).")
+                        # Se ha modificado el mensaje para reflejar que solo se omiten los adjuntos que no son PDF.
+                        logger.info(f"    - Omitiendo adjunto (no es PDF).")
