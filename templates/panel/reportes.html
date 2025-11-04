@@ -14,7 +14,8 @@
             <h1 class="rp-title">Reportes Mensuales</h1>
             <p class="rp-subtitle">Visualización detallada y exportación de indicadores tributarios clave</p>
         </div>
-        <div class="rp-filters">
+        
+        <div class="rp-header-actions">
             <div class="rp-filter-group">
                 <select id="monthSelector" class="rp-select">
                     <option>Seleccionar mes</option>
@@ -24,47 +25,47 @@
                 </select>
             </div>
             <div class="rp-actions">
-                <button id="exportCsvBtn" class="rp-btn btn-secondary">
+                <button id="exportCsvBtn" class="rp-btn btn-ghost">
                     <i class="fas fa-file-csv"></i>
                     <span>CSV</span>
                 </button>
                 <button id="exportExcelBtn" class="rp-btn btn-primary">
                     <i class="fas fa-file-excel"></i>
-                    <span>Excel</span>
+                    <span>Exportar</span> 
                 </button>
             </div>
         </div>
     </header>
 
     <section class="rp-kpi-grid">
-        <div class="rp-kpi-card kpi-ingresos">
-            <div class="kpi-icon">
+        <div class="rp-kpi-card">
+            <div class="kpi-icon kpi-ingresos-icon">
                 <i class="fas fa-arrow-trend-up"></i>
             </div>
             <div class="kpi-content">
                 <h4>Total Ingresos</h4>
                 <p id="kpiIngresos">$0</p>
-                <span class="kpi-badge positive">+0%</span>
+                <span class="kpi-badge kpi-badge-positive">+0%</span>
             </div>
         </div>
-        <div class="rp-kpi-card kpi-gastos">
-            <div class="kpi-icon">
+        <div class="rp-kpi-card">
+            <div class="kpi-icon kpi-gastos-icon">
                 <i class="fas fa-arrow-trend-down"></i>
             </div>
             <div class="kpi-content">
                 <h4>Total Gastos</h4>
                 <p id="kpiGastos">$0</p>
-                <span class="kpi-badge negative">+0%</span>
+                <span class="kpi-badge kpi-badge-negative">-0%</span>
             </div>
         </div>
-        <div class="rp-kpi-card kpi-resultado">
-            <div class="kpi-icon">
+        <div class="rp-kpi-card">
+            <div class="kpi-icon kpi-resultado-icon">
                 <i class="fas fa-chart-line"></i>
             </div>
             <div class="kpi-content">
                 <h4>Resultado Neto</h4>
                 <p id="kpiResultado">$0</p>
-                <span class="kpi-badge neutral">0%</span>
+                <span class="kpi-badge kpi-badge-neutral">0%</span>
             </div>
         </div>
     </section>
@@ -104,9 +105,9 @@
         <div class="table-header">
             <h5>Detalle de Documentos Recientes</h5>
             <div class="table-actions">
-                <button class="table-filter-btn">
+                <button class="table-filter-btn rp-btn btn-ghost">
                     <i class="fas fa-filter"></i>
-                    Filtrar
+                    <span>Filtrar</span>
                 </button>
             </div>
         </div>
@@ -117,7 +118,7 @@
                         <th>Folio</th>
                         <th>Tipo de Documento</th>
                         <th>Fecha de Emisión</th> 
-                        <th>Monto Total</th>
+                        <th class="text-right">Monto Total</th>
                     </tr>
                 </thead>
                 <tbody id="reportTableBody">
