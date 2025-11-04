@@ -537,3 +537,69 @@
 .kv-skel div {
   height: 1.1rem;
 }
+
+/* ================================================= */
+/* --- SECCIONES Y ESTILOS DE DATOS MEJORADOS (JS) --- */
+/* ================================================= */
+
+/* Estilo para cada sección del detalle */
+.detail-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    /* Un sutil separador visual, como una línea inferior */
+    border-bottom: 1px dashed var(--b-200); 
+}
+.detail-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* Título de cada sección (Información Principal, Montos, etc.) */
+.detail-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--brand); /* Color de marca para destacar */
+    text-transform: uppercase;
+    margin: 0 0 0.75rem 0;
+    padding-bottom: 0.25rem;
+    border-bottom: 2px solid var(--brand-weak);
+    display: block;
+}
+
+/* Mejoras para los valores de formatValue (JS) */
+
+/* Valores nulos/sin datos */
+.text-muted {
+    color: var(--muted); 
+    font-style: italic;
+}
+
+/* Booleanos */
+.text-success {
+    color: #10b981; /* Verde más vivo */
+    font-weight: 700;
+}
+.text-danger {
+    color: #ef4444; /* Rojo para error/rechazo */
+    font-weight: 700;
+}
+
+/* Fechas y Horas */
+.text-date {
+    color: #3b82f6; /* Azul para resaltar fechas */
+    font-weight: 500;
+}
+
+/* Bloques JSON/Objeto */
+.json-display {
+    white-space: pre-wrap;
+    margin: .25rem 0 .5rem 0;
+    padding: .5rem;
+    background-color: #f8fafc; 
+    border: 1px solid var(--b-200);
+    border-radius: .5rem;
+    font-family: monospace;
+    font-size: 0.85em;
+    color: #334155; 
+}

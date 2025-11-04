@@ -132,12 +132,10 @@ function renderRows(rows){
         ${ r.archivo ? `<a class="act act-open" href="${r.archivo}" target="_blank" rel="noopener" title="Ver"><i class="fa-solid fa-eye fa-xl"></i></a>` : "" }
         ${ r.archivo ? `<a class="act act-open" href="${r.archivo}" download title="Descargar"><i class="fa-solid fa-download fa-xl"></i></a>` : "" }
 
-        <!-- Validar SII: siempre disponible para reintento -->
         <a class="act act-validate" href="#" data-id="${r.id}" title="Validar en SII" aria-label="Validar en SII">
           <i class="fa-solid fa-shield-check fa-xl"></i>
         </a>
 
-        <!-- Actualizar estado SII: solo si hay TrackID -->
         ${ r.sii_track_id ? `
           <a class="act act-refresh" href="#" data-id="${r.id}" title="Actualizar estado SII" aria-label="Actualizar estado SII">
             <i class="fa-solid fa-rotate fa-xl"></i>
@@ -205,8 +203,8 @@ function paintDetail(doc){
     $dlBtn().href   = doc.archivo; $dlBtn().hidden   = false;
   } else { $viewBtn().hidden = true; $dlBtn().hidden = true; }
 
-  // contenido dinámico con todos los campos
-  $content().innerHTML = kvGridFromObject(doc);
+  // Contenido dinámico mejorado con secciones agrupadas
+  paintDetailCustom(doc);
 }
 
 /* =======================
@@ -266,32 +264,150 @@ async function onRefreshSii(id, { silent=false } = {}){
 }
 
 /* =======================
-   Utilidades UI
+   Utilidades UI - Mejorado y Agrupado
    ======================= */
-function kvGridFromObject(obj){
-  const entries = Object.entries(obj ?? {});
-  if(!entries.length) return `<p>No hay datos.</p>`;
-  return `
-    <div class="kv-grid">
-      ${entries.map(([k,v]) => `
-        <div class="k">${escapeHtml(k)}</div>
-        <div class="v">${formatValue(v)}</div>
-      `).join("")}
-    </div>
-  `;
+
+// NUEVA FUNCIÓN: Genera un sub-grid para agrupar campos específicos con un título de sección
+function kvGridFromMap(map, title) {
+    // Filtra valores nulos, undefined o cadenas vacías para no mostrar filas innecesarias
+    const entries = Object.entries(map ?? {}).filter(([k, v]) => v !== undefined && v !== null && v !== "");
+    if(!entries.length) return '';
+    
+    return `
+        <div class="detail-section">
+            <h4 class="detail-section-title">${escapeHtml(title)}</h4>
+            <div class="kv-grid">
+                ${entries.map(([k,v]) => `
+                    <div class="k">${escapeHtml(k)}</div>
+                    <div class="v">${formatValue(v)}</div>
+                `).join("")}
+            </div>
+        </div>
+    `;
 }
 
+// NUEVA FUNCIÓN: Define la estructura del contenido del modal
+function paintDetailCustom(doc) {
+    const sections = [];
+
+    // 1. Información Principal
+    sections.push(kvGridFromMap({
+        'Tipo Documento': doc.tipo_documento || doc.tipo,
+        'Folio': doc.folio,
+        'Fecha Emisión': doc.fecha_emision || doc.fecha,
+        'Fecha Creación': doc.created_at,
+        'Origen': doc.origen,
+        'ID Interno': doc.id,
+    }, 'Información Principal'));
+
+    // 2. Información del Proveedor/Emisor
+    sections.push(kvGridFromMap({
+        'RUT Proveedor/Emisor': doc.rut_proveedor || doc.rut_emisor,
+        'Razón Social': doc.razon_social_proveedor || doc.razon_social,
+        'Dirección': doc.direccion,
+        'Comuna': doc.comuna,
+    }, 'Proveedor / Emisor'));
+
+    // 3. Valores y Montos
+    sections.push(kvGridFromMap({
+        'Total': doc.total,
+        'Neto': doc.neto,
+        'IVA': doc.iva,
+        'Tasa IVA (%)': doc.tasa_iva,
+        'Exento': doc.exento,
+    }, 'Montos y Valores'));
+    
+    // 4. Metadata Adicional (el resto de campos no mapeados)
+    const knownKeys = new Set([
+        'id', 'tipo_documento', 'tipo', 'folio', 'fecha_emision', 'fecha', 'created_at', 'origen', 
+        'rut_proveedor', 'rut_emisor', 'razon_social_proveedor', 'razon_social', 
+        'direccion', 'comuna', 'total', 'neto', 'iva', 'tasa_iva', 'exento',
+        // Campos de estado que ya están en los pills y no queremos repetir
+        'estado', 'sii_estado', 'sii_track_id', 'validado_sii', 'archivo',
+    ]);
+    
+    const additionalData = {};
+    for (const [key, value] of Object.entries(doc)) {
+        if (!knownKeys.has(key) && value !== null && value !== undefined && value !== "") {
+             // Formatea la clave para mejor lectura
+             const formattedKey = key.replace(/_/g, ' ').charAt(0).toUpperCase() + key.replace(/_/g, ' ').slice(1);
+             additionalData[formattedKey] = value; 
+        }
+    }
+    
+    if (Object.keys(additionalData).length > 0) {
+        sections.push(kvGridFromMap(additionalData, 'Detalles Adicionales'));
+    }
+
+    $content().innerHTML = sections.join('');
+}
+
+
+// Función de Formato de Valores (El corazón del estilo "bonito")
 function formatValue(v){
-  if (v == null) return "—";
+  if (v == null) return '<span class="text-muted">—</span>'; // Estilo para valores nulos
+
+  // 1. Manejo de objetos: muestra JSON con formato y clase
   if (typeof v === "object") {
-    try { return `<pre style="white-space:pre-wrap;margin:.25rem 0 .5rem 0">${escapeHtml(JSON.stringify(v, null, 2))}</pre>`; }
+    // Caso especial para arrays/objetos vacíos: mostrar un guión estilizado.
+    if (Object.keys(v).length === 0 && (Array.isArray(v) || v.constructor === Object)) {
+      return '<span class="text-muted">—</span>';
+    }
+    // Si parece una fecha (objeto Date), formatearla.
+    if (v instanceof Date && !isNaN(v.getTime())) {
+        return `<span class="text-date">${v.toLocaleString("es-CL", { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</span>`;
+    }
+    // Si es un objeto genérico (JSON)
+    try { return `<pre class="json-display">${escapeHtml(JSON.stringify(v, null, 2))}</pre>`; }
     catch { return String(v); }
   }
+
+  // 2. Manejo de booleanos: muestra "Sí" o "No" con iconos/colores
+  if (typeof v === "boolean") {
+    const text = v ? 'Sí' : 'No';
+    const className = v ? 'text-success' : 'text-danger';
+    const icon = v ? '✔️' : '❌'; // Icono para mejor visual
+    return `<span class="${className}">${icon} ${text}</span>`;
+  }
+
+  // 3. Manejo de números: formato de moneda para grandes, separador de miles para el resto.
   if (typeof v === "number") {
+    // Si es un valor monetario (total, neto, iva) o una cantidad grande
     if (Math.abs(v) >= 1000) {
+      // Formato de moneda CLP (sin decimales)
       return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(v);
     }
+    // Para números pequeños, aplica formato de miles si es necesario
+    return new Intl.NumberFormat("es-CL").format(v);
   }
+
+  // 4. Manejo de cadenas (detección de fechas y saltos de línea)
+  if (typeof v === "string") {
+    // Intenta detectar un formato de fecha ISO (con o sin tiempo)
+    const dateMatch = v.match(/^(\d{4}-\d{2}-\d{2})T?([\d:.]+)?Z?$/);
+    if (dateMatch) {
+      const d = new Date(v);
+      if (!isNaN(d.getTime())) {
+        const hasTime = dateMatch[2] || v.includes('T');
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        if (hasTime) {
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+            options.second = '2-digit';
+            options.hour12 = false;
+        }
+
+        // Usa toLocaleString para un formato completo y legible
+        const formatted = d.toLocaleString("es-CL", options);
+
+        return `<span class="text-date">${formatted}</span>`;
+      }
+    }
+    
+    // Cadena normal: reemplazar saltos de línea por <br> y escapar HTML
+    return escapeHtml(v).replace(/\n/g, '<br>');
+  }
+
   return escapeHtml(String(v));
 }
 
