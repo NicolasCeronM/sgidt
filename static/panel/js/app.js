@@ -21,21 +21,14 @@
 
   if (!fabMain || !chatbotModal || !civaModal) return;
 
-  // La función para cerrar se mantiene igual.
-  const closeModal = () => {
-    const activeModal = document.querySelector(".chatbot-modal.active");
-    if (activeModal) {
-      activeModal.classList.remove("active");
-      activeModal.setAttribute("aria-hidden", "true");
-    }
-  };
-  
-  // ¡CORRECCIÓN! Se llama a closeModal() antes de abrir uno nuevo.
   const openModal = (modal) => {
-    // 1. Cierra cualquier modal que ya esté abierto.
-    closeModal();
-    
-    // 2. Abre el nuevo modal.
+    // Cierra cualquier otro modal abierto
+    document.querySelectorAll(".chatbot-modal.active").forEach((m) => {
+      m.classList.remove("active");
+      m.setAttribute("aria-hidden", "true");
+    });
+
+    // Abre el nuevo
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     const input = modal.querySelector("input, textarea");
@@ -56,18 +49,28 @@
   chatTrigger.addEventListener("click", () => openWidget(chatbotModal));
   calcTrigger.addEventListener("click", () => openWidget(civaModal));
 
-  document
-    .querySelectorAll(".chatbot-close, .chatbot-backdrop")
-    .forEach((el) => {
-      el.addEventListener("click", closeModal);
+  // ✅ NUEVA LÓGICA DE CIERRE
+  document.querySelectorAll('[data-close="true"]').forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const modal = e.target.closest(".chatbot-modal");
+      if (modal) {
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+      }
     });
+  });
 
+  // Cerrar con tecla Escape
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && document.querySelector(".chatbot-modal.active")) {
-      closeModal();
+    if (e.key === "Escape") {
+      document.querySelectorAll(".chatbot-modal.active").forEach((m) => {
+        m.classList.remove("active");
+        m.setAttribute("aria-hidden", "true");
+      });
     }
   });
 })();
+
 
 // --- LÓGICA ESPECÍFICA PARA LA CALCULADORA DE IVA ---
 // --- LÓGICA ESPECÍFICA PARA LA CALCULADORA DE IVA (CON NUEVO DISEÑO) ---
