@@ -2,141 +2,158 @@
 SGIDT{% endblock %} {% block content %} {% block css %}
 <link
   rel="stylesheet"
-  href="{% static 'documentos/css/documentos.css' %}?v=3"
+  href="{% static 'documentos/css/documentos.css' %}?v=4"
 />
 {% endblock %}
 
-<!-- Línea de carga superior -->
 <div id="pageProgress" class="page-progress" aria-hidden="true"></div>
 
-<!-- Contenedor para notificaciones -->
 <div id="toastContainer" class="toast-container"></div>
 
 <section class="docs-page" aria-labelledby="docs-title">
   <div class="docs-container">
-    <h1 id="docs-title" class="docs-title">Gestión de Documentos</h1>
-
-    <!-- SUBIDA / DROPZONE -->
-    <section class="card upload-card" aria-labelledby="up-title">
-      <h2 id="up-title" class="card-title">Subir Nuevo Documento</h2>
-
-      <div id="uploadArea" class="upload-area" role="group" tabindex="0" aria-describedby="drop-hint">
-        <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
-        <p class="dz-title">Arrastra archivos aquí o haz clic para seleccionar</p>
-        <p id="drop-hint" class="upload-hint">PDF, JPG, PNG (máx. 10MB por archivo)</p>
+    
+    <header class="page-header">
+      <h1 id="docs-title" class="docs-title">Gestión de Documentos</h1>
+      <div class="page-actions">
+        <button id="btnToggleUpload" class="btn btn-primary" aria-expanded="false" aria-controls="uploadContainer">
+          <i class="fas fa-plus" aria-hidden="true"></i>
+          <span>Subir Documento</span>
+        </button>
       </div>
+    </header>
 
-      <!-- form invisible para CSRF + file input -->
-      <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none">
-        {% csrf_token %}
-        <input type="file" id="fileInput" name="files[]" accept=".pdf,.jpg,.jpeg,.png" multiple />
-      </form>
+    <div id="uploadContainer" class="upload-container" hidden>
+      <section class="card upload-card" aria-labelledby="up-title">
+        <h2 id="up-title" class="card-title-hidden">Subir Nuevo Documento</h2>
 
-      <div class="upload-actions">
-        <button class="btn btn-primary" id="btnSelect"><i class="fas fa-plus"></i> Seleccionar archivos</button>
-        <a href="{% url 'panel:documentos_page' %}" class="btn btn-ghost"><i class="fas fa-folder-open"></i> Ver documentos</a>
-      </div>
-
-      <!-- Cola de subida -->
-      <ul id="queue" class="upload-queue" hidden></ul>
-    </section>
-
-    <!-- FILTROS -->
-    <section class="card filters" role="search" aria-label="Filtros de documentos">
-      <form id="filter-form" class="filters-grid">
-        <div class="f-item">
-          <label for="dateFrom">Fecha desde</label>
-          <div class="f-input"><i class="far fa-calendar-alt" aria-hidden="true"></i><input type="date" id="dateFrom" /></div>
+        <div id="uploadArea" class="upload-area" role="group" tabindex="0" aria-describedby="drop-hint">
+          <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+          <p class="dz-title">Arrastra archivos aquí o haz clic para seleccionar</p>
+          <p id="drop-hint" class="upload-hint">PDF, JPG, PNG (máx. 10MB por archivo)</p>
         </div>
-        <div class="f-item">
-          <label for="dateTo">Fecha hasta</label>
-          <div class="f-input"><i class="far fa-calendar-alt" aria-hidden="true"></i><input type="date" id="dateTo" /></div>
+
+        <input type="file" id="fileInput" multiple hidden accept=".pdf,.jpg,.jpeg,.png" />
+
+        <div class="upload-actions">
+          <button id="btnSelect" class="btn btn-secondary">
+            <i class="fas fa-search" aria-hidden="true"></i>
+            Seleccionar Archivos
+          </button>
         </div>
+
+        <ul id="queue" class="upload-queue" hidden aria-live="polite"></ul>
+      </section>
+    </div>
+
+    <section class="card filters" aria-labelledby="filter-title">
+      <h2 id="filter-title" class="card-title">Filtrar Documentos</h2>
+      <div class="filters-grid">
         <div class="f-item">
-          <label for="docType">Tipo</label>
+          <label for="filterDateFrom">Desde</label>
           <div class="f-input">
-            <i class="fas fa-file-invoice" aria-hidden="true"></i>
-            <select id="docType">
+            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+            <input type="date" id="filterDateFrom" class="form-control" />
+          </div>
+        </div>
+        <div class="f-item">
+          <label for="filterDateTo">Hasta</label>
+          <div class="f-input">
+            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+            <input type="date" id="filterDateTo" class="form-control" />
+          </div>
+        </div>
+        <div class="f-item">
+          <label for="filterType">Tipo</label>
+          <div class="f-input">
+            <i class="fas fa-file-alt" aria-hidden="true"></i>
+            <select id="filterType" class="form-control">
               <option value="">Todos</option>
-              <option value="factura">Factura</option>
-              <option value="boleta">Boleta</option>
-              <option value="nc">Nota de crédito</option>
+              <option value="factura_afecta">Factura Afecta</option>
+              <option value="factura_exenta">Factura Exenta</option>
+              <option value="nota_credito">Nota de Crédito</option>
+              <option value="boleta_honorarios">Boleta Honorarios</option>
+              <option value="otro">Otro</option>
             </select>
           </div>
         </div>
         <div class="f-item">
-          <label for="docStatus">Estado</label>
+          <label for="filterStatus">Estado</label>
           <div class="f-input">
-            <i class="fas fa-circle-notch" aria-hidden="true"></i>
-            <select id="docStatus">
+            <i class="fas fa-tasks" aria-hidden="true"></i>
+            <select id="filterStatus" class="form-control">
               <option value="">Todos</option>
               <option value="procesado">Procesado</option>
-              <option value="cola">En cola</option>
+              <option value="pendiente">Pendiente</option>
               <option value="error">Error</option>
             </select>
           </div>
         </div>
         <div class="f-actions">
-          <button type="button" class="btn btn-primary" id="btnFilter"><i class="fas fa-filter"></i> Filtrar</button>
-          <button type="reset" class="btn btn-ghost" id="btn-clear">Limpiar</button>
+          <button id="btnFilter" class="btn btn-primary">
+            <i class="fas fa-filter" aria-hidden="true"></i>
+            Filtrar
+          </button>
         </div>
-      </form>
-      <div id="result-info" class="result-info" aria-live="polite"></div>
+      </div>
+      <p id="result-info" class="result-info" aria-live="polite"></p>
     </section>
 
-    <!-- TABLA -->
-    <section class="card table-card" aria-labelledby="tbl-title">
-      <h2 id="tbl-title" class="sr-only">Listado de documentos</h2>
-
-      <!-- Skeleton -->
-      <div class="table-skeleton" id="tbl-skeleton">
-        <div></div><div></div><div></div><div></div><div></div>
-      </div>
-
-      <div class="table-wrap" aria-busy="false">
-        <table class="table" id="documentsTable">
+    <section class="card table-card" aria-labelledby="table-title">
+      <h2 id="table-title" class="card-title-hidden">Lista de Documentos</h2>
+      <div class="table-wrap">
+        <table id="documentsTable" class="table">
           <thead>
             <tr>
-              <th>Fecha</th>
+              <th>Fecha Emisión</th>
               <th>Tipo</th>
               <th>Folio</th>
-              <th>RUT Emisor</th>
+              <th>RUT Proveedor</th>
               <th>Razón Social</th>
               <th class="num">Total</th>
               <th>Estado</th>
-              <th>Validación SII</th>
+              <th>Estado SII</th>
               <th class="actions">Acciones</th>
             </tr>
           </thead>
-          <tbody id="documentsTableBody"></tbody>
+          <tbody id="documentsTableBody">
+            </tbody>
         </table>
       </div>
+      
+      <div id="tbl-skeleton" class="table-skeleton" aria-hidden="true">
+        <div></div><div></div><div></div><div></div>
+      </div>
 
-      <div id="tbl-empty" class="empty-state" hidden>
-        <p class="empty-text">Aún no hay documentos.</p>
+      <div id="tbl-empty" class="empty" hidden>
+        <i class="fas fa-folder-open empty-illu" aria-hidden="true"></i>
+        <p class="empty-text">No se encontraron documentos.</p>
+        <p class="empty-text-secondary">
+          ¿Por qué no
+          <a href="#" id="empty-upload" class="empty-link">subes uno ahora</a>?
+        </p>
       </div>
     </section>
   </div>
 </section>
 
-<!-- ===== MODAL DETALLE DOCUMENTO ===== -->
 <div id="docDetailOverlay" class="modal-overlay" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="docDetailTitle" tabindex="-1">
-    <div class="modal-header">
-      <h3 id="docDetailTitle" class="modal-title">Detalle del documento</h3>
-      <button class="modal-close" id="docDetailClose" aria-label="Cerrar">×</button>
-    </div>
+    
+    <button class="modal-close-icon" id="docDetailClose" aria-label="Cerrar">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
     <div class="modal-body">
       <div id="docDetailContent">
-        <!-- estado inicial esqueleto -->
         <div class="kv-skel">
-          <div class="skeleton"></div><div class="skeleton"></div>
           <div class="skeleton"></div><div class="skeleton"></div>
           <div class="skeleton"></div><div class="skeleton"></div>
           <div class="skeleton"></div><div class="skeleton"></div>
         </div>
       </div>
     </div>
+    
     <div class="modal-actions">
       <a id="docViewBtn" class="btn-min" href="#" target="_blank" rel="noopener" hidden><i class="fa-solid fa-eye"></i> Ver archivo</a>
       <a id="docDownloadBtn" class="btn-min" href="#" download hidden><i class="fa-solid fa-download"></i> Descargar</a>
@@ -145,9 +162,7 @@ SGIDT{% endblock %} {% block content %} {% block css %}
     </div>
   </div>
 </div>
-<!-- progreso en tiempo real (IIFE no-module) -->
-<script src="{% static 'documentos/js/progreso.js' %}?v=2"></script>
-<!-- módulo principal -->
-<script type="module" src="{% static 'documentos/js/main.js' %}?v=1"></script>
 
+{% endblock %} {% block js %}
+<script type="module" src="{% static 'documentos/js/main.js' %}?v=2"></script>
 {% endblock %}

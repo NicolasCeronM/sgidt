@@ -1,315 +1,441 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
+  // --- ELEMENTOS DEL DOM ---
+  const monthSelector = document.getElementById("monthSelector");
+  const yearSelector = document.getElementById("yearSelector");
+  const exportCsvBtn = document.getElementById("exportCsvBtn");
+  const exportExcelBtn = document.getElementById("exportExcelBtn");
+  const kpiIngresos = document.getElementById("kpiIngresos");
+  const kpiGastos = document.getElementById("kpiGastos");
+  const kpiResultado = document.getElementById("kpiResultado");
+  const reportTableBody = document.getElementById("reportTableBody");
+  const tblSkeleton = document.getElementById("tbl-skeleton");
+  const tblEmpty = document.getElementById("tbl-empty");
+  const chart1El = document.getElementById("ingresosVsGastosChart");
+  const chart2El = document.getElementById("analisisIvaChart");
 
-    // --- ELEMENTOS DEL DOM (guardas por si alguno falta) ---
-    const monthSelector = document.getElementById('monthSelector');
-    const yearSelector = document.getElementById('yearSelector');
-    const exportCsvBtn = document.getElementById('exportCsvBtn');
-    const exportExcelBtn = document.getElementById('exportExcelBtn');
-    const kpiIngresos = document.getElementById('kpiIngresos');
-    const kpiGastos = document.getElementById('kpiGastos');
-    const kpiResultado = document.getElementById('kpiResultado');
-    const reportTableBody = document.getElementById('reportTableBody');
+  // --- URLs DE LA API ---
+  const kpiApiUrl = "/api/v1/panel/reportes/kpis/"; // La URL que me diste
+  const docApiUrl = "/api/v1/documentos/"; // URL para la tabla (como en list.js)
 
-    if (!monthSelector || !yearSelector || !reportTableBody) {
-        console.error('Faltan elementos del DOM requeridos (monthSelector, yearSelector o reportTableBody).');
+  // --- INSTANCIAS DE GRÁFICOS (APEXCHARTS) ---
+  let ingresosVsGastosChart, analisisIvaChart;
+  let currentReportData = []; // Almacena los documentos actuales para exportar
+
+  if (!monthSelector || !yearSelector || !reportTableBody) {
+    console.error("Faltan elementos del DOM requeridos.");
+    return;
+  }
+
+  // =================================================================
+  // INICIALIZACIÓN DE GRÁFICOS
+  // =================================================================
+
+  function inicializarGraficos() {
+    // --- Gráfico 1: Ingresos vs Gastos (Barra) ---
+    const options1 = {
+      series: [],
+      chart: {
+        type: "bar",
+        height: 350,
+        toolbar: { show: true },
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: "50%",
+          dataLabels: { position: "top" },
+        },
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val) => formatCLP(val, false),
+        offsetY: -20,
+        style: {
+          fontSize: "12px",
+          colors: ["#304758"],
+        },
+      },
+      xaxis: {
+        categories: ["Periodo"], // Solo mostraremos una barra para el mes
+      },
+      yaxis: {
+        title: { text: "Monto (CLP)" },
+        labels: { formatter: (val) => formatCLP(val, true) },
+      },
+      colors: ["#0cac78", "#ef4444"], // Verde (Ingreso), Rojo (Gasto)
+      noData: { text: "Cargando datos..." },
+    };
+
+    // --- Gráfico 2: Análisis de IVA (Dona) ---
+    const options2 = {
+      series: [],
+      chart: {
+        type: "donut",
+        height: 350,
+      },
+      labels: ["IVA Crédito (Compras)", "IVA Débito (Ventas)"],
+      legend: { position: "bottom" },
+      tooltip: {
+        y: { formatter: (val) => formatCLP(val, false) },
+      },
+      colors: ["#3b82f6", "#f59e0b"], // Azul, Naranja
+      noData: { text: "Cargando datos..." },
+    };
+
+    if (chart1El) {
+      chart1El.innerHTML = ""; // Limpiar skeleton
+      ingresosVsGastosChart = new ApexCharts(chart1El, options1);
+      ingresosVsGastosChart.render();
+      chart1El.classList.add("loaded");
+    }
+    if (chart2El) {
+      chart2El.innerHTML = ""; // Limpiar skeleton
+      analisisIvaChart = new ApexCharts(chart2El, options2);
+      analisisIvaChart.render();
+      chart2El.classList.add("loaded");
+    }
+  }
+
+  // =================================================================
+  // LÓGICA DE DATOS PRINCIPAL
+  // =================================================================
+
+  /**
+   * Rellena los selectores de Mes y Año.
+   */
+  function populateSelectors() {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    for (let i = 0; i < 5; i++) {
+      const year = currentYear - i;
+      const option = new Option(year, year);
+      yearSelector.add(option);
+    }
+    const months = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+    ];
+    months.forEach((month, index) => {
+      const option = new Option(month, index + 1);
+      monthSelector.add(option);
+    });
+
+    monthSelector.value = currentMonth;
+    yearSelector.value = currentYear;
+
+    // Cargar datos al cambiar la selección
+    monthSelector.addEventListener("change", loadDataForPeriod);
+    yearSelector.addEventListener("change", loadDataForPeriod);
+  }
+
+  /**
+   * Función maestra que se llama al cambiar la fecha.
+   * Ejecuta ambas peticiones (KPIs y Tabla) en paralelo.
+   */
+  async function loadDataForPeriod() {
+    // 1. Mostrar estado de carga en todos los componentes
+    setKpiLoading();
+    showTableLoading(true);
+    ingresosVsGastosChart?.updateSeries([], false);
+    analisisIvaChart?.updateSeries([], false);
+    
+    // Ejecutar ambas peticiones en paralelo
+    await Promise.all([
+        fetchKpiAndChartData(),
+        fetchTableData()
+    ]).catch(error => {
+        console.error("Error al cargar datos del reporte:", error);
+        // Mostrar error en la tabla
+        if (tblSkeleton) tblSkeleton.hidden = true;
+        if (tblEmpty) {
+            tblEmpty.hidden = false;
+            tblEmpty.querySelector(".empty-text").textContent = "Error al cargar el reporte.";
+        }
+    });
+  }
+
+  /**
+   * 1. Busca los datos de KPIs y Gráficos (según tu nueva API).
+   */
+  async function fetchKpiAndChartData() {
+    const month = monthSelector.value;
+    const year = yearSelector.value;
+    const apiUrl = `${kpiApiUrl}?mes=${month}&anio=${year}`;
+
+    try {
+      const response = await fetch(apiUrl, { headers: { Accept: "application/json" } });
+      if (!response.ok) {
+        throw new Error(`Error ${response.status} en API de KPIs`);
+      }
+      const data = await response.json();
+
+      // --- RENDERIZAR DATOS (CORREGIDO) ---
+
+      // 1. KPIs
+      renderKpis(data.kpis);
+
+      // 2. Gráfico Ingresos vs Gastos
+      const ingGasData = data.ingresos_vs_gastos_chart;
+      if (ingresosVsGastosChart && ingGasData) {
+        ingresosVsGastosChart.updateSeries([
+          { name: "Ingresos", data: [ingGasData.ingresos] },
+          { name: "Gastos", data: [ingGasData.gastos] },
+        ]);
+      }
+
+      // 3. Gráfico Análisis de IVA
+      const ivaData = data.analisis_iva_chart;
+      if (analisisIvaChart && ivaData) {
+        analisisIvaChart.updateSeries([
+          ivaData.iva_credito,
+          ivaData.iva_debito,
+        ]);
+      }
+      
+      // (Aquí se podrían procesar los otros gráficos si tuvieras más contenedores HTML)
+
+    } catch (error) {
+      console.error("Error en fetchKpiAndChartData:", error);
+      setKpiLoading(); // Resetear KPIs a '---' en caso de error
+      // Lanzar el error para que Promise.all lo capture
+      throw error;
+    }
+  }
+  
+  /**
+   * 2. Busca los datos de la TABLA.
+   */
+  async function fetchTableData() {
+    const month = monthSelector.value;
+    const year = yearSelector.value;
+
+    // Crear rango de fechas para el filtro
+    const dateFrom = `${year}-${String(month).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month, 0).getDate();
+    const dateTo = `${year}-${String(month).padStart(2, '0')}-${lastDay}`;
+    
+    const params = new URLSearchParams();
+    // Asumo que los filtros se llaman así (puedes necesitar ajustarlos)
+    params.set('fecha_emision_after', dateFrom);
+    params.set('fecha_emision_before', dateTo);
+    // Podrías necesitar un filtro de estado, ej:
+    // params.set('estado', 'procesado'); 
+    
+    const apiUrl = `${docApiUrl}?${params.toString()}`;
+
+    try {
+        const response = await fetch(apiUrl, { headers: { Accept: "application/json" } });
+        if (!response.ok) {
+            throw new Error(`Error ${response.status} en API de Documentos`);
+        }
+        const data = await response.json();
+        
+        // La API de documentos devuelve { "results": [...] }
+        const documentos = data.results || [];
+        
+        renderTable(documentos);
+        currentReportData = documentos; // Guardar para exportar
+
+    } catch (error) {
+        console.error("Error en fetchTableData:", error);
+        showTableEmpty();
+        if (tblEmpty) tblEmpty.querySelector(".empty-text").textContent = "Error al cargar documentos.";
+        // Lanzar el error para que Promise.all lo capture
+        throw error;
+    }
+  }
+
+
+  /**
+   * Pone los KPIs en estado "Cargando...".
+   */
+  function setKpiLoading() {
+    const loadingText = "---";
+    if (kpiIngresos) kpiIngresos.textContent = loadingText;
+    if (kpiGastos) kpiGastos.textContent = loadingText;
+    if (kpiResultado) {
+      kpiResultado.textContent = loadingText;
+      kpiResultado.classList.remove("positive", "negative");
+    }
+  }
+
+  /**
+   * Renderiza las tarjetas de KPI (CORREGIDO).
+   */
+  function renderKpis(kpis) {
+    if (!kpis) {
+        setKpiLoading();
         return;
     }
-
-    // --- INSTANCIAS DE GRÁFICOS (APEXCHARTS) ---
-    let ingresosVsGastosChart, analisisIvaChart, distribucionIngresosChart, distribucionGastosChart;
-
-    // Almacena los documentos actuales para exportar
-    let currentReportData = [];
-
-    /**
-     * Inicializa todos los gráficos con una configuración base.
-     */
-    function inicializarGraficos() {
-        // Opciones comunes para los gráficos de dona/pastel
-        const commonPieOptions = {
-            chart: { type: 'donut', height: 350 },
-            legend: { position: 'bottom' },
-            responsive: [{
-                breakpoint: 480,
-                options: {
-                    chart: { width: 250 },
-                    legend: { position: 'bottom' }
-                }
-            }]
-        };
-
-        // 1. Gráfico de Ingresos vs Gastos (Barras)
-        const ingresosVsGastosOptions = {
-            series: [],
-            chart: { type: 'bar', height: 350 },
-            plotOptions: { bar: { horizontal: false, columnWidth: '55%' } },
-            dataLabels: { enabled: false },
-            stroke: { show: true, width: 2, colors: ['transparent'] },
-            xaxis: { categories: ['Resumen del Mes'] },
-            yaxis: { title: { text: '$ (CLP)' } },
-            fill: { opacity: 1 },
-            tooltip: { y: { formatter: (val) => `$${new Intl.NumberFormat('es-CL').format(val || 0)}` } },
-            noData: { text: 'Cargando datos...' }
-        };
-        if (document.querySelector("#ingresosVsGastosChart")) {
-            ingresosVsGastosChart = new ApexCharts(document.querySelector("#ingresosVsGastosChart"), ingresosVsGastosOptions);
-            ingresosVsGastosChart.render();
-        }
-
-        // 2. Gráfico de Análisis de IVA (Dona)
-        const analisisIvaOptions = { ...commonPieOptions, series: [], labels: [], noData: { text: 'Cargando datos...' } };
-        if (document.querySelector("#analisisIvaChart")) {
-            analisisIvaChart = new ApexCharts(document.querySelector("#analisisIvaChart"), analisisIvaOptions);
-            analisisIvaChart.render();
-        }
-
-        // 3. Gráfico de Distribución de Ingresos (Pastel)
-        const distribucionIngresosOptions = { ...commonPieOptions, chart: { ...commonPieOptions.chart, type: 'pie' }, series: [], labels: [], noData: { text: 'Cargando datos...' } };
-        if (document.querySelector("#distribucionIngresosChart")) {
-            distribucionIngresosChart = new ApexCharts(document.querySelector("#distribucionIngresosChart"), distribucionIngresosOptions);
-            distribucionIngresosChart.render();
-        }
-
-        // 4. Gráfico de Distribución de Gastos (Pastel)
-        const distribucionGastosOptions = { ...commonPieOptions, chart: { ...commonPieOptions.chart, type: 'pie' }, series: [], labels: [], noData: { text: 'Cargando datos...' } };
-        if (document.querySelector("#distribucionGastosChart")) {
-            distribucionGastosChart = new ApexCharts(document.querySelector("#distribucionGastosChart"), distribucionGastosOptions);
-            distribucionGastosChart.render();
-        }
+    
+    // Corregido para usar las claves de tu JSON
+    if (kpiIngresos) kpiIngresos.textContent = formatCLP(kpis.total_ingresos);
+    if (kpiGastos) kpiGastos.textContent = formatCLP(kpis.total_gastos);
+    if (kpiResultado) {
+      // Corregido de 'resultado' a 'resultado_mes'
+      const resultado = kpis.resultado_mes; 
+      kpiResultado.textContent = formatCLP(resultado);
+      kpiResultado.classList.toggle("positive", resultado >= 0);
+      kpiResultado.classList.toggle("negative", resultado < 0);
     }
+  }
 
+  /**
+   * Muestra el estado de carga en la tabla.
+   */
+  function showTableLoading(isLoading) {
+    if (tblSkeleton) tblSkeleton.hidden = !isLoading;
+    if (reportTableBody) reportTableBody.innerHTML = "";
+    if (tblEmpty) tblEmpty.hidden = true;
+  }
 
-    // --- LÓGICA DE ACTUALIZACIÓN DE GRÁFICOS ---
-    function actualizarGraficos(chartData = {}) {
-        if (!chartData) return;
-
-        // 1. Actualizar Ingresos vs Gastos
-        if (ingresosVsGastosChart && chartData.ingresos_gastos) {
-            ingresosVsGastosChart.updateSeries([
-                { name: 'Ingresos', data: [chartData.ingresos_gastos.ingresos || 0] },
-                { name: 'Gastos', data: [chartData.ingresos_gastos.gastos || 0] }
-            ]);
-        }
-
-        // 2. Actualizar Análisis de IVA
-        if (analisisIvaChart && chartData.analisis_iva) {
-            analisisIvaChart.updateOptions({
-                series: [chartData.analisis_iva.iva_credito || 0, chartData.analisis_iva.iva_debito || 0],
-                labels: ['IVA Crédito (Gastos)', 'IVA Débito (Ingresos)']
-            });
-        }
-
-        // 3. Actualizar Distribución de Ingresos
-        if (distribucionIngresosChart && chartData.distribucion_ingresos) {
-            distribucionIngresosChart.updateOptions({
-                series: Object.values(chartData.distribucion_ingresos || {}),
-                labels: Object.keys(chartData.distribucion_ingresos || {})
-            });
-        }
-
-        // 4. Actualizar Distribución de Gastos
-        if (distribucionGastosChart && chartData.distribucion_gastos) {
-            distribucionGastosChart.updateOptions({
-                series: Object.values(chartData.distribucion_gastos || {}),
-                labels: Object.keys(chartData.distribucion_gastos || {})
-            });
-        }
+  /**
+   * Muestra el estado vacío en la tabla.
+   */
+  function showTableEmpty() {
+    if (reportTableBody) reportTableBody.innerHTML = "";
+    if (tblSkeleton) tblSkeleton.hidden = true;
+    if (tblEmpty) {
+        tblEmpty.hidden = false;
+        // Restaurar texto original
+        tblEmpty.querySelector(".empty-text").textContent = "Sin datos para el periodo seleccionado.";
     }
+  }
 
-    // --- LÓGICA GENERAL (Filtros, AJAX, etc.) ---
-    function inicializarFiltros() {
-        const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        const fechaActual = new Date();
-        const mesActual = fechaActual.getMonth();
-        const añoActual = fechaActual.getFullYear();
+  /**
+   * Renderiza la tabla de documentos.
+   */
+  function renderTable(documentos) {
+    if (tblSkeleton) tblSkeleton.hidden = true;
 
-        // Limpiar opciones previas (por si se re-ejecuta)
-        monthSelector.innerHTML = '';
-        yearSelector.innerHTML = '';
-
-        meses.forEach((mes, index) => {
-            const option = new Option(mes, index + 1);
-            if (index === mesActual) option.selected = true;
-            monthSelector.add(option);
-        });
-        for (let i = 0; i < 5; i++) {
-            const año = añoActual - i;
-            const option = new Option(año, año);
-            if (año === añoActual) option.selected = true;
-            yearSelector.add(option);
-        }
+    if (!documentos || documentos.length === 0) {
+      showTableEmpty();
+      return;
     }
+    
+    if (tblEmpty) tblEmpty.hidden = true;
 
-    function formatCurrency(valor) {
-        return `$${new Intl.NumberFormat('es-CL').format(valor || 0)}`;
+    const html = documentos
+      .map(
+        (doc) => `
+      <tr>
+        <td>${doc.folio || "S/F"}</td>
+        <td>${doc.tipo_documento || "No definido"}</td>
+        <td>${formatDate(doc.fecha_emision)}</td>
+        <td class="num">${formatCLP(doc.total)}</td>
+      </tr>
+    `
+      )
+      .join("");
+
+    reportTableBody.innerHTML = html;
+  }
+
+  // =================================================================
+  // UTILIDADES Y EXPORTACIÓN
+  // =================================================================
+
+  const formatCLP = (value, compact = false) => {
+    if (value == null) return "—";
+    const options = {
+      style: "currency",
+      currency: "CLP",
+      maximumFractionDigits: 0,
+    };
+    if (compact) {
+      options.notation = "compact";
+      options.minimumFractionDigits = 0;
     }
+    return new Intl.NumberFormat("es-CL", options).format(value);
+  };
 
-    async function cargarDatosReporte() {
-        const month = monthSelector.value;
-        const year = yearSelector.value;
-
-        reportTableBody.innerHTML = '<tr><td colspan="4" class="table-loading">Cargando datos...</td></tr>';
-
-        try {
-            const response = await fetch(`?month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            if (!response.ok) throw new Error('La respuesta del servidor no fue exitosa.');
-            const data = await response.json();
-
-            // Guardamos los documentos para exportación y uso posterior
-            currentReportData = data.ultimos_documentos || [];
-
-            actualizarUI(data);
-        } catch (error) {
-            console.error("Error al cargar los datos del reporte:", error);
-            reportTableBody.innerHTML = '<tr><td colspan="4" class="table-loading">Error al cargar datos.</td></tr>';
-            currentReportData = []; // Limpiar datos en caso de error
-            // también podemos limpiar KPIs
-            if (kpiIngresos) kpiIngresos.textContent = formatCurrency(0);
-            if (kpiGastos) kpiGastos.textContent = formatCurrency(0);
-            if (kpiResultado) kpiResultado.textContent = formatCurrency(0);
-        }
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    try {
+      // Asume que la fecha puede venir como 'YYYY-MM-DD' o ISO
+      return new Date(dateString.split('T')[0]).toLocaleDateString("es-CL", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    } catch (e) {
+      return dateString;
     }
+  };
 
-    function actualizarUI(data = {}) {
-        actualizarKPIs(data.kpis || {});
-        actualizarTabla(data.ultimos_documentos || []);
-        actualizarGraficos(data.charts || {});
+  // Lógica de exportación
+  function getExportData() {
+    if (currentReportData.length === 0) {
+      alert("No hay documentos en la tabla para exportar. Genere un reporte primero.");
+      return null;
     }
+    // Simplificar datos para exportar
+    return currentReportData.map(doc => ({
+      Folio: doc.folio,
+      Tipo: doc.tipo_documento,
+      FechaEmision: formatDate(doc.fecha_emision),
+      RUTProveedor: doc.rut_proveedor,
+      Proveedor: doc.nombre_proveedor, // Asumo que este dato viene
+      Neto: doc.monto_neto, // Asumo que este dato viene
+      IVA: doc.iva, // Asumo que este dato viene
+      Total: doc.total
+    }));
+  }
+  
+  function getFileName() {
+    const month = monthSelector.options[monthSelector.selectedIndex].text;
+    const year = yearSelector.value;
+    return `Reporte_SGIDT_${month}_${year}`;
+  }
+  
+  function downloadCSV(csvContent, fileName) {
+      const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  }
 
-    function actualizarKPIs(kpis = {}) {
-        if (kpiIngresos) kpiIngresos.textContent = formatCurrency(kpis.total_ingresos || 0);
-        if (kpiGastos) kpiGastos.textContent = formatCurrency(kpis.total_gastos || 0);
-        if (kpiResultado) kpiResultado.textContent = formatCurrency(kpis.resultado_mes || 0);
-    }
+  if (exportCsvBtn) {
+    exportCsvBtn.addEventListener("click", () => {
+      const dataToExport = getExportData();
+      if (!dataToExport) return;
+      try {
+        if (typeof XLSX === "undefined") throw new Error("XLSX no está cargado.");
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const csvOutput = XLSX.utils.sheet_to_csv(ws);
+        downloadCSV(csvOutput, `${getFileName()}.csv`);
+      } catch (err) {
+        console.error(err);
+        alert("No se pudo exportar a CSV: " + err.message);
+      }
+    });
+  }
 
-    function actualizarTabla(documentos = []) {
-        reportTableBody.innerHTML = '';
+  if (exportExcelBtn) {
+    exportExcelBtn.addEventListener("click", () => {
+      const dataToExport = getExportData();
+      if (!dataToExport) return;
+      try {
+        if (typeof XLSX === "undefined") throw new Error("XLSX no está cargado.");
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+        XLSX.writeFile(wb, `${getFileName()}.xlsx`);
+      } catch (err) {
+        console.error(err);
+        alert("No se pudo exportar a Excel: " + err.message);
+      }
+    });
+  }
 
-        if (!documentos || documentos.length === 0) {
-            reportTableBody.innerHTML = '<tr><td colspan="4" class="table-loading">No hay documentos para el período seleccionado.</td></tr>';
-            return;
-        }
-
-        // Construir filas de forma segura (evitar innerHTML repetido por rendimiento)
-        const fragment = document.createDocumentFragment();
-        documentos.forEach(doc => {
-            const tr = document.createElement('tr');
-
-            const tdFolio = document.createElement('td');
-            tdFolio.textContent = doc.folio || 'N/A';
-            tr.appendChild(tdFolio);
-
-            const tdTipo = document.createElement('td');
-            tdTipo.textContent = doc.tipo_documento_display || '';
-            tr.appendChild(tdTipo);
-
-            const tdFecha = document.createElement('td');
-            tdFecha.textContent = doc.fecha_emision || '';
-            tr.appendChild(tdFecha);
-
-            const tdMonto = document.createElement('td');
-            tdMonto.textContent = formatCurrency(doc.monto_total || 0);
-            tr.appendChild(tdMonto);
-
-            fragment.appendChild(tr);
-        });
-        reportTableBody.appendChild(fragment);
-    }
-
-    // --- (AÑADIDO) LÓGICA DE EXPORTACIÓN ---
-
-    /**
-     * Prepara los datos para la exportación.
-     */
-    function getExportData() {
-        if (!currentReportData || currentReportData.length === 0) {
-            alert("No hay documentos para exportar. Por favor, cargue un reporte primero.");
-            return null;
-        }
-
-        // Mapea los datos. Exportamos el valor numérico (doc.monto_total).
-        return currentReportData.map(doc => ({
-            "Folio": doc.folio || 'N/A',
-            "Tipo de Documento": doc.tipo_documento_display || '',
-            "Fecha de Emisión": doc.fecha_emision || '',
-            "Monto Total": doc.monto_total != null ? doc.monto_total : ''
-        }));
-    }
-
-    /**
-     * Función auxiliar para descargar el archivo CSV con codificación UTF-8.
-     */
-    function downloadCSV(csvContent, fileName) {
-        const a = document.createElement('a');
-        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-        a.href = URL.createObjectURL(blob);
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-    }
-
-    /**
-     * Obtiene un nombre de archivo dinámico basado en los filtros.
-     */
-    function getFileName() {
-        try {
-            const monthText = monthSelector.options[monthSelector.selectedIndex].text.toLowerCase();
-            const year = yearSelector.value;
-            return `reporte_${monthText}_${year}`;
-        } catch (e) {
-            return 'reporte_sgidt';
-        }
-    }
-
-    // --- MANEJADORES DE EVENTOS ---
-    monthSelector.addEventListener('change', cargarDatosReporte);
-    yearSelector.addEventListener('change', cargarDatosReporte);
-
-    if (exportCsvBtn) {
-        exportCsvBtn.addEventListener('click', () => {
-            const dataToExport = getExportData();
-            if (!dataToExport) return; // Salir si no hay datos
-
-            try {
-                if (typeof XLSX === 'undefined') throw new Error('XLSX no está cargado. Asegúrate de incluir la librería SheetJS (xlsx).');
-
-                const ws = XLSX.utils.json_to_sheet(dataToExport);
-                const csvOutput = XLSX.utils.sheet_to_csv(ws);
-
-                downloadCSV(csvOutput, `${getFileName()}.csv`);
-            } catch (err) {
-                console.error(err);
-                alert('No se pudo exportar a CSV: ' + err.message);
-            }
-        });
-    }
-
-    if (exportExcelBtn) {
-        exportExcelBtn.addEventListener('click', () => {
-            const dataToExport = getExportData();
-            if (!dataToExport) return; // Salir si no hay datos
-
-            try {
-                if (typeof XLSX === 'undefined') throw new Error('XLSX no está cargado. Asegúrate de incluir la librería SheetJS (xlsx).');
-
-                const ws = XLSX.utils.json_to_sheet(dataToExport);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Reporte');
-
-                XLSX.writeFile(wb, `${getFileName()}.xlsx`);
-            } catch (err) {
-                console.error(err);
-                alert('No se pudo exportar a Excel: ' + err.message);
-            }
-        });
-    }
-
-    // --- INICIALIZACIÓN ---
-    inicializarFiltros();
-    inicializarGraficos(); // Inicia los gráficos con estructura vacía
-    cargarDatosReporte(); // Busca los datos y los carga en los gráficos
+  // --- INICIALIZACIÓN ---
+  populateSelectors();
+  inicializarGraficos();
+  loadDataForPeriod(); // Carga inicial
 });

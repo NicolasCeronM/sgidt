@@ -1,144 +1,130 @@
-{% extends 'base_app.html' %}
-{% load static %}
-{% block title %}Reportes · SGIDT{% endblock %}
+{% extends 'base_app.html' %} {% load static %} {% block title %}Reportes ·
+SGIDT{% endblock %} {% block css %}
+<link
+  rel="stylesheet"
+  href="{% static 'reportes/css/reportes.css' %}?v=2"
+/>
+{% endblock %} {% block content %}
+<div id="toastContainer" class="toast-container"></div>
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'reportes/css/reportes.css' %}">
-{% endblock %}
-
-
-{% block content %}
-<div class="rp-container">
-    <header class="rp-header">
-        <div class="rp-header-content">
-            <h1 class="rp-title">Reportes Mensuales</h1>
-            <p class="rp-subtitle">Visualización detallada y exportación de indicadores tributarios clave</p>
-        </div>
-        
-        <div class="rp-header-actions">
-            <div class="rp-filter-group">
-                <select id="monthSelector" class="rp-select">
-                    <option>Seleccionar mes</option>
-                </select>
-                <select id="yearSelector" class="rp-select">
-                    <option>Seleccionar año</option>
-                </select>
-            </div>
-            <div class="rp-actions">
-                <button id="exportCsvBtn" class="rp-btn btn-ghost">
-                    <i class="fas fa-file-csv"></i>
-                    <span>CSV</span>
-                </button>
-                <button id="exportExcelBtn" class="rp-btn btn-primary">
-                    <i class="fas fa-file-excel"></i>
-                    <span>Exportar</span> 
-                </button>
-            </div>
-        </div>
+<section class="docs-page" aria-labelledby="docs-title">
+  <div class="docs-container">
+    
+    <header class="page-header">
+      <h1 id="docs-title" class="docs-title">Reportes</h1>
     </header>
 
-    <section class="rp-kpi-grid">
-        <div class="rp-kpi-card">
-            <div class="kpi-icon kpi-ingresos-icon">
-                <i class="fas fa-arrow-trend-up"></i>
-            </div>
-            <div class="kpi-content">
-                <h4>Total Ingresos</h4>
-                <p id="kpiIngresos">$0</p>
-                <span class="kpi-badge kpi-badge-positive">+0%</span>
-            </div>
+    <section class="card filters" aria-labelledby="filter-title">
+      <h2 id="filter-title" class="card-title">Generar Reporte</h2>
+      <div class="filters-grid" id="filters-container">
+        <div class="f-item">
+          <label for="monthSelector">Mes</label>
+          <div class="f-input">
+            <i class="fas fa-calendar-alt"></i>
+            <select id="monthSelector" class="form-control"></select>
+          </div>
         </div>
-        <div class="rp-kpi-card">
-            <div class="kpi-icon kpi-gastos-icon">
-                <i class="fas fa-arrow-trend-down"></i>
-            </div>
-            <div class="kpi-content">
-                <h4>Total Gastos</h4>
-                <p id="kpiGastos">$0</p>
-                <span class="kpi-badge kpi-badge-negative">-0%</span>
-            </div>
+        <div class="f-item">
+          <label for="yearSelector">Año</label>
+          <div class="f-input">
+            <i class="fas fa-calendar-check"></i>
+            <select id="yearSelector" class="form-control"></select>
+          </div>
         </div>
-        <div class="rp-kpi-card">
-            <div class="kpi-icon kpi-resultado-icon">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="kpi-content">
-                <h4>Resultado Neto</h4>
-                <p id="kpiResultado">$0</p>
-                <span class="kpi-badge kpi-badge-neutral">0%</span>
-            </div>
+
+        <div class="f-actions">
+          <button id="exportCsvBtn" class="btn btn-secondary">
+            <i class="fas fa-file-csv"></i>
+            <span>Exportar CSV</span>
+          </button>
+          <button id="exportExcelBtn" class="btn btn-primary">
+            <i class="fas fa-file-excel"></i>
+            <span>Exportar Excel</span>
+          </button>
         </div>
+      </div>
     </section>
 
-    <section class="rp-charts-grid">
-        <div class="rp-chart-card">
-            <div class="chart-header">
-                <h5>Ingresos vs. Gastos</h5>
-                <span class="chart-period">Periodo actual</span>
-            </div>
-            <div id="ingresosVsGastosChart" class="chart-container"></div>
+    <section class="kpi-grid" aria-label="Métricas clave">
+      <article class="card kpi-card kpi-ingresos">
+        <div class="kpi-icon-wrapper">
+          <i class="fas fa-arrow-up"></i>
         </div>
-        <div class="rp-chart-card">
-            <div class="chart-header">
-                <h5>Análisis de IVA</h5>
-                <span class="chart-period">Crédito y Débito</span>
-            </div>
-            <div id="analisisIvaChart" class="chart-container"></div>
+        <div class="kpi-content">
+          <span class="kpi-title">Total Ingresos</span>
+          <span class="kpi-value" id="kpiIngresos">--</span>
         </div>
-        <div class="rp-chart-card">
-            <div class="chart-header">
-                <h5>Distribución de Ingresos</h5>
-                <span class="chart-period">Por tipo de documento</span>
-            </div>
-            <div id="distribucionIngresosChart" class="chart-container"></div>
+      </article>
+
+      <article class="card kpi-card kpi-gastos">
+        <div class="kpi-icon-wrapper">
+          <i class="fas fa-arrow-down"></i>
         </div>
-        <div class="rp-chart-card">
-            <div class="chart-header">
-                <h5>Distribución de Gastos</h5>
-                <span class="chart-period">Por proveedor</span>
-            </div>
-            <div id="distribucionGastosChart" class="chart-container"></div>
+        <div class="kpi-content">
+          <span class="kpi-title">Total Gastos</span>
+          <span class="kpi-value" id="kpiGastos">--</span>
         </div>
+      </article>
+
+      <article class="card kpi-card kpi-resultado">
+        <div class="kpi-icon-wrapper">
+          <i class="fas fa-balance-scale"></i>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-title">Resultado del Periodo</span>
+          <span class="kpi-value" id="kpiResultado">--</span>
+        </div>
+      </article>
     </section>
 
-    <section class="rp-table-card">
-        <div class="table-header">
-            <h5>Detalle de Documentos Recientes</h5>
-            <div class="table-actions">
-                <button class="table-filter-btn rp-btn btn-ghost">
-                    <i class="fas fa-filter"></i>
-                    <span>Filtrar</span>
-                </button>
-            </div>
-        </div>
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Folio</th>
-                        <th>Tipo de Documento</th>
-                        <th>Fecha de Emisión</th> 
-                        <th class="text-right">Monto Total</th>
-                    </tr>
-                </thead>
-                <tbody id="reportTableBody">
-                    <tr>
-                        <td colspan="4" class="table-loading">
-                            <div class="loading-spinner"></div>
-                            <span>Cargando datos del periodo...</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <section class="chart-grid" aria-label="Visualizaciones">
+      <article class="card chart-card" id="chart1-container">
+        <h3 class="card-title">Ingresos vs. Gastos</h3>
+        <div id="ingresosVsGastosChart" class="chart-loader">
+          </div>
+      </article>
+      <article class="card chart-card" id="chart2-container">
+        <h3 class="card-title">Análisis de IVA</h3>
+        <div id="analisisIvaChart" class="chart-loader">
+          </div>
+      </article>
     </section>
 
-</div>
-{% endblock %}
+    <section class="card table-card" aria-labelledby="table-title">
+      <h2 id="table-title" class="card-title">Detalle de Documentos</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Tipo de Documento</th>
+              <th>Fecha de Emisión</th>
+              <th class="num">Monto Total</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            </tbody>
+        </table>
+      </div>
+      <div id="tbl-skeleton" class="table-skeleton" hidden>
+        <div></div><div></div><div></div>
+      </div>
+      <div id="tbl-empty" class="empty" hidden>
+        <i class="fas fa-chart-pie empty-illu"></i>
+        <p class="empty-text">Sin datos para el periodo seleccionado.</p>
+        <p class="empty-text-secondary">
+          Selecciona un mes y año para generar el reporte.
+        </p>
+      </div>
+    </section>
 
-
-{% block js %}
+  </div>
+</section>
+{% endblock %} {% block js %}
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script src="{% static 'reportes/js/reportes.js' %}"></script>
+<script
+  type="module"
+  src="{% static 'reportes/js/reportes.js' %}?v=2"
+></script>
 {% endblock %}
