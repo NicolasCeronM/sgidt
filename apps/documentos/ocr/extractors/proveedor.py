@@ -3,8 +3,8 @@ import re
 from ..utils.rut import is_valid, clean_rut, format_rut
 
 RUT_PATTERNS = [
-    re.compile(r'(?:R\.?U\.?T\.?|RUT|ROL)[\s:.]*(\d{1,2}\.\d{3}\.\d{3}-[\dkK])'),
-    re.compile(r'(\d{1,2}\.\d{3}\.\d{3}-[\dkK])')
+    re.compile(r'(?:R\.?U\.?T\.?|RUT|ROL)[\s:.]*(\d{1,2}\.\d{3}\.\d{3}-\s*[\dkK])'),
+    re.compile(r'(\d{1,2}\.\d{3}\.\d{3}-\s*[\dkK])')
 ]
 RECEPTOR_KEYWORDS = re.compile(r'SEÑOR\(ES\)|RECEPTOR|CLIENTE', re.I)
 COMPANY_KEYWORDS = re.compile(r'\b(SpA|Spa|LTDA|Ltda|EIRL|S\.A\.)\b', re.I)
