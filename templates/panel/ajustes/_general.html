@@ -1,0 +1,45 @@
+<div class="settings-section">
+  <div class="settings-section-title">Preferencias generales</div>
+  <p class="settings-section-desc">Idioma, zona horaria y tips del sistema.</p>
+
+  <form method="post" class="settings-form">
+    {% csrf_token %}
+
+    <div class="settings-row">
+      <div class="settings-label">Zona horaria</div>
+      <div class="settings-field">
+        <select class="form-select" name="tz">
+          <option value="America/Santiago">America/Santiago</option>
+          <option value="America/Lima">America/Lima</option>
+          <option value="UTC">UTC</option>
+        </select>
+        <div class="settings-help">Se usa para mostrar fechas y horas en el panel.</div>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-label">Idioma</div>
+      <div class="settings-field">
+        <select class="form-select" name="lang">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-label">Tips contextuales</div>
+      <div class="settings-field">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="tips" name="tips" checked>
+          <label class="form-check-label" for="tips">Mostrar ayudas dentro de las pantallas</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-actions">
+      <button class="btn btn-primary" type="submit">Guardar</button>
+      <a href="{% url 'panel:ajustes' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>

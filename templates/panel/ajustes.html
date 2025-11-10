@@ -1,0 +1,204 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block title %}Ajustes{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'panel/css/ajustes.css' %}?v={% now 'U' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ajustes-page">
+  <div class="settings-wrap">
+    <!-- Encabezado -->
+    <div class="mb-4">
+      <h1 class="h3 settings-title">Ajustes</h1>
+      <div class="settings-title-underline"></div>
+      <p class="mt-2 settings-subtitle">
+        {% if seccion == 'general' %}Configura preferencias generales.{% endif %}
+        {% if seccion == 'cuenta' %}Actualiza los datos de tu cuenta.{% endif %}
+        {% if seccion == 'privacidad' %}Gestiona privacidad y seguridad.{% endif %}
+      </p>
+    </div>
+
+    <!-- Navegación tipo "cards" (toda la card clickeable) -->
+    <div class="settings-quick-cards">
+      <a class="sqc-card {% if seccion == 'general' %}active{% endif %}"
+         href="{% url 'panel:ajustes_general' %}"
+         aria-label="Ir a Ajustes Generales">
+        <div class="sqc-icon"><i class="fas fa-sliders-h" aria-hidden="true"></i></div>
+        <h3 class="sqc-title">General</h3>
+        <p class="sqc-desc">Idioma, zona horaria y ayudas del sistema.</p>
+        <span class="sqc-cta">Ver General <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+      </a>
+
+      <a class="sqc-card {% if seccion == 'cuenta' %}active{% endif %}"
+         href="{% url 'panel:ajustes_cuenta' %}"
+         aria-label="Ir a Ajustes de Cuenta">
+        <div class="sqc-icon"><i class="fas fa-user-cog" aria-hidden="true"></i></div>
+        <h3 class="sqc-title">Cuenta</h3>
+        <p class="sqc-desc">Nombre, correo y contraseña.</p>
+        <span class="sqc-cta">Ver Cuenta <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+      </a>
+
+      <a class="sqc-card {% if seccion == 'privacidad' %}active{% endif %}"
+         href="{% url 'panel:ajustes_privacidad' %}"
+         aria-label="Ir a Ajustes de Privacidad">
+        <div class="sqc-icon"><i class="fas fa-shield-alt" aria-hidden="true"></i></div>
+        <h3 class="sqc-title">Privacidad</h3>
+        <p class="sqc-desc">2FA y preferencias de datos.</p>
+        <span class="sqc-cta">Ver Privacidad <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+      </a>
+    </div>
+
+    <!-- Card de contenido -->
+    <div class="card settings-card">
+      <div class="card-body p-4 p-md-5">
+
+        {# ===== CONTENIDO GENERAL ===== #}
+        {% if seccion == 'general' %}
+        <div class="settings-section">
+          <div class="settings-section-title">Preferencias generales</div>
+          <p class="settings-section-desc">Idioma, zona horaria y tips del sistema.</p>
+
+          <form method="post" class="settings-form">
+            {% csrf_token %}
+            <div class="settings-row">
+              <div class="settings-label">Zona horaria</div>
+              <div class="settings-field">
+                <select class="form-select" name="tz">
+                  <option value="America/Santiago">America/Santiago</option>
+                  <option value="America/Lima">America/Lima</option>
+                  <option value="UTC">UTC</option>
+                </select>
+                <div class="settings-help">Se usa para mostrar fechas y horas en el panel.</div>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">Idioma</div>
+              <div class="settings-field">
+                <select class="form-select" name="lang">
+                  <option value="es">Español</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">Tips contextuales</div>
+              <div class="settings-field">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="tips" name="tips" checked>
+                  <label class="form-check-label" for="tips">Mostrar ayudas dentro de las pantallas</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <button class="btn btn-primary" type="submit">Guardar</button>
+              <a href="{% url 'panel:ajustes_general' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+
+        {# ===== CONTENIDO CUENTA ===== #}
+        {% if seccion == 'cuenta' %}
+        <div class="settings-section">
+          <div class="settings-section-title">Datos de la cuenta</div>
+          <p class="settings-section-desc">Actualiza tu información personal y correo.</p>
+
+          <form method="post" class="settings-form">
+            {% csrf_token %}
+            <div class="settings-row">
+              <div class="settings-label">Nombre</div>
+              <div class="settings-field">
+                <input class="form-control" type="text" name="first_name" value="{{ user.first_name }}">
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">Apellido</div>
+              <div class="settings-field">
+                <input class="form-control" type="text" name="last_name" value="{{ user.last_name }}">
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">Email</div>
+              <div class="settings-field">
+                <input class="form-control" type="email" name="email" value="{{ user.email }}">
+                <div class="settings-help">Usado para notificaciones y recuperación de cuenta.</div>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">Contraseña</div>
+              <div class="settings-field">
+                <a href="{% url 'usuarios:password_change' %}" class="btn btn-outline-primary btn-sm">
+                  Cambiar contraseña
+                </a>
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <button class="btn btn-primary" type="submit">Actualizar cuenta</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+
+        {# ===== CONTENIDO PRIVACIDAD ===== #}
+        {% if seccion == 'privacidad' %}
+        <div class="settings-section">
+          <div class="settings-section-title">Privacidad y seguridad</div>
+          <p class="settings-section-desc">Autenticación y preferencias de datos.</p>
+
+          <form method="post" class="settings-form">
+            {% csrf_token %}
+            <div class="settings-row">
+              <div class="settings-label">Autenticación en dos pasos</div>
+              <div class="settings-field">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="twofa" name="twofa">
+                  <label class="form-check-label" for="twofa">Habilitar 2FA</label>
+                </div>
+                <div class="settings-help">Agrega una capa extra de seguridad a tu inicio de sesión.</div>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">Compartir datos anónimos</div>
+              <div class="settings-field">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="share_data" name="share_data">
+                  <label class="form-check-label" for="share_data">Permitir mejoras del producto con datos agregados</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">Zona peligrosa</div>
+              <div class="settings-field">
+                <div class="danger-zone">
+                  <strong>Eliminar mi cuenta</strong>
+                  <p class="mb-2">Esta acción es irreversible. Se borrarán tus datos asociados.</p>
+                  <button type="button" class="btn btn-outline-danger btn-sm">Eliminar cuenta</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <button class="btn btn-primary" type="submit">Guardar privacidad</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

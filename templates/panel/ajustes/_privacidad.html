@@ -1,0 +1,44 @@
+<div class="settings-section">
+  <div class="settings-section-title">Privacidad y seguridad</div>
+  <p class="settings-section-desc">Autenticación y preferencias de datos.</p>
+
+  <form method="post" class="settings-form">
+    {% csrf_token %}
+
+    <div class="settings-row">
+      <div class="settings-label">Autenticación en dos pasos</div>
+      <div class="settings-field">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="twofa" name="twofa">
+          <label class="form-check-label" for="twofa">Habilitar 2FA</label>
+        </div>
+        <div class="settings-help">Agrega una capa extra de seguridad a tu inicio de sesión.</div>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-label">Compartir datos anónimos</div>
+      <div class="settings-field">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="share_data" name="share_data">
+          <label class="form-check-label" for="share_data">Permitir mejoras del producto con datos agregados</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-label">Zona peligrosa</div>
+      <div class="settings-field">
+        <div class="danger-zone">
+          <strong>Eliminar mi cuenta</strong>
+          <p class="mb-2">Esta acción es irreversible. Se borrarán tus datos asociados.</p>
+          <button type="button" class="btn btn-outline-danger btn-sm">Eliminar cuenta</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-actions">
+      <button class="btn btn-primary" type="submit">Guardar privacidad</button>
+    </div>
+  </form>
+</div>

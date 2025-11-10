@@ -254,6 +254,3 @@ SII_BASE_URL = "https://api.sii.cl"   # placeholder para el real
 # =====================================================================
 # Chatbot AI
 # =====================================================================
-import os
-GROQ_API_KEY = "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"
-GROQ_MODEL = "llama-3.3-70b-versatile"
