@@ -1,43 +1,137 @@
-<div class="settings-section">
-  <div class="settings-section-title">Datos de la cuenta</div>
-  <p class="settings-section-desc">Actualiza tu información personal y correo.</p>
+{%load static %}
+<div class="settings-section row">
+  <div class="col-md-4 settings-section-info">
+    <h4>Perfil Público</h4>
+    <p>Esta información se mostrará a otros miembros de tu organización.</p>
+  </div>
+  <div class="col-md-8 settings-section-content">
+    <div class="card">
+      <form method="post" class="settings-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card-body p-4">
 
-  <form method="post" class="settings-form">
-    {% csrf_token %}
+          <div class="settings-row">
+            <div class="settings-label">Foto de perfil</div>
+            <div class="settings-field">
+              <div class="avatar-upload">
+                <img src="{% static 'panel/img/avatar_default.png' %}" alt="Avatar" class="avatar-preview">
+                <div class="avatar-actions">
+                  <label for="avatar-input" class="btn btn-sm btn-outline-primary">Subir foto</label>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Quitar</button>
+                  <input type="file" id="avatar-input" name="avatar" class="d-none" accept="image/png, image/jpeg">
+                  <div class="settings-help">JPG o PNG. Máx 2MB.</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-    <div class="settings-row">
-      <div class="settings-label">Nombre</div>
-      <div class="settings-field">
-        <input class="form-control" type="text" name="first_name" value="{{ user.first_name }}">
+          <div class="settings-row">
+            <div class="settings-label">Nombre</div>
+            <div class="settings-field">
+              <input class="form-control" type="text" name="first_name" value="{{ user.first_name }}">
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-label">Apellido</div>
+            <div class="settings-field">
+              <input class="form-control" type="text" name="last_name" value="{{ user.last_name }}">
+            </div>
+          </div>
+          
+          <div class="settings-row">
+            <div class="settings-label">Cargo o Rol</div>
+            <div class="settings-field">
+              <input class="form-control" type="text" name="job_title" value="{{ user.profile.job_title|default:'' }}" placeholder="Ej: Gerente de Finanzas">
+            </div>
+          </div>
+
+        </div>
+        <div class="card-footer settings-actions">
+          <button class="btn btn-primary" type="submit" name="action_update_profile">Actualizar perfil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="settings-section row">
+  <div class="col-md-4 settings-section-info">
+    <h4>Email</h4>
+    <p>Este email se usa para iniciar sesión, notificaciones y recuperación de cuenta.</p>
+  </div>
+  <div class="col-md-8 settings-section-content">
+    <div class="card">
+      <form method="post" class="settings-form">
+        {% csrf_token %}
+        <div class="card-body p-4">
+          <div class="settings-row">
+            <div class="settings-label">Email</div>
+            <div class="settings-field">
+              <input class="form-control" type="email" name="email" value="{{ user.email }}">
+            </div>
+          </div>
+        </div>
+        <div class="card-footer settings-actions">
+          <button class="btn btn-primary" type="submit" name="action_update_email">Actualizar email</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="settings-section row">
+  <div class="col-md-4 settings-section-info">
+    <h4>Cambiar contraseña</h4>
+    <p>Se recomienda usar una contraseña segura que no estés usando en otro sitio.</p>
+  </div>
+  <div class="col-md-8 settings-section-content">
+    <div class="card">
+      <form method="post" class="settings-form">
+        {% csrf_token %}
+        <div class="card-body p-4">
+          <div class="settings-row">
+            <div class="settings-label">Contraseña actual</div>
+            <div class="settings-field">
+              <input class="form-control" type="password" name="password_current" autocomplete="current-password">
+            </div>
+          </div>
+          
+          <div class="settings-row">
+            <div class="settings-label">Nueva contraseña</div>
+            <div class="settings-field">
+              <input class="form-control" type="password" name="password_new" autocomplete="new-password">
+            </div>
+          </div>
+          
+          <div class="settings-row">
+            <div class="settings-label">Confirmar nueva</div>
+            <div class="settings-field">
+              <input class="form-control" type="password" name="password_confirm" autocomplete="new-password">
+            </div>
+          </div>
+        </div>
+        <div class="card-footer settings-actions">
+          <button class="btn btn-primary" type="submit" name="action_change_password">Cambiar contraseña</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="settings-section row">
+  <div class="col-md-4 settings-section-info">
+    <h4>Eliminar cuenta</h4>
+    <p>Esta acción es irreversible. Se borrarán todos tus datos personales y se te eliminará de todas las organizaciones.</p>
+  </div>
+  <div class="col-md-8 settings-section-content">
+    <div class="card card-danger">
+      <div class="card-body p-4">
+        <p class="mb-3">Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate.</p>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+          Eliminar mi cuenta permanentemente
+        </button>
       </div>
     </div>
-
-    <div class="settings-row">
-      <div class="settings-label">Apellido</div>
-      <div class="settings-field">
-        <input class="form-control" type="text" name="last_name" value="{{ user.last_name }}">
-      </div>
-    </div>
-
-    <div class="settings-row">
-      <div class="settings-label">Email</div>
-      <div class="settings-field">
-        <input class="form-control" type="email" name="email" value="{{ user.email }}">
-        <div class="settings-help">Usado para notificaciones y recuperación de cuenta.</div>
-      </div>
-    </div>
-
-    <div class="settings-row">
-      <div class="settings-label">Contraseña</div>
-      <div class="settings-field">
-        <a href="{% url 'usuarios:password_change' %}" class="btn btn-outline-primary btn-sm">
-          Cambiar contraseña
-        </a>
-      </div>
-    </div>
-
-    <div class="settings-actions">
-      <button class="btn btn-primary" type="submit">Actualizar cuenta</button>
-    </div>
-  </form>
+  </div>
 </div>

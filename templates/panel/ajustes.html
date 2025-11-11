@@ -25,58 +25,7 @@
 
     <div class="row settings-layout">
       
-      <div class="col-md-4 col-lg-3 settings-nav-col">
-        <div class="settings-nav-menu">
-          
-          <a class="settings-nav-link {% if seccion == 'general' %}active{% endif %}"
-             href="{% url 'panel:ajustes_general' %}">
-            <div class="nav-link-icon"><i class="fas fa-sliders-h"></i></div>
-            <div>
-              <div class="nav-link-title">General</div>
-              <div class="nav-link-desc">Idioma, zona horaria y ayudas.</div>
-            </div>
-          </a>
-
-          <a class="settings-nav-link {% if seccion == 'cuenta' %}active{% endif %}"
-             href="{% url 'panel:ajustes_cuenta' %}">
-            <div class="nav-link-icon"><i class="fas fa-user-cog"></i></div>
-            <div>
-              <div class="nav-link-title">Cuenta</div>
-              <div class="nav-link-desc">Nombre, correo y contraseña.</div>
-            </div>
-          </a>
-          
-          <a class="settings-nav-link {% if seccion == 'privacidad' %}active{% endif %}"
-             href="{% url 'panel:ajustes_privacidad' %}">
-            <div class="nav-link-icon"><i class="fas fa-shield-alt"></i></div>
-            <div>
-              <div class="nav-link-title">Privacidad</div>
-              <div class="nav-link-desc">2FA y preferencias de datos.</div>
-            </div>
-          </a>
-          
-          <a class="settings-nav-link {% if seccion == 'empresa' %}active{% endif %}"
-             href="{% url 'panel:ajustes_empresa' %}">
-            <div class="nav-link-icon"><i class="fas fa-building"></i></div>
-            <div>
-              <div class="nav-link-title">Empresa</div>
-              <div class="nav-link-desc">RUT, Razón Social y datos.</div>
-            </div>
-          </a>
-          
-          <a class="settings-nav-link {% if seccion == 'integraciones' %}active{% endif %}"
-             href="{% url 'panel:ajustes_integraciones' %}">
-            <div class="nav-link-icon"><i class="fas fa-cloud"></i></div>
-            <div>
-              <div class="nav-link-title">Integraciones</div>
-              <div class="nav-link-desc">Google Drive, Dropbox y Email.</div>
-            </div>
-          </a>
-
-        </div>
-      </div>
-
-      <div class="col-md-8 col-lg-9 settings-content-col">
+      <div class="col-12 settings-content-col">
         
         {% if messages %}
         <div class="messages-stack mb-3">
@@ -86,38 +35,34 @@
         </div>
         {% endif %}
 
-        <div class="card settings-card">
-          <div class="card-body p-4 p-md-5">
+        {# ===== CONTENIDO GENERAL ===== #}
+        {% if seccion == 'general' %}
+          {% include "panel/ajustes/_general.html" %}
+        {% endif %}
 
-            {# ===== CONTENIDO GENERAL ===== #}
-            {% if seccion == 'general' %}
-              {% include "panel/ajustes/_general.html" %}
-            {% endif %}
+        {# ===== CONTENIDO CUENTA ===== #}
+        {% if seccion == 'cuenta' %}
+          {% include "panel/ajustes/_cuenta.html" %}
+        {% endif %}
 
-            {# ===== CONTENIDO CUENTA ===== #}
-            {% if seccion == 'cuenta' %}
-              {% include "panel/ajustes/_cuenta.html" %}
-            {% endif %}
+        {# ===== CONTENIDO PRIVACIDAD ===== #}
+        {% if seccion == 'privacidad' %}
+          {% include "panel/ajustes/_privacidad.html" %}
+        {% endif %}
+        
+        {# ===== CONTENIDO EMPRESA ===== #}
+        {% if seccion == 'empresa' %}
+          {% include "panel/ajustes/_empresa.html" %}
+        {% endif %}
+        
+        {# ===== CONTENIDO INTEGRACIONES ===== #}
+        {% if seccion == 'integraciones' %}
+          {% include "panel/ajustes/_integraciones.html" %}
+        {% endif %}
 
-            {# ===== CONTENIDO PRIVACIDAD ===== #}
-            {% if seccion == 'privacidad' %}
-              {% include "panel/ajustes/_privacidad.html" %}
-            {% endif %}
-            
-            {# ===== CONTENIDO EMPRESA ===== #}
-            {% if seccion == 'empresa' %}
-              {% include "panel/ajustes/_empresa.html" %}
-            {% endif %}
-            
-            {# ===== CONTENIDO INTEGRACIONES ===== #}
-            {% if seccion == 'integraciones' %}
-              {% include "panel/ajustes/_integraciones.html" %}
-            {% endif %}
-
-          </div>
-        </div>
       </div>
 
-    </div> </div>
+    </div> 
+  </div>
 </div>
 {% endblock %}

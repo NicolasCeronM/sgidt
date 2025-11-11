@@ -1,83 +1,70 @@
-<div class="settings-section">
-  <div class="settings-section-title">Integraciones y Conexiones</div>
-  <p class="settings-section-desc">Sincroniza tus documentos con servicios en la nube.</p>
-
-  <div class="settings-grid">
-
-    <div class="settings-card service-card">
-      <div class="service-inner">
-        <div class="service-art brand-google">
-          <i class="fab fa-google-drive"></i>
-        </div>
-        <h3 class="service-title">Google Drive</h3>
-        <p class="service-text">Sincroniza tus documentos tributarios con Google Drive.</p>
-
-        <div class="service-actions">
-          {% if drive_connected %}
-          <span class="status-badge connected">Conectado</span>
-          <a href="{% url 'integraciones:google_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
-          <a href="{% url 'integraciones:google_files' %}" class="btn btn-small btn-secondary">Ver</a>
-          {% else %}
-          <span class="status-badge disconnected">Desconectado</span>
-          <a href="{% url 'integraciones:google_connect' %}" class="btn btn-small btn-primary">
-            <i class="fab fa-google-drive"></i> Conectar
-          </a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <div class="settings-card service-card">
-      <div class="service-inner">
-        <div class="service-art brand-dropbox">
-          <i class="fab fa-dropbox"></i>
-        </div>
-        <h3 class="service-title">Dropbox</h3>
-        <p class="service-text">Almacena y comparte archivos de tu empresa en Dropbox.</p>
-
-        <div class="service-actions">
-          {% if dropbox_connected %}
-          <span class="status-badge connected">Conectado</span>
-          <a href="{% url 'integraciones:dropbox_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
-          <a href="{% url 'integraciones:dropbox_files' %}" class="btn btn-small btn-secondary">Ver</a>
-          {% else %}
-          <span class="status-badge disconnected">Desconectado</span>
-          <a href="{% url 'integraciones:dropbox_connect' %}" class="btn btn-small btn-primary">
-            <i class="fab fa-dropbox"></i> Conectar
-          </a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
+<div class="settings-section row">
+  <div class="col-md-4 settings-section-info">
+    <h4>Almacenamiento</h4>
+    <p>Sincroniza automáticamente copias de tus documentos con tus servicios en la nube preferidos.</p>
   </div>
+  <div class="col-md-8 settings-section-content">
+    <div class="settings-grid">
 
-  <div class="settings-card feedback-card">
-    <div class="feedback-inner">
-      <div class="feedback-art">
-        <i class="fas fa-comments"></i>
+      <div class="card service-card">
+        <div class="service-inner">
+          <div class="service-art brand-google"><i class="fab fa-google-drive"></i></div>
+          <h3 class="service-title">Google Drive</h3>
+          <p class="service-text">Sincroniza tus documentos tributarios con una carpeta en Google Drive.</p>
+          <div class="service-actions">
+            {% if drive_connected %}
+            <span class="status-badge connected">Conectado</span>
+            <a href="{% url 'integraciones:google_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
+            {% else %}
+            <span class="status-badge disconnected">Desconectado</span>
+            <a href="{% url 'integraciones:google_connect' %}" class="btn btn-small btn-primary">Conectar</a>
+            {% endif %}
+          </div>
+        </div>
       </div>
-      <h3 class="feedback-title">Centro de Feedback</h3>
-      <p class="feedback-text">
-        Aquí verás información útil relacionada a tus integraciones:
-      </p>
 
-      <ul class="feedback-list">
-        {% if drive_connected %}
-        <li><i class="fas fa-check-circle"></i> Google Drive conectado correctamente.</li>
-        {% else %}
-        <li><i class="fas fa-times-circle"></i> Google Drive aún no está conectado.</li>
-        {% endif %}
+      <div class="card service-card">
+        <div class="service-inner">
+          <div class="service-art brand-dropbox"><i class="fab fa-dropbox"></i></div>
+          <h3 class="service-title">Dropbox</h3>
+          <p class="service-text">Almacena y comparte archivos de tu empresa en Dropbox.</p>
+          <div class="service-actions">
+            {% if dropbox_connected %}
+            <span class="status-badge connected">Conectado</span>
+            <a href="{% url 'integraciones:dropbox_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
+            {% else %}
+            <span class="status-badge disconnected">Desconectado</span>
+            <a href="{% url 'integraciones:dropbox_connect' %}" class="btn btn-small btn-primary">Conectar</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
 
-        {% if dropbox_connected %}
-        <li><i class="fas fa-check-circle"></i> Dropbox conectado correctamente.</li>
-        {% else %}
-        <li><i class="fas fa-times-circle"></i> Dropbox aún no está conectado.</li>
-        {% endif %}
-
-        <li><i class="fas fa-lightbulb"></i> Tip: Usa <strong>“Ver”</strong> para explorar tus archivos
-          sincronizados.</li>
-      </ul>
     </div>
   </div>
 </div>
+
+<div class="settings-section row">
+  <div class="col-md-4 settings-section-info">
+    <h4>Automatización</h4>
+    <p>Conecta tu email para importar documentos automáticamente y sincroniza con tu software de contabilidad.</p>
+  </div>
+  <div class="col-md-8 settings-section-content">
+    <div class="settings-grid">
+      <div class="card service-card">
+        <div class="service-inner">
+          <div class="service-art brand-email"><i class="fas fa-envelope"></i></div>
+          <h3 class="service-title">Sincronización IMAP</h3>
+          <p class="service-text">Conecta un buzón de correo para importar DTEs automáticamente.</p>
+          <div class="service-actions">
+            <span class="status-badge disconnected">Desconectado</span>
+            <a href="#" class="btn btn-small btn-primary"><i class="fas fa-cogs"></i> Configurar</a>
+          </div>
+        </div>
+      </div>
+      
+      
+    </div>
+  </div>
+</div>
+

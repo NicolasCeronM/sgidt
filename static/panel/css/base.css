@@ -153,7 +153,15 @@ body {
   flex-direction: column;
   gap: 0.25rem;
   padding: 0 0.5rem;
+  position: relative;
 }
+/* AÑADIDO: footer-nav */
+.sidebar-nav.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .sidebar-link {
   position: relative;
   display: flex;
@@ -220,6 +228,110 @@ body {
 .sidebar-link--danger.is-active::before {
   background: var(--danger);
 }
+
+
+/* =================================== */
+/* AÑADIDO: ESTILOS PARA DROPDOWN
+/* =================================== */
+
+/* Estilos para el <summary> que actúa como link */
+.sidebar-dropdown > summary.sidebar-link {
+  list-style: none; /* Quita el marcador de <details> */
+  cursor: pointer;
+}
+/* Oculta marcador en Firefox */
+.sidebar-dropdown > summary.sidebar-link::marker {
+  display: none;
+}
+/* Oculta marcador en Webkit */
+.sidebar-dropdown > summary.sidebar-link::-webkit-details-marker {
+  display: none;
+}
+
+/* Flecha para el dropdown */
+.sidebar-link.has-submenu::after {
+  content: '\f078'; /* FontAwesome chevron-down */
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  font-size: 0.7rem;
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+/* Flecha rotada cuando está abierto */
+.sidebar-dropdown[open] > summary.sidebar-link.has-submenu::after {
+  transform: rotate(-180deg);
+}
+
+/* Contenedor del submenú */
+.sidebar-submenu {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0.25rem 0 0.5rem;
+  overflow: hidden;
+  /* Animación de despliegue (opcional pero recomendado) */
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease-out;
+}
+.sidebar-submenu > li {
+  overflow: hidden;
+}
+
+/* Estado abierto del submenú */
+.sidebar-dropdown[open] > .sidebar-submenu {
+  grid-template-rows: 1fr;
+}
+
+
+/* Links del submenú */
+.sidebar-submenu a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem 0.6rem 2.75rem; /* Más indentación */
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 12px;
+  transition: background 0.18s ease, color 0.18s ease;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+/* Círculo indicador en submenú */
+.sidebar-submenu a::before {
+  content: '';
+  position: absolute;
+  left: 1.75rem; /* Alineado con el ícono principal */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #64748b; /* slate-500 */
+  transition: all 0.18s ease;
+}
+
+.sidebar-submenu a:hover {
+  background: var(--bg-sidebar-item);
+  color: var(--text-strong);
+}
+.sidebar-submenu a:hover::before {
+  background-color: var(--text-strong);
+}
+
+/* Submenú activo */
+.sidebar-submenu a.active {
+  color: #ecfdf5; /* verde claro */
+  font-weight: 500;
+}
+.sidebar-submenu a.active::before {
+  background-color: var(--brand);
+  width: 6px;
+  height: 6px;
+}
+/* FIN DE ESTILOS DROPDOWN */
+
 
 /* Oculta header móvil y botón cerrar en desktop */
 @media (min-width: 901px) {

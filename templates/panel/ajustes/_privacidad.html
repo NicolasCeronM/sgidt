@@ -1,44 +1,98 @@
-<div class="settings-section">
-  <div class="settings-section-title">Privacidad y seguridad</div>
-  <p class="settings-section-desc">Autenticación y preferencias de datos.</p>
+<div class="settings-section row">
+  <div class="col-md-4 settings-section-info">
+    <h4>Seguridad de la cuenta</h4>
+    <p>Gestiona la autenticación de dos factores y tus preferencias de datos.</p>
+  </div>
+  <div class="col-md-8 settings-section-content">
+    <div class="card">
+      <form method="post" class="settings-form">
+        {% csrf_token %}
+        <div class="card-body p-4">
 
-  <form method="post" class="settings-form">
-    {% csrf_token %}
-
-    <div class="settings-row">
-      <div class="settings-label">Autenticación en dos pasos</div>
-      <div class="settings-field">
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" id="twofa" name="twofa">
-          <label class="form-check-label" for="twofa">Habilitar 2FA</label>
+          <div class="settings-row">
+            <div class="settings-label">
+              Autenticación 2-Pasos (2FA)
+            </div>
+            <div class="settings-field">
+              <p class="settings-help mb-3">Agrega una capa extra de seguridad a tu inicio de sesión usando una app de autenticación (como Google Authenticator).</p>
+              
+              {% if user.profile.two_fa_enabled %}
+                <span class="status-badge connected mb-2">2FA Habilitado</span>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-danger" type="submit" name="action_disable_2fa">Deshabilitar 2FA</button>
+                  <a href="#" class="btn btn-sm btn-outline-secondary">Ver códigos de recuperación</a>
+                </div>
+              {% else %}
+                <span class="status-badge disconnected mb-2">2FA Deshabilitado</span>
+                <button class="btn btn-sm btn-primary" type="submit" name="action_enable_2fa">Habilitar 2FA</button>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="settings-row">
+            <div class="settings-label">Compartir datos anónimos</div>
+            <div class="settings-field">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="share_data" name="share_data" {% if user.profile.share_data %}checked{% endif %}>
+                <label class="form-check-label" for="share_data">Permitir mejoras del producto con datos agregados.</label>
+              </div>
+              <div class="settings-help">Nos ayudas a mejorar SGIDT analizando tendencias de uso de forma 100% anónima.</div>
+            </div>
+          </div>
         </div>
-        <div class="settings-help">Agrega una capa extra de seguridad a tu inicio de sesión.</div>
+        <div class="card-footer settings-actions">
+          <button class="btn btn-primary" type="submit" name="action_update_privacy">Guardar privacidad</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+    
+<div class="settings-section row">
+  <div class="col-md-4 settings-section-info">
+    <h4>Sesiones Activas</h4>
+    <p>Estos son los dispositivos que han iniciado sesión en tu cuenta. Cierra las sesiones que no reconozcas.</p>
+  </div>
+  <div class="col-md-8 settings-section-content">
+    <div class="card">
+      <div class="card-body p-4">
+        <ul class="session-list">
+          <li class="session-item">
+            <div class="session-icon"><i class="fas fa-desktop"></i></div>
+            <div class="session-details">
+              <strong>Chrome en Windows 11</strong>
+              <span>Cerca de Santiago, Chile · <span class="text-success">Sesión actual</span></span>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary ms-auto" disabled>Actual</button>
+          </li>
+          <li class="session-item">
+            <div class="session-icon"><i class="fas fa-mobile-alt"></i></div>
+            <div class="session-details">
+              <strong>App Móvil en iPhone 15</strong>
+              <span>Cerca de Valparaíso, Chile · Hace 2 días</span>
+            </div>
+            <button class="btn btn-sm btn-outline-danger ms-auto">Cerrar sesión</button>
+          </li>
+        </ul>
+      </div>
+      <div class="card-footer settings-actions">
+        <button class="btn btn-danger" type="submit" name="action_logout_all">Cerrar sesión en todos los demás dispositivos</button>
       </div>
     </div>
-
-    <div class="settings-row">
-      <div class="settings-label">Compartir datos anónimos</div>
-      <div class="settings-field">
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="share_data" name="share_data">
-          <label class="form-check-label" for="share_data">Permitir mejoras del producto con datos agregados</label>
-        </div>
+  </div>
+</div>
+    
+<div class="settings-section row">
+  <div class="col-md-4 settings-section-info">
+    <h4>Exportar datos</h4>
+    <p>Puedes solicitar una exportación de todos tus datos personales almacenados en SGIDT.</p>
+  </div>
+  <div class="col-md-8 settings-section-content">
+    <div class="card">
+      <div class="card-body p-4">
+        <p class="settings-help mb-3">Generaremos un archivo ZIP con tus datos y te enviaremos un enlace de descarga a tu email.</p>
+        <button class="btn btn-primary" type="submit" name="action_export_data">Iniciar exportación de datos</cbu>
       </div>
     </div>
-
-    <div class="settings-row">
-      <div class="settings-label">Zona peligrosa</div>
-      <div class="settings-field">
-        <div class="danger-zone">
-          <strong>Eliminar mi cuenta</strong>
-          <p class="mb-2">Esta acción es irreversible. Se borrarán tus datos asociados.</p>
-          <button type="button" class="btn btn-outline-danger btn-sm">Eliminar cuenta</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="settings-actions">
-      <button class="btn btn-primary" type="submit">Guardar privacidad</button>
-    </div>
-  </form>
+  </div>
 </div>
