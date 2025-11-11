@@ -16,7 +16,7 @@
             <div class="settings-field">
               <p class="settings-help mb-3">Agrega una capa extra de seguridad a tu inicio de sesión usando una app de autenticación (como Google Authenticator).</p>
               
-              {% if user.profile.two_fa_enabled %}
+              {% if user.two_fa_enabled %}
                 <span class="status-badge connected mb-2">2FA Habilitado</span>
                 <div class="d-flex gap-2">
                   <button class="btn btn-sm btn-outline-danger" type="submit" name="action_disable_2fa">Deshabilitar 2FA</button>
@@ -33,7 +33,7 @@
             <div class="settings-label">Compartir datos anónimos</div>
             <div class="settings-field">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="share_data" name="share_data" {% if user.profile.share_data %}checked{% endif %}>
+                <input class="form-check-input" type="checkbox" id="share_data" name="share_data" {% if user.share_data %}checked{% endif %}>
                 <label class="form-check-label" for="share_data">Permitir mejoras del producto con datos agregados.</label>
               </div>
               <div class="settings-help">Nos ayudas a mejorar SGIDT analizando tendencias de uso de forma 100% anónima.</div>
@@ -91,7 +91,7 @@
     <div class="card">
       <div class="card-body p-4">
         <p class="settings-help mb-3">Generaremos un archivo ZIP con tus datos y te enviaremos un enlace de descarga a tu email.</p>
-        <button class="btn btn-primary" type="submit" name="action_export_data">Iniciar exportación de datos</cbu>
+        <button class="btn btn-primary" type="submit" name="action_export_data">Iniciar exportación de datos</button>
       </div>
     </div>
   </div>

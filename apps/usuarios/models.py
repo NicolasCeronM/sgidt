@@ -21,6 +21,12 @@ class Usuario(AbstractUser):
     region = models.CharField(max_length=100, blank=True)
     foto = models.ImageField(upload_to=user_avatar_upload_to, blank=True, null=True)
 
+    # --- INICIO: CAMPOS PARA 2FA Y PRIVACIDAD (NUEVO) ---
+    two_fa_enabled = models.BooleanField(default=False)
+    two_fa_secret = models.CharField(max_length=255, null=True, blank=True)
+    share_data = models.BooleanField(default=True) # Campo usado en _privacidad.html
+    # --- FIN: CAMPOS PARA 2FA Y PRIVACIDAD (NUEVO) ---
+
     def __str__(self):
         return f"{self.username} ({self.rut})"
 

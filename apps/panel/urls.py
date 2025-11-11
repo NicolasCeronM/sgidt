@@ -13,7 +13,7 @@ from apps.panel.views.api import DashboardSummaryApi, DashboardLatestDocsApi
 from apps.panel.views.ajustes import (
     AjustesGeneralView, AjustesCuentaView, AjustesPrivacidadView, ajustes_landing,
     AjustesIntegracionesView, AjustesEmpresaView,
-    check_email_sync_status, save_email_sync_config
+    check_email_sync_status, save_email_sync_config, Ajustes2FASetupView
 )
 
 # APIs existentes de documentos
@@ -60,4 +60,7 @@ urlpatterns = [
 
     path("documentos/api/list/", doc_views.documentos_list_api, name="documentos_list_api"),
     path("documentos/api/upload/", doc_views.documentos_upload_api, name="documentos_upload_api"),
+
+    # --- RUTA PARA CONFIGURACIÓN 2FA ---
+    path("ajustes/2fa/setup/", Ajustes2FASetupView.as_view(), name="ajustes_2fa_setup"),
 ]
