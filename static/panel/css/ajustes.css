@@ -426,14 +426,14 @@ body {
 }
 
 .btn-primary {
-  background: var(--color-primary);
+  background: #0cac78;
   color: white;
-  border-color: var(--color-primary);
+  border-color: #0cac78 ;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
+  background: #0cac78;
+  border-color: #0cac78;
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
