@@ -1,0 +1,109 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} · SGIDT{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'panel/css/ajustes.css' %}?v={% now 'U' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ajustes-page">
+  <div class="settings-wrap">
+    
+    <!-- HEADER -->
+    <div class="settings-header">
+      <h1 class="settings-title">{{ page_title }}</h1>
+      <div class="settings-title-underline"></div>
+      <p class="settings-subtitle">
+        Estos códigos te permiten acceder a tu cuenta si pierdes tu dispositivo de autenticación.
+      </p>
+    </div>
+
+    <!-- MENSAJES DE ALERTA -->
+    {% if messages %}
+    <div class="messages-stack mb-4">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- SECCIÓN PRINCIPAL -->
+    <div class="settings-section">
+      
+      <!-- COLUMNA IZQUIERDA - INFO -->
+      <div class="settings-section-info">
+        <h4>
+          <i class="fas fa-key me-2 text-primary"></i>Códigos de Recuperación
+        </h4>
+        <p>
+          Guarda estos códigos en un lugar seguro. Cada código solo puede usarse <strong>una vez</strong>.
+        </p>
+        <p class="settings-help text-danger">
+          <i class="fas fa-exclamation-triangle me-1"></i>Si crees que tus códigos han sido comprometidos, regenéralos de inmediato.
+        </p>
+      </div>
+
+      <!-- COLUMNA DERECHA - CONTENIDO -->
+      <div class="settings-section-content">
+        
+        {% if recovery_codes %}
+          <!-- TARJETA CON CÓDIGOS -->
+          <div class="card">
+            <div class="card-body">
+              <div class="recovery-codes-grid">
+                {% for code in recovery_codes %}
+                <div class="recovery-code-item">
+                  <span class="recovery-code-number">{{ forloop.counter }}</span>
+                  <span class="recovery-code-value">{{ code }}</span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="card-footer settings-actions">
+              <form method="post" class="w-100">
+                {% csrf_token %}
+                <button class="btn btn-primary" type="submit" name="action_regenerate_codes">
+                  <i class="fas fa-sync-alt me-2"></i>Regenerar Códigos
+                </button>
+              </form>
+            </div>
+          </div>
+
+        {% else %}
+          <!-- ESTADO VACÍO -->
+          <div class="card card-empty">
+            <div class="card-body text-center py-5">
+              <i class="fas fa-inbox text-muted mb-3" style="font-size: 3rem; display: block;"></i>
+              <h5 class="text-muted mb-2">Sin Códigos de Recuperación</h5>
+              <p class="text-muted mb-4">
+                No tienes códigos de recuperación activos. Habilita 2FA o regenéralos ahora.
+              </p>
+              <form method="post" class="d-inline-block">
+                {% csrf_token %}
+                <button class="btn btn-primary" type="submit" name="action_regenerate_codes">
+                  <i class="fas fa-plus me-2"></i>Generar Códigos
+                </button>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- BOTÓN VOLVER ATRÁS -->
+        <div class="settings-actions mt-4">
+          <a href="{% url 'panel:ajustes_privacidad' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver Atrás
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

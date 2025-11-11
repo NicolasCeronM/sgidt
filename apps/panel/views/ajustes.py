@@ -16,7 +16,17 @@ from apps.empresas.models import Empresa
 from apps.panel.utils.empresa import get_empresa_activa
 
 # --- NUEVOS IMPORTS PARA 2FA ---
-import pyotp
+import pyotp, secrets
+# ---
+
+def generate_recovery_codes(count=10):
+    """Genera 10 códigos de recuperación únicos de 8 dígitos."""
+    codes = []
+    for _ in range(count):
+        # Genera un número de 8 dígitos y lo formatea como cadena
+        code = '{:08}'.format(secrets.randbelow(10**8))
+        codes.append(code)
+    return codes
 # ---
 
 
@@ -123,17 +133,60 @@ class Ajustes2FASetupView(LoginRequiredMixin, TemplateView): # <--- NUEVA CLASE
             # Verificación exitosa: Guardar el secreto permanentemente y habilitar 2FA
             user.two_fa_secret = secret
             user.two_fa_enabled = True
+            
+
+            # --- NUEVO: Generar y guardar códigos de recuperación ---
+            recovery_codes = generate_recovery_codes()
+            user.two_fa_recovery_codes = recovery_codes
+            # ------------------------------------------------------
+            
             user.save()
 
             if '2fa_secret' in request.session:
                 del request.session['2fa_secret'] # Limpiar secreto temporal
             
             messages.success(request, "¡Autenticación de dos factores habilitada correctamente!")
-            return redirect(reverse("panel:ajustes_privacidad"))
+            return redirect(reverse("panel:ajustes_2fa_recovery"))
         else:
             messages.error(request, "Código de verificación inválido. Inténtalo de nuevo.")
             # Si la verificación falla, volvemos a mostrar el formulario.
             return self.get(request, *args, **kwargs)
+
+# --- NUEVA VISTA PARA MOSTRAR/REGENERAR CÓDIGOS ---
+class Ajustes2FARecoveryView(AjustesBase):
+    """
+    Muestra la lista de códigos de recuperación y maneja su regeneración.
+    """
+    template_name = "panel/ajustes_2fa_recovery.html"
+    seccion = "privacidad"
+    page_title = "Códigos de Recuperación 2FA"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        if not user.two_fa_enabled:
+            messages.warning(self.request, "La autenticación de dos factores no está habilitada.")
+            # Redirigir a privacidad si el 2FA no está activo
+            return redirect(reverse("panel:ajustes_privacidad")) 
+
+        ctx['recovery_codes'] = user.two_fa_recovery_codes
+        return ctx
+    
+    @method_decorator(require_POST)
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        
+        if 'action_regenerate_codes' in request.POST:
+            # Regenerar códigos y guardar
+            recovery_codes = generate_recovery_codes()
+            user.two_fa_recovery_codes = recovery_codes
+            user.save()
+            
+            messages.success(request, "Se han generado 10 nuevos códigos de recuperación. Los códigos anteriores han sido invalidados.")
+            return redirect(reverse("panel:ajustes_2fa_recovery"))
+
+        return redirect(reverse("panel:ajustes_2fa_recovery"))
 
 # --- Vistas movidas desde configuracion.py ---
 

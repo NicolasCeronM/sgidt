@@ -27,6 +27,11 @@ class Usuario(AbstractUser):
     share_data = models.BooleanField(default=True) # Campo usado en _privacidad.html
     # --- FIN: CAMPOS PARA 2FA Y PRIVACIDAD (NUEVO) ---
 
+    # NUEVO: Campo para almacenar los códigos de recuperación (guardados como lista o JSON)
+    # Si NO USAS PostgreSQL, reemplaza ArrayField por JSONField (si Django es >= 3.1)
+    two_fa_recovery_codes = models.JSONField(default=list, null=True, blank=True) # <-- CORRECCIÓN/ADICIÓN
+    # --- FIN: CAMPOS PARA 2FA Y PRIVACIDAD ---
+
     def __str__(self):
         return f"{self.username} ({self.rut})"
 

@@ -20,7 +20,7 @@
                 <span class="status-badge connected mb-2">2FA Habilitado</span>
                 <div class="d-flex gap-2">
                   <button class="btn btn-sm btn-outline-danger" type="submit" name="action_disable_2fa">Deshabilitar 2FA</button>
-                  <a href="#" class="btn btn-sm btn-outline-secondary">Ver códigos de recuperación</a>
+                  <a href="{% url 'panel:ajustes_2fa_recovery' %}" class="btn btn-sm btn-outline-secondary">Ver códigos de recuperación</a>
                 </div>
               {% else %}
                 <span class="status-badge disconnected mb-2">2FA Deshabilitado</span>
