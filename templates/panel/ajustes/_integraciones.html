@@ -1,3 +1,9 @@
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'panel/css/ajustes.css' %}">
+{% endblock %}
+
 <div class="settings-section row">
   <div class="col-md-4 settings-section-info">
     <h4>Almacenamiento</h4>
@@ -62,9 +68,6 @@
           </div>
         </div>
       </div>
-      
-      
     </div>
   </div>
 </div>
-
