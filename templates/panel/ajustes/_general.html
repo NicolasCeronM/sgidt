@@ -5,7 +5,7 @@
   </div>
   <div class="col-md-8 settings-section-content">
     <div class="card">
-      <form method="post" class="settings-form">
+      <form method="post" class="settings-form" action="{% url 'panel:ajustes_general' %}">
         {% csrf_token %}
         <div class="card-body p-4">
           
@@ -13,9 +13,9 @@
             <div class="settings-label">Tema</div>
             <div class="settings-field">
               <select class="form-select" name="theme">
-                <option value="system">Automático (según el sistema)</option>
-                <option value="light">Claro</option>
-                <option value="dark">Oscuro</option>
+                <option value="system" {% if user.profile.theme == 'system' %}selected{% endif %}>Automático (según el sistema)</option>
+                <option value="light" {% if user.profile.theme == 'light' %}selected{% endif %}>Claro</option>
+                <option value="dark" {% if user.profile.theme == 'dark' %}selected{% endif %}>Oscuro</option>
               </select>
             </div>
           </div>
@@ -24,7 +24,7 @@
             <div class="settings-label">Tips contextuales</div>
             <div class="settings-field">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="tips" name="tips" checked>
+                <input class="form-check-input" type="checkbox" id="tips" name="tips" {% if user.profile.tips %}checked{% endif %}>
                 <label class="form-check-label" for="tips">Mostrar ayudas dentro de las pantallas</label>
               </div>
             </div>
@@ -46,7 +46,7 @@
   </div>
   <div class="col-md-8 settings-section-content">
     <div class="card">
-      <form method="post" class="settings-form">
+      <form method="post" class="settings-form" action="{% url 'panel:ajustes_general' %}">
         {% csrf_token %}
         <div class="card-body p-4">
 
@@ -54,8 +54,8 @@
             <div class="settings-label">Idioma</div>
             <div class="settings-field">
               <select class="form-select" name="lang">
-                <option value="es">Español</option>
-                <option value="en">English</option>
+                <option value="es" {% if user.profile.lang == 'es' %}selected{% endif %}>Español</option>
+                <option value="en" {% if user.profile.lang == 'en' %}selected{% endif %}>English</option>
               </select>
             </div>
           </div>
@@ -64,9 +64,9 @@
             <div class="settings-label">Zona horaria</div>
             <div class="settings-field">
               <select class="form-select" name="tz">
-                <option value="America/Santiago">America/Santiago</option>
-                <option value="America/Lima">America/Lima</option>
-                <option value="UTC">UTC</option>
+                <option value="America/Santiago" {% if user.profile.tz == 'America/Santiago' %}selected{% endif %}>America/Santiago</option>
+                <option value="America/Lima" {% if user.profile.tz == 'America/Lima' %}selected{% endif %}>America/Lima</option>
+                <option value="UTC" {% if user.profile.tz == 'UTC' %}selected{% endif %}>UTC</option>
               </select>
             </div>
           </div>
@@ -75,9 +75,9 @@
             <div class="settings-label">Formato de fecha</div>
             <div class="settings-field">
               <select class="form-select" name="date_format">
-                <option value="dd/mm/aaaa">dd/mm/aaaa (31/12/2025)</option>
-                <option value="mm/dd/aaaa">mm/dd/aaaa (12/31/2025)</option>
-                <option value="aaaa-mm-dd">aaaa-mm-dd (2025-12-31)</option>
+                <option value="dd/mm/aaaa" {% if user.profile.date_format == 'dd/mm/aaaa' %}selected{% endif %}>dd/mm/aaaa (31/12/2025)</option>
+                <option value="mm/dd/aaaa" {% if user.profile.date_format == 'mm/dd/aaaa' %}selected{% endif %}>mm/dd/aaaa (12/31/2025)</option>
+                <option value="aaaa-mm-dd" {% if user.profile.date_format == 'aaaa-mm-dd' %}selected{% endif %}>aaaa-mm-dd (2025-12-31)</option>
               </select>
             </div>
           </div>
@@ -86,8 +86,8 @@
             <div class="settings-label">Formato de número</div>
             <div class="settings-field">
               <select class="form-select" name="number_format">
-                <option value=".,">1.000,00 (Coma decimal)</option>
-                <option value=", .">1,000.00 (Punto decimal)</option>
+                <option value=".," {% if user.profile.number_format == '.,' %}selected{% endif %}>1.000,00 (Coma decimal)</option>
+                <option value=", ." {% if user.profile.number_format == ', .' %}selected{% endif %}>1,000.00 (Punto decimal)</option>
               </select>
             </div>
           </div>
@@ -100,3 +100,4 @@
     </div>
   </div>
 </div>
+
