@@ -370,6 +370,19 @@ class AjustesEmpresaView(AjustesBase):
 # INTEGRACIONES
 # ------------------------------
 
+# class AjustesIntegracionesView(AjustesBase):
+#     seccion = "integraciones"
+#     page_title = "Integraciones"
+#
+#     def get_context_data(self, **kwargs):
+#         ctx = super().get_context_data(**kwargs)
+#         u = self.request.user
+#         ctx["drive_connected"] = GoogleDriveCredential.objects.filter(user=u).exists()
+#         ctx["dropbox_connected"] = DropboxCredential.objects.filter(user=u).exists()
+#         return ctx
+
+    
+
 class AjustesIntegracionesView(AjustesBase):
     seccion = "integraciones"
     page_title = "Integraciones"
@@ -377,6 +390,13 @@ class AjustesIntegracionesView(AjustesBase):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         u = self.request.user
+        
+        # 1. Agregamos la empresa al contexto para poder verificar el email_host
+        try:
+            ctx["empresa"] = get_empresa_activa(self.request)
+        except Exception:
+            ctx["empresa"] = None
+
         ctx["drive_connected"] = GoogleDriveCredential.objects.filter(user=u).exists()
         ctx["dropbox_connected"] = DropboxCredential.objects.filter(user=u).exists()
         return ctx

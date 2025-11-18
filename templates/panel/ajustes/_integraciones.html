@@ -20,6 +20,7 @@
           <div class="service-actions">
             {% if drive_connected %}
             <span class="status-badge connected">Conectado</span>
+            <a href="{% url 'integraciones:google_files' %}" class="btn btn-small btn-secondary">Ver</a>
             <a href="{% url 'integraciones:google_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
             {% else %}
             <span class="status-badge disconnected">Desconectado</span>
@@ -37,6 +38,7 @@
           <div class="service-actions">
             {% if dropbox_connected %}
             <span class="status-badge connected">Conectado</span>
+            <a href="{% url 'integraciones:dropbox_files' %}" class="btn btn-small btn-secondary">Ver</a>
             <a href="{% url 'integraciones:dropbox_disconnect' %}" class="btn btn-small btn-danger">Desconectar</a>
             {% else %}
             <span class="status-badge disconnected">Desconectado</span>
@@ -57,14 +59,36 @@
   </div>
   <div class="col-md-8 settings-section-content">
     <div class="settings-grid">
+      
       <div class="card service-card">
         <div class="service-inner">
           <div class="service-art brand-email"><i class="fas fa-envelope"></i></div>
           <h3 class="service-title">Sincronización IMAP</h3>
           <p class="service-text">Conecta un buzón de correo para importar DTEs automáticamente.</p>
+          
           <div class="service-actions">
-            <span class="status-badge disconnected">Desconectado</span>
-            <a href="#" class="btn btn-small btn-primary"><i class="fas fa-cogs"></i> Configurar</a>
+            {% if empresa.email_host %}
+                <span class="status-badge connected">Conectado</span>
+                <a href="javascript:void(0);" 
+                  id="open-email-sync-modal-btn" 
+                  class="btn btn-small btn-secondary"
+                  onclick="document.getElementById('email-sync-modal').style.display='flex';">
+                  <i class="fas fa-cog"></i> Editar
+                </a>
+                <a href="{% url 'panel:email_disconnect' %}" 
+                  class="btn btn-small btn-danger"
+                  onclick="return confirm('¿Estás seguro de que deseas desconectar la cuenta de correo?');">
+                  <i class="fas fa-unlink"></i> Desconectar
+                </a>
+            {% else %}
+                <span class="status-badge disconnected">Desconectado</span>
+                <a href="javascript:void(0);" 
+                  id="open-email-sync-modal-btn" 
+                  class="btn btn-small btn-primary"
+                  onclick="document.getElementById('email-sync-modal').style.display='flex';">
+                  <i class="fas fa-cogs"></i> Configurar
+                </a>
+            {% endif %}
           </div>
         </div>
       </div>

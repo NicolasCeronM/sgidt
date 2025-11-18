@@ -17,7 +17,7 @@ from dropbox.exceptions import ApiError
 
 
 # A dónde volver siempre (ajusta si usas namespace: p.ej. "panel:configuraciones")
-REDIRECT_NAME = "panel:configuraciones"
+REDIRECT_NAME = "panel:ajustes"
 
 # ----- Google Integration -------#
 def _flow():
