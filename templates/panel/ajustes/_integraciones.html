@@ -75,11 +75,6 @@
                   onclick="document.getElementById('email-sync-modal').style.display='flex';">
                   <i class="fas fa-cog"></i> Editar
                 </a>
-                <a href="{% url 'panel:email_disconnect' %}" 
-                  class="btn btn-small btn-danger"
-                  onclick="return confirm('¿Estás seguro de que deseas desconectar la cuenta de correo?');">
-                  <i class="fas fa-unlink"></i> Desconectar
-                </a>
             {% else %}
                 <span class="status-badge disconnected">Desconectado</span>
                 <a href="javascript:void(0);" 
