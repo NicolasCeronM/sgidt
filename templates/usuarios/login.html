@@ -5,6 +5,36 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'usuarios/css/login.css' %}">
+<style>
+    .alert-2fa {
+        background-color: #e3f2fd;
+        color: #0d47a1;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        border: 1px solid #bbdefb;
+    }
+    .alert-2fa i {
+        font-size: 1.5rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    /* Estilo para el checkbox de confiar */
+    .trust-device-option {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        color: #555;
+    }
+    .trust-device-option input {
+        margin-right: 8px;
+        width: 16px;
+        height: 16px;
+        accent-color: #0d47a1;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -24,71 +54,104 @@
     {% csrf_token %}
     {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
 
-    <!-- Usuario -->
-    <div class="form-group">
-      <label for="{{ form.username.id_for_label }}" class="form-label">Correo o RUT</label>
-      <input type="text" id="{{ form.username.auto_id }}" name="{{ form.username.html_name }}" class="form-input"
-        required autocomplete="username" value="{{ form.username.value|default_if_none:'' }}"
-        placeholder="correo@dominio.cl o 12.345.678-9" aria-invalid="{{ form.username.errors|yesno:'true,false' }}">
-      {% if form.username.errors %}
-      <div class="field-error">
-        {% for err in form.username.errors %}
-        {{ err }}{% if not forloop.last %}<br>{% endif %}
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
+    {% if requires_2fa %}
+        <div class="alert-2fa">
+            <i class="fas fa-shield-alt"></i> 
+            <strong>Verificación en dos pasos</strong><br>
+            Ingresa el código de tu aplicación autenticadora.
+        </div>
 
-    <!-- Contraseña -->
-    <div class="form-group password-group">
-      <label for="{{ form.password.id_for_label }}" class="form-label">Contraseña</label>
-      <div class="password-wrapper">
-        <input type="password" id="{{ form.password.auto_id }}" name="{{ form.password.html_name }}" class="form-input"
-          required autocomplete="current-password" placeholder="••••••••"
-          aria-invalid="{{ form.password.errors|yesno:'true,false' }}">
-        <button type="button" class="toggle-password" aria-label="Mostrar u ocultar contraseña">
-          <i class="far fa-eye"></i>
+        <div style="display:none;">
+            {{ form.username.as_hidden }}
+            {{ form.password.as_hidden }}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.otp_code.id_for_label }}" class="form-label">Código de Verificación</label>
+            {{ form.otp_code }}
+            {% if form.otp_code.errors %}
+            <div class="field-error">
+                {% for err in form.otp_code.errors %}
+                {{ err }}{% if not forloop.last %}<br>{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="trust-device-option">
+            {{ form.trust_device }}
+            <label for="{{ form.trust_device.id_for_label }}">{{ form.trust_device.label }}</label>
+        </div>
+
+        <button type="submit" class="btn-login">Verificar Código</button>
+        
+        <div style="text-align:center; margin-top:1rem;">
+            <a href="{% url 'usuarios:login' %}" style="font-size:0.9rem; color:#666;">Cancelar / Volver</a>
+        </div>
+
+    {% else %}
+        <div class="form-group">
+          <label for="{{ form.username.id_for_label }}" class="form-label">Correo o RUT</label>
+          {{ form.username }}
+          {% if form.username.errors %}
+          <div class="field-error">
+            {% for err in form.username.errors %}
+            {{ err }}{% if not forloop.last %}<br>{% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="form-group password-group">
+          <label for="{{ form.password.id_for_label }}" class="form-label">Contraseña</label>
+          <div class="password-wrapper">
+            {{ form.password }}
+            <button type="button" class="toggle-password" aria-label="Mostrar u ocultar contraseña">
+              <i class="far fa-eye"></i>
+            </button>
+          </div>
+          {% if form.password.errors %}
+          <div class="field-error">
+            {% for err in form.password.errors %}
+            {{ err }}{% if not forloop.last %}<br>{% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="form-checkbox">
+          <input type="checkbox" id="remember" name="remember">
+          <label for="remember">Recordarme</label>
+          <a href="{% url 'usuarios:password_reset_request' %}">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button type="submit" class="btn-login">
+          Iniciar Sesión
         </button>
-      </div>
-      {% if form.password.errors %}
-      <div class="field-error">
-        {% for err in form.password.errors %}
-        {{ err }}{% if not forloop.last %}<br>{% endif %}
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
+        
+        <div class="divider"><span>o</span></div>
 
-    <div class="form-checkbox">
-      <input type="checkbox" id="remember" name="remember">
-      <label for="remember">Recordarme</label>
-      <a href="{% url 'usuarios:password_reset_request' %}">¿Olvidaste tu contraseña?</a>
-    </div>
+        <p class="register-link">
+            ¿No tienes cuenta?
+        </p>
+        <p class="register-link" style="margin-top:.5rem;">
+            ¿Eres empresa?
+            <a href="{% url 'empresas:registro_pyme-legacy' %}">Registrar empresa / PYME</a>
+        </p>
 
-    <button type="submit" class="btn-login">
-      Iniciar Sesión
-    </button>
+    {% endif %}
   </form>
-
-  <div class="divider"><span>o</span></div>
-
-  <p class="register-link">
-    ¿No tienes cuenta?
-  </p>
-  <p class="register-link" style="margin-top:.5rem;">
-    ¿Eres empresa?
-    <a href="{% url 'empresas:registro_pyme-legacy' %}">Registrar empresa / PYME</a>
-  </p>
 </div>
 {% endblock %}
 
 {% block js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 <script>
-  // Mostrar/ocultar contraseña
   (function () {
     const toggle = document.querySelector('.toggle-password');
-    const input = document.getElementById('{{ form.password.auto_id }}');
+    const passInputId = '{{ form.password.auto_id }}';
+    const input = document.getElementById(passInputId);
+
     if (toggle && input) {
       toggle.addEventListener('click', () => {
         const isPwd = input.type === 'password';
@@ -97,6 +160,11 @@
           ? '<i class="far fa-eye-slash"></i>'
           : '<i class="far fa-eye"></i>';
       });
+    }
+    
+    const otpInput = document.getElementById('{{ form.otp_code.auto_id }}');
+    if(otpInput) {
+        otpInput.focus();
     }
   })();
 </script>

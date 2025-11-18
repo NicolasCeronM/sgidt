@@ -218,8 +218,12 @@ class AjustesPrivacidadView(AjustesBase):
             user.two_fa_enabled = False
             user.two_fa_secret = None
             user.save()
+            
             messages.success(request, "La autenticación de dos factores ha sido deshabilitada.")
-            return redirect(reverse("panel:ajustes_privacidad"))
+            response = redirect(reverse("panel:ajustes_privacidad"))
+            response.delete_cookie("sgidt_trusted_device")
+            
+            return response
 
         elif "action_update_privacy" in request.POST:
             share_data = "share_data" in request.POST

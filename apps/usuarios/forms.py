@@ -1,4 +1,4 @@
-# usuarios/forms.py
+# apps/usuarios/forms.py
 from __future__ import annotations
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
@@ -7,16 +7,40 @@ from django.core.validators import EmailValidator
 
 Usuario = get_user_model()
 
-#
 class FormularioLogin(AuthenticationForm):
     username = forms.CharField(
         label="Correo o RUT",
         widget=forms.TextInput(attrs={
             "autofocus": True,
-            "placeholder": "tucorreo@dominio.cl o 12345678-9"
+            "placeholder": "tucorreo@dominio.cl o 12345678-9",
+            "class": "form-input"
         })
     )
-    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
+    password = forms.CharField(
+        label="Contraseña", 
+        widget=forms.PasswordInput(attrs={"class": "form-input"})
+    )
+    
+    # Campo para el código 2FA
+    otp_code = forms.CharField(
+        label="Código de Verificación (2FA)",
+        required=False, 
+        widget=forms.TextInput(attrs={
+            "class": "form-input", 
+            "placeholder": "Ingresa el código de 6 dígitos",
+            "autocomplete": "off",
+            "inputmode": "numeric",
+            "pattern": "[0-9]*"
+        })
+    )
+
+    # Campo para recordar el dispositivo
+    trust_device = forms.BooleanField(
+        label="No pedir código en este dispositivo por 30 días",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+    )
+
 
 
 # Formulario para solicitar restablecimiento de contraseña
