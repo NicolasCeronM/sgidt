@@ -25,16 +25,9 @@
 
     <main class="main-content">{% block content %}{% endblock %}</main>
 
-    <!-- CHATBOT -->
-
     <div class="chatbot-modal" id="chatbotModal" aria-hidden="true">
       <div class="chatbot-backdrop" data-close="true"></div>
-      <div
-        class="chatbot-window"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="chatbotTitle"
-      >
+      <div class="chatbot-window" role="dialog" aria-modal="true" aria-labelledby="chatbotTitle">
         <div class="chatbot-header">
           <div class="agent">
             <span class="avatar">🤖</span>
@@ -42,14 +35,7 @@
               <h3 id="chatbotTitle">Asistente de Soporte</h3>
             </div>
           </div>
-          <button
-            class="chatbot-close"
-            type="button"
-            aria-label="Cerrar"
-            data-close="true"
-          >
-            x
-          </button>
+          <button class="chatbot-close" type="button" aria-label="Cerrar" data-close="true">x</button>
         </div>
         <div class="chatbot-body">
           <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
@@ -58,20 +44,9 @@
             </div>
           </div>
           <div id="chatSuggest"></div>
-          <form
-            class="chatbot-input"
-            id="chatbotForm"
-            data-endpoint="{% url 'panel:chatbot_ask' %}"
-          >
+          <form class="chatbot-input" id="chatbotForm" data-endpoint="{% url 'panel:chatbot_ask' %}">
             {% csrf_token %}
-            <input
-              type="text"
-              id="chatbotText"
-              class="form-input"
-              placeholder="Escribe tu mensaje…"
-              autocomplete="off"
-              required
-            />
+            <input type="text" id="chatbotText" class="form-input" placeholder="Escribe tu mensaje…" autocomplete="off" required />
             <button class="btn btn-primary" type="submit" aria-label="Enviar">
               <i class="fas fa-paper-plane"></i>
             </button>
@@ -80,55 +55,23 @@
       </div>
     </div>
 
-    <!-- CALCULADORA IVA -->
-
-    <div
-      class="chatbot-modal"
-      id="civaModal"
-      aria-hidden="true"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="civaTitle"
-    >
+    <div class="chatbot-modal" id="civaModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="civaTitle">
       <div class="chatbot-backdrop" data-close="true"></div>
       <div class="civa-window">
         <header class="civa-header">
           <i class="fas fa-calculator civa-icon" aria-hidden="true"></i>
           <h3 id="civaTitle">Calculadora de IVA</h3>
-          <button
-            class="civa-close"
-            type="button"
-            aria-label="Cerrar calculadora"
-            data-close="true"
-          >
-            ×
-          </button>
+          <button class="civa-close" type="button" aria-label="Cerrar calculadora" data-close="true">×</button>
         </header>
         <main class="civa-body">
           <form id="civaForm" autocomplete="off">
             <div class="form-group">
               <label for="expression">Monto o Expresión</label>
-              <input
-                id="expression"
-                name="expression"
-                type="text"
-                class="form-input"
-                placeholder="Ej: 10000 + 2500"
-                required
-              />
+              <input id="expression" name="expression" type="text" class="form-input" placeholder="Ej: 10000 + 2500" required />
             </div>
             <div class="form-group">
               <label for="civaRate">Tasa de IVA (%)</label>
-              <input
-                id="civaRate"
-                name="rate"
-                type="number"
-                step="0.01"
-                min="0"
-                class="form-input"
-                placeholder="19"
-                value="19"
-              />
+              <input id="civaRate" name="rate" type="number" step="0.01" min="0" class="form-input" placeholder="19" value="19" />
             </div>
             <div class="form-group">
               <label for="civaMode">Modo de cálculo</label>
@@ -150,32 +93,19 @@
     </div>
 
     <div class="fab-container">
-      <button
-        id="fab-main"
-        class="fab"
-        aria-label="Abrir menú de herramientas"
-        title="Herramientas"
-      >
+      <button id="fab-main" class="fab" aria-label="Abrir menú de herramientas" title="Herramientas">
         <i class="fas fa-plus"></i>
       </button>
       <div class="fab-options">
         <div class="fab-option">
           <span class="fab-label">Asistente</span>
-          <button
-            id="fab-chat-trigger"
-            class="fab-mini"
-            aria-label="Asistente de Soporte"
-          >
+          <button id="fab-chat-trigger" class="fab-mini" aria-label="Asistente de Soporte">
             <i class="fas fa-comment-dots"></i>
           </button>
         </div>
         <div class="fab-option">
           <span class="fab-label">Calculadora</span>
-          <button
-            id="fab-calc-trigger"
-            class="fab-mini"
-            aria-label="Calculadora de IVA"
-          >
+          <button id="fab-calc-trigger" class="fab-mini" aria-label="Calculadora de IVA">
             <i class="fas fa-calculator"></i>
           </button>
         </div>
@@ -183,63 +113,53 @@
     </div>
 
     <div id="email-sync-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-        <button id="email-sync-close" class="modal-close-btn" type="button" aria-label="Cerrar">×</button>
-        <h2 class="modal-title">¡Potencia tu Productividad!</h2>
-        <p class="modal-description">
-            Conecta tu correo y deja que SGIDT trabaje por ti.
-            <strong>Detectaremos y procesaremos tus facturas automáticamente</strong>, ahorrándote horas de trabajo manual.
-        </p>
+      <div class="modal-content">
+          <button id="email-sync-close" class="modal-close-btn" type="button" aria-label="Cerrar">×</button>
+          <h2 class="modal-title">¡Potencia tu Productividad!</h2>
+          <p class="modal-description">
+              Conecta tu correo y deja que SGIDT trabaje por ti.
+              <strong>Detectaremos y procesaremos tus facturas automáticamente</strong>, ahorrándote horas de trabajo manual.
+          </p>
 
-        <form id="email-sync-form">
-            <div class="form-group">
-                <label for="email-options">Cuenta de Correo</label>
-                <select id="email-options" name="email_user" class="form-control">
-                    <option value="{{ user.email }}">{{ user.email }} (Cuenta de usuario)</option>
-                    <option value="other">Usar otra dirección de correo</option>
-                </select>
-                <input type="email" id="other-email" name="other_email_user" class="form-control" style="display: none; margin-top: 10px;" placeholder="Ingresa tu otro correo">
-            </div>
+          <form id="email-sync-form">
+              <div class="form-group">
+                  <label for="email-options">Cuenta de Correo</label>
+                  <select id="email-options" name="email_user" class="form-control">
+                      <option value="{{ user.email }}">{{ user.email }} (Cuenta de usuario)</option>
+                      <option value="other">Usar otra dirección de correo</option>
+                  </select>
+                  <input type="email" id="other-email" name="other_email_user" class="form-control" style="display: none; margin-top: 10px;" placeholder="Ingresa tu otro correo">
+              </div>
 
-            <div class="form-group">
-                <label for="provider">Proveedor de Correo</label>
-                <select id="provider" name="provider" class="form-control">
-                    <option value="">Selecciona...</option>
-                    <option value="gmail">Gmail</option>
-                    <option value="outlook">Outlook / Office 365</option>
-                </select>
-            </div>
+              <div class="form-group">
+                  <label for="provider">Proveedor de Correo</label>
+                  <select id="provider" name="provider" class="form-control">
+                      <option value="">Selecciona...</option>
+                      <option value="gmail">Gmail</option>
+                      <option value="outlook">Outlook / Office 365</option>
+                  </select>
+              </div>
 
-            <div class="form-group">
-                <label for="password">Contraseña de Aplicación</label>
-                <input type="password" id="password" name="password" class="form-control" required>
-                <small class="form-text">Por seguridad, te recomendamos crear una <a href="https://support.google.com/accounts/answer/185833?hl=es" target="_blank">contraseña de aplicación</a>.</small>
-            </div>
+              <div class="form-group">
+                  <label for="password">Contraseña de Aplicación</label>
+                  <input type="password" id="password" name="password" class="form-control" required>
+                  <small class="form-text">Por seguridad, te recomendamos crear una <a href="https://support.google.com/accounts/answer/185833?hl=en" target="_blank">contraseña de aplicación</a>.</small>
+              </div>
 
-            <div class="modal-actions">
-                <button id="email-sync-skip" type="button" class="btn btn-secondary">Omitir por ahora</button>
-                <button type="submit" class="btn btn-primary">Conectar mi Correo</button>
-            </div>
-        </form>
+              <div class="modal-actions">
+                  <button id="email-sync-skip" type="button" class="btn btn-secondary">Omitir por ahora</button>
+                  <button type="submit" class="btn btn-primary">Conectar mi Correo</button>
+              </div>
+          </form>
+      </div>
     </div>
-</div>
-<script src="{% static 'panel/js/email_sync_setup.js' %}"></script>
 
-</body>
-</html>
-
+    <script src="{% static 'panel/js/email_sync_setup.js' %}"></script>
     <script src="{% static 'ayuda/js/chatbot.js' %}?v=7"></script>
     <script src="{% static 'configuraciones/js/configuraciones.js' %}?v=1"></script>
     <script src="{% static 'panel/js/app.js' %}"></script>
 
     {% block js %}{% endblock %}
-    {% block extra_js %}
-{% endblock %}
-
-
-
-
-</body>
-</html>
+    {% block extra_js %}{% endblock %}
   </body>
 </html>
