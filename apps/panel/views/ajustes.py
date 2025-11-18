@@ -303,7 +303,23 @@ class Ajustes2FARecoveryView(AjustesBase):
             return redirect(reverse("panel:ajustes_2fa_recovery"))
 
         return redirect(reverse("panel:ajustes_2fa_recovery"))
-
+    
+@require_POST
+@login_required
+def desconectar_email_sync(request):
+    """Elimina la configuración de sincronización de email de la empresa activa."""
+    empresa = get_empresa_activa(request)
+    if empresa:
+        empresa.email_host = ""      
+        empresa.email_user = ""      
+        empresa.email_password = ""  
+        empresa.email_port = 993     
+        empresa.email_last_check = None 
+        empresa.save()
+        messages.success(request, "Sincronización de correo desconectada correctamente.")
+    else:
+        messages.error(request, "No se encontró una empresa activa.")
+    return redirect("panel:ajustes_integraciones")
 
 # ------------------------------
 # EMPRESA

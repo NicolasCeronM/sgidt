@@ -13,7 +13,8 @@ from apps.panel.views.api import DashboardSummaryApi, DashboardLatestDocsApi
 from apps.panel.views.ajustes import (
     AjustesGeneralView, AjustesCuentaView, AjustesPrivacidadView, ajustes_landing,
     AjustesIntegracionesView, AjustesEmpresaView,
-    check_email_sync_status, save_email_sync_config, Ajustes2FASetupView, Ajustes2FARecoveryView
+    check_email_sync_status, save_email_sync_config, Ajustes2FASetupView, Ajustes2FARecoveryView,
+    desconectar_email_sync
 )
 
 # APIs existentes de documentos
@@ -64,5 +65,8 @@ urlpatterns = [
     # --- RUTA PARA CONFIGURACIÓN 2FA ---
     path("ajustes/2fa/setup/", Ajustes2FASetupView.as_view(), name="ajustes_2fa_setup"),
     path("ajustes/2fa/recovery/", Ajustes2FARecoveryView.as_view(), name="ajustes_2fa_recovery"),
+
+    # --- RUTA PARA DESCONECTAR SINCRONIZACIÓN DE EMAIL ---
+    path("api/disconnect-email-sync/", desconectar_email_sync, name="desconectar_email"),
 
 ]

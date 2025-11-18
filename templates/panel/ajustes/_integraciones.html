@@ -66,22 +66,31 @@
           <h3 class="service-title">Sincronización IMAP</h3>
           <p class="service-text">Conecta un buzón de correo para importar DTEs automáticamente.</p>
           
-          <div class="service-actions">
+          <div class="service-actions" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
             {% if empresa.email_host %}
                 <span class="status-badge connected">Conectado</span>
+                
                 <a href="javascript:void(0);" 
-                  id="open-email-sync-modal-btn" 
-                  class="btn btn-small btn-secondary"
-                  onclick="document.getElementById('email-sync-modal').style.display='flex';">
-                  <i class="fas fa-cog"></i> Editar
+                   id="open-email-sync-modal-btn" 
+                   class="btn btn-small btn-secondary"
+                   onclick="document.getElementById('email-sync-modal').style.display='flex';">
+                   <i class="fas fa-cog"></i> Editar
                 </a>
+
+                <form method="post" action="{% url 'panel:desconectar_email' %}" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas detener la sincronización?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-small btn-danger">
+                    <i class="fas fa-unlink"></i> Desconectar
+                  </button>
+                </form>
+
             {% else %}
                 <span class="status-badge disconnected">Desconectado</span>
                 <a href="javascript:void(0);" 
-                  id="open-email-sync-modal-btn" 
-                  class="btn btn-small btn-primary"
-                  onclick="document.getElementById('email-sync-modal').style.display='flex';">
-                  <i class="fas fa-cogs"></i> Configurar
+                   id="open-email-sync-modal-btn" 
+                   class="btn btn-small btn-primary"
+                   onclick="document.getElementById('email-sync-modal').style.display='flex';">
+                   <i class="fas fa-cogs"></i> Configurar
                 </a>
             {% endif %}
           </div>
