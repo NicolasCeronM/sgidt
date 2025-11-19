@@ -19,7 +19,7 @@ urlpatterns = [
     path("password/nueva/", pr_views.password_reset_set, name="password_reset_set"),
 
     # Configuración de Administrador
-    path("config/admin/", ConfiguracionAdministradorView.as_view(), name="config_admin"),
+    #path("config/admin/", ConfiguracionAdministradorView.as_view(), name="config_admin"),
 
     # === Cambio de contraseña (usuario autenticado) ===
     path(
