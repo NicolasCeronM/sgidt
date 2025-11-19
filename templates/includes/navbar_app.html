@@ -53,23 +53,23 @@
         <i class="fas fa-chart-line" aria-hidden="true"></i><span>Reportes</span>
       </a>
     </div>
-
+    
     <div class="sidebar-sep"></div>
-
-    <!-- GRUPO: Administración -->
+    <!--
+     GRUPO: Administración 
     <div class="sidebar-group">
       <p class="sidebar-group-title">Administración</p>
 
       <a href="{% url 'panel:validaciones' %}" class="sidebar-link">
         <i class="fas fa-circle-check" aria-hidden="true"></i><span>Validación SII</span>
-      </a>
+      </a>-->
 
       <!-- <a href="{% url 'panel:ajustes' %}" class="sidebar-link">
         <i class="fas fa-sliders" aria-hidden="true"></i><span>Configuración</span>
-      </a> -->
+      </a> 
     </div>
 
-    <div class="sidebar-sep"></div>
+    <div class="sidebar-sep"></div>-->
 
     <!-- GRUPO: Soporte -->
     <div class="sidebar-group">
@@ -81,12 +81,12 @@
         <span>Ajustes</span>
       </summary>
       <ul class="sidebar-submenu">
-        <li>
+        <!--<li>
           <a href="{% url 'panel:ajustes_general' %}" 
              class="{% if request.path == '/panel/ajustes/general/' %}active{% endif %}">
             General
           </a>
-        </li>
+        </li>-->
         <li>
           <a href="{% url 'panel:ajustes_cuenta' %}"
              class="{% if request.path == '/panel/ajustes/cuenta/' %}active{% endif %}">
@@ -94,15 +94,15 @@
           </a>
         </li>
         <li>
-          <a href="{% url 'panel:ajustes_privacidad' %}"
-             class="{% if request.path == '/panel/ajustes/privacidad/' %}active{% endif %}">
-            Privacidad
-          </a>
-        </li>
-        <li>
           <a href="{% url 'panel:ajustes_empresa' %}"
              class="{% if request.path == '/panel/ajustes/empresa/' %}active{% endif %}">
             Empresa
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'panel:ajustes_privacidad' %}"
+             class="{% if request.path == '/panel/ajustes/privacidad/' %}active{% endif %}">
+            Privacidad
           </a>
         </li>
         <li>
