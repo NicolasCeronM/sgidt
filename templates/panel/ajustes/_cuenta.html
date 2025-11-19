@@ -55,27 +55,3 @@
   </div>
 </div>
 
-<div class="settings-section row">
-  <div class="col-md-4 settings-section-info">
-    <h4>Email</h4>
-    <p>Este email se usa para iniciar sesión, notificaciones y recuperación de cuenta.</p>
-  </div>
-  <div class="col-md-8 settings-section-content">
-    <div class="card">
-      <form method="post" class="settings-form">
-        {% csrf_token %}
-        <div class="card-body p-4">
-          <div class="settings-row">
-            <div class="settings-label">Email</div>
-            <div class="settings-field">
-              <input class="form-control" type="email" name="email" value="{{ user.email }}">
-            </div>
-          </div>
-        </div>
-        <div class="card-footer settings-actions">
-          <button class="btn btn-primary" type="submit" name="action_update_email">Actualizar email</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
