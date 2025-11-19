@@ -1,4 +1,4 @@
-{%load static %}
+{% load static %}
 <div class="settings-section row">
   <div class="col-md-4 settings-section-info">
     <h4>Perfil de la Empresa</h4>
@@ -10,64 +10,76 @@
         {% csrf_token %}
         <div class="card-body p-4">
         
+          <!-- Logo de la empresa -->
           <div class="settings-row">
             <div class="settings-label">Logo de la Empresa</div>
             <div class="settings-field">
               <div class="logo-upload">
-                <img src="{% static 'panel/img/logo_default.png' %}" alt="Logo" class="logo-preview">
+                {% if empresa and empresa.logo %}
+                  <img src="{{ empresa.logo.url }}" alt="Logo de {{ empresa.razon_social }}" class="logo-preview">
+                {% else %}
+                  <img src="{% static 'panel/img/logo_default.png' %}" alt="Logo" class="logo-preview">
+                {% endif %}
                 <div class="avatar-actions">
                   <label for="logo-input" class="btn btn-sm btn-outline-primary">Subir logo</label>
-                  <button type="button" class="btn btn-sm btn-outline-secondary">Quitar</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" id="logo-remove-btn">Quitar</button>
                   <input type="file" id="logo-input" name="company_logo" class="d-none" accept="image/png, image/jpeg">
+                  <input type="hidden" name="remove_logo" id="remove-logo-input" value="0">
                   <div class="settings-help">Se usará en facturas y correos.</div>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- RUT -->
           <div class="settings-row">
             <div class="settings-label">RUT</div>
             <div class="settings-field">
-              <input class="form-control" type="text" name="company_rut" value="{{ empresa.rut|default_if_none:'' }}" placeholder="76.123.456-7">
+              <input class="form-control" type="text" name="company_rut"
+                     value="{{ empresa.rut|default_if_none:'' }}" placeholder="76.123.456-7">
             </div>
           </div>
 
+          <!-- Razón Social -->
           <div class="settings-row">
             <div class="settings-label">Razón Social</div>
             <div class="settings-field">
-              <input class="form-control" type="text" name="company_name" value="{{ empresa.razon_social|default_if_none:'' }}" placeholder="Mi Empresa SpA">
+              <input class="form-control" type="text" name="company_name"
+                     value="{{ empresa.razon_social|default_if_none:'' }}" placeholder="Empresa de prueba">
             </div>
           </div>
-          
+
+          <!-- Email -->
           <div class="settings-row">
             <div class="settings-label">Email de Contacto</div>
             <div class="settings-field">
-              <input class="form-control" type="email" name="company_email" value="{{ empresa.email|default_if_none:'' }}" placeholder="contacto@empresa.cl">
+              <input class="form-control" type="email" name="company_email"
+                     value="{{ empresa.email|default_if_none:'' }}" placeholder="contacto@empresa.cl">
             </div>
           </div>
-          
+
+          <!-- Teléfono -->
           <div class="settings-row">
             <div class="settings-label">Teléfono</div>
             <div class="settings-field">
-              <input class="form-control" type="tel" name="company_phone" value="{{ empresa.telefono|default_if_none:'' }}" placeholder="+56 9 1234 5678">
+              <input class="form-control" type="text" name="company_phone"
+                     value="{{ empresa.telefono|default_if_none:'' }}" placeholder="+56 9 1234 5678">
             </div>
           </div>
-          
+
+          <!-- Dirección -->
           <div class="settings-row">
             <div class="settings-label">Dirección</div>
             <div class="settings-field">
-              <input class="form-control mb-2" type="text" name="company_address_1" value="{{ empresa.direccion_1|default:'' }}" placeholder="Calle Falsa 123, Oficina 45">
-              <div class="row g-2">
-                <div class="col-md-6">
-                  <input class="form-control" type="text" name="company_city" value="{{ empresa.ciudad|default:'' }}" placeholder="Ciudad">
-                </div>
-                <div class="col-md-6">
-                  <input class="form-control" type="text" name="company_country" value="{{ empresa.pais|default:'Chile' }}" placeholder="País">
-                </div>
-              </div>
+              <input class="form-control mb-2" type="text" name="company_address_1"
+              value="{{ empresa.direccion|default_if_none:'' }}" placeholder="Calle Falsa 123, Oficina 45">
+              <input class="form-control mb-2" type="text" name="company_city"
+              value="{{ empresa.comuna|default_if_none:'' }}" placeholder="Ciudad">
+              <input class="form-control" type="text" name="company_country"
+               value="{{ empresa.region|default_if_none:'' }}" placeholder="Chile">
             </div>
           </div>
-        
+
         </div>
         <div class="card-footer settings-actions">
           <button class="btn btn-primary" type="submit" name="action_update_company">Guardar Empresa</button>
@@ -77,58 +89,32 @@
   </div>
 </div>
 
-<!-- <div class="settings-section row">
-  <div class="col-md-4 settings-section-info">
-    <h4>Miembros del Equipo</h4>
-    <p>Gestiona quién tiene acceso a esta empresa y qué permisos tienen.</p>
-  </div>
-  <div class="col-md-8 settings-section-content">
-    <div class="card">
-      <div class="card-header p-4 d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Usuarios con acceso</h5>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inviteUserModal">
-          <i class="fas fa-plus me-1"></i> Invitar
-        </button>
-      </div>
-      <div class="table-responsive">
-        <table class="table settings-table mb-0">
-          <thead>
-            <tr>
-              <th class="ps-4">Nombre</th>
-              <th>Rol</th>
-              <th class="pe-4">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="ps-4">
-                <div class="d-flex align-items-center">
-                  <img src="{% static 'panel/img/avatar_default.png' %}" class="avatar-xs me-2">
-                  <div>
-                    <strong>{{ user.first_name }} {{ user.last_name }} (Tú)</strong>
-                    <div class="text-muted">{{ user.email }}</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="badge bg-primary-subtle text-primary-emphasis">Propietario</span></td>
-              <td class="pe-4"><a href="#" class="btn btn-sm btn-outline-secondary" disabled>Gestionar</a></td>
-            </tr>
-            <tr>
-              <td class="ps-4">
-                <div class="d-flex align-items-center">
-                  <img src="{% static 'panel/img/avatar_2_default.png' %}" class="avatar-xs me-2">
-                  <div>
-                    <strong>Ana Contreras</strong>
-                    <div class="text-muted">ana.contabilidad@empresa.cl</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="badge bg-secondary-subtle text-secondary-emphasis">Miembro</span></td>
-              <td class="pe-4"><a href="#" class="btn btn-sm btn-outline-secondary">Gestionar</a></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div> -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const logoInput = document.getElementById("logo-input");
+    const logoPreview = document.querySelector(".logo-preview");
+    const removeBtn = document.getElementById("logo-remove-btn");
+    const removeInput = document.getElementById("remove-logo-input");
+    const defaultLogoSrc = "{% static 'panel/img/logo_default.png' %}";
+
+    // Previsualizar logo nuevo
+    if (logoInput) {
+      logoInput.addEventListener("change", function (e) {
+        const [file] = e.target.files;
+        if (file) {
+          logoPreview.src = URL.createObjectURL(file);
+          removeInput.value = "0";  
+        }
+      });
+    }
+
+    // Quitar logo (frontend + marcar para backend)
+    if (removeBtn) {
+      removeBtn.addEventListener("click", function () {
+        logoPreview.src = defaultLogoSrc;
+        logoInput.value = "";
+        removeInput.value = "1";   
+      });
+    }
+  });
+</script>

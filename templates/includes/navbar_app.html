@@ -14,10 +14,15 @@
   <!-- Perfil de usuario -->
   <a href="#" class="sidebar-profile" aria-label="Perfil SGIDT" style="text-decoration: none; ">
     <div class="avatar" aria-hidden="true">
-      {% if empresa.logo %}
-      <img src="{{ empresa.logo.url }}" alt="Logo de {{ empresa.razon_social }}" class="avatar-logo">
+      {% if user.foto %}
+        <!-- Foto de perfil del usuario -->
+        <img src="{{ user.foto.url }}" alt="{{ user.first_name }} {{ user.last_name }}" class="avatar-logo">
+      {% elif empresa and empresa.logo %}
+        <!-- Si el usuario no tiene foto, usamos el logo de la empresa (cuando exista en contexto) -->
+        <img src="{{ empresa.logo.url }}" alt="Logo de {{ empresa.razon_social }}" class="avatar-logo">
       {% else %}
-      <i class="fas fa-user-circle"></i>
+        <!-- Fallback -->
+        <i class="fas fa-user-circle"></i>
       {% endif %}
     </div>
     <div class="profile-meta" style="text-decoration: none; color: white; ">
@@ -25,9 +30,6 @@
       <span class="profile-role">Administrador</span>
     </div>
   </a>
-
-
-
 
   <div class="sidebar-sep"></div>
 

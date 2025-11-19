@@ -408,13 +408,20 @@ class AjustesEmpresaView(AjustesBase):
             empresa.razon_social = company_name
             empresa.email = company_email
             empresa.telefono = company_phone
-            empresa.direccion_1 = company_address
-            empresa.ciudad = company_city
-            empresa.pais = company_country
+            empresa.direccion = company_address
+            empresa.comuna = company_city
+            empresa.region = company_country
 
             if company_logo:
                 logo_path = handle_uploaded_file(company_logo, "logos", f"empresa_{empresa.id}")
                 empresa.logo = logo_path
+            elif "remove_logo" in request.POST:
+                if empresa.logo:
+                    try:
+                        empresa.logo.delete(save=False)
+                    except Exception:
+                        pass
+                empresa.logo = None
 
             empresa.save()
             messages.success(request, "Datos de la empresa guardados correctamente.")
@@ -514,4 +521,5 @@ def save_email_sync_config(request):
         return JsonResponse({"status": "success", "message": "¡Configuración guardada correctamente!"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 
