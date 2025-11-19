@@ -2,11 +2,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.sessions.models import Session
 
 def user_avatar_upload_to(instance, filename):
     return f"usuarios/{instance.id or 'tmp'}/{filename}"
 
-# Modelo personalizado de usuario
 class Usuario(AbstractUser):
     TIPO_CONTRIBUYENTE = (
         ("empresa", "Empresa"),
@@ -16,21 +16,13 @@ class Usuario(AbstractUser):
     email = models.EmailField(unique=True)
     rut = models.CharField(max_length=12, unique=True)
     telefono = models.CharField(max_length=20, blank=True)
-    # opcional: comuna, región
     comuna = models.CharField(max_length=100, blank=True)
     region = models.CharField(max_length=100, blank=True)
     foto = models.ImageField(upload_to=user_avatar_upload_to, blank=True, null=True)
-
-    # --- INICIO: CAMPOS PARA 2FA Y PRIVACIDAD (NUEVO) ---
     two_fa_enabled = models.BooleanField(default=False)
     two_fa_secret = models.CharField(max_length=255, null=True, blank=True)
-    share_data = models.BooleanField(default=True) # Campo usado en _privacidad.html
-    # --- FIN: CAMPOS PARA 2FA Y PRIVACIDAD (NUEVO) ---
-
-    # NUEVO: Campo para almacenar los códigos de recuperación (guardados como lista o JSON)
-    # Si NO USAS PostgreSQL, reemplaza ArrayField por JSONField (si Django es >= 3.1)
-    two_fa_recovery_codes = models.JSONField(default=list, null=True, blank=True) # <-- CORRECCIÓN/ADICIÓN
-    # --- FIN: CAMPOS PARA 2FA Y PRIVACIDAD ---
+    share_data = models.BooleanField(default=True) 
+    two_fa_recovery_codes = models.JSONField(default=list, null=True, blank=True) 
 
     def __str__(self):
         return f"{self.username} ({self.rut})"
@@ -58,3 +50,17 @@ class PasswordResetCode(models.Model):
 
     def __str__(self):
         return f"Reset {self.user} - {self.code}"
+    
+# Modelo para manejar sesiones de usuario y dispositivos
+class SesionUsuario(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sesiones")
+    session = models.OneToOneField(Session, on_delete=models.CASCADE)
+    ip = models.GenericIPAddressField()
+    user_agent = models.CharField(max_length=255)
+    device_name = models.CharField(max_length=255, default="Dispositivo desconocido")
+    device_type = models.CharField(max_length=50, default="unknown") # 'mobile', 'pc', 'tablet'
+    last_activity = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.device_name}"

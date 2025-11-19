@@ -1,4 +1,7 @@
-<div class="settings-section row">
+{% load static %}
+
+<!-- SECCIÓN 1: SEGURIDAD DE LA CUENTA (2FA Y DATOS) -->
+<div class="settings-section row mb-5">
   <div class="col-md-4 settings-section-info">
     <h4>Seguridad de la cuenta</h4>
     <p>Gestiona la autenticación de dos factores y tus preferencias de datos.</p>
@@ -9,45 +12,51 @@
         {% csrf_token %}
         <div class="card-body p-4">
 
-          <div class="settings-row">
-            <div class="settings-label">
+          <!-- 2FA Setting -->
+          <div class="settings-row mb-4 pb-4 border-bottom">
+            <div class="settings-label fw-bold mb-2">
               Autenticación 2-Pasos (2FA)
             </div>
             <div class="settings-field">
-              <p class="settings-help mb-3">Agrega una capa extra de seguridad a tu inicio de sesión usando una app de autenticación (como Google Authenticator).</p>
+              <p class="settings-help text-muted mb-3">Agrega una capa extra de seguridad a tu inicio de sesión usando una app de autenticación (como Google Authenticator).</p>
               
               {% if user.two_fa_enabled %}
-                <span class="status-badge connected mb-2">2FA Habilitado</span>
-                <div class="d-flex gap-2">
+                <span class="badge bg-success mb-2 p-2"><i class="fas fa-check-circle me-1"></i> 2FA Habilitado</span>
+                <div class="d-flex gap-2 mt-2">
                   <button class="btn btn-sm btn-outline-danger" type="submit" name="action_disable_2fa">Deshabilitar 2FA</button>
                   <a href="{% url 'panel:ajustes_2fa_recovery' %}" class="btn btn-sm btn-outline-secondary">Ver códigos de recuperación</a>
                 </div>
               {% else %}
-                <span class="status-badge disconnected mb-2">2FA Deshabilitado</span>
-                <button class="btn btn-sm btn-primary" type="submit" name="action_enable_2fa">Habilitar 2FA</button>
+                <span class="badge bg-secondary mb-2 p-2"><i class="fas fa-times-circle me-1"></i> 2FA Deshabilitado</span>
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-primary" type="submit" name="action_enable_2fa">Habilitar 2FA</button>
+                </div>
               {% endif %}
             </div>
           </div>
           
+          <!-- Privacy Setting -->
           <div class="settings-row">
-            <div class="settings-label">Compartir datos anónimos</div>
+            <div class="settings-label fw-bold mb-2">Compartir datos anónimos</div>
             <div class="settings-field">
               <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="share_data" name="share_data" {% if user.share_data %}checked{% endif %}>
                 <label class="form-check-label" for="share_data">Permitir mejoras del producto con datos agregados.</label>
               </div>
-              <div class="settings-help">Nos ayudas a mejorar SGIDT analizando tendencias de uso de forma 100% anónima.</div>
+              <div class="settings-help text-muted small mt-1">Nos ayudas a mejorar SGIDT analizando tendencias de uso de forma 100% anónima.</div>
             </div>
           </div>
+
         </div>
-        <div class="card-footer settings-actions">
+        <div class="card-footer settings-actions bg-light text-end">
           <button class="btn btn-primary" type="submit" name="action_update_privacy">Guardar privacidad</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-    
+
+<!-- SECCIÓN 2: SESIONES ACTIVAS (NUEVO) -->
 <div class="settings-section row">
   <div class="col-md-4 settings-section-info">
     <h4>Sesiones Activas</h4>
@@ -56,43 +65,66 @@
   <div class="col-md-8 settings-section-content">
     <div class="card">
       <div class="card-body p-4">
-        <ul class="session-list">
-          <li class="session-item">
-            <div class="session-icon"><i class="fas fa-desktop"></i></div>
-            <div class="session-details">
-              <strong>Chrome en Windows 11</strong>
-              <span>Cerca de Santiago, Chile · <span class="text-success">Sesión actual</span></span>
+        {% if sesiones_activas %}
+            <ul class="session-list list-unstyled mb-0">
+              {% for sesion in sesiones_activas %}
+                <li class="session-item d-flex align-items-center mb-4 {% if not forloop.last %}pb-3 border-bottom{% endif %}">
+                  
+                  <!-- Icono del dispositivo -->
+                  <div class="session-icon me-3 fs-3 text-secondary">
+                    {% if sesion.device_type == 'mobile' %}
+                      <i class="fas fa-mobile-alt"></i>
+                    {% elif sesion.device_type == 'tablet' %}
+                      <i class="fas fa-tablet-alt"></i>
+                    {% else %}
+                      <i class="fas fa-desktop"></i>
+                    {% endif %}
+                  </div>
+                  
+                  <!-- Detalles de la sesión -->
+                  <div class="session-details flex-grow-1">
+                    <div class="fw-bold text-dark">{{ sesion.device_name }}</div>
+                    <div class="small text-muted">
+                      IP: {{ sesion.ip }} · 
+                      {% if sesion.session.session_key == session_key_actual %}
+                        <span class="text-success fw-bold">Sesión actual</span>
+                      {% else %}
+                        Última vez: {{ sesion.last_activity|timesince }}
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Botones de acción -->
+                  <div class="ms-3">
+                    {% if sesion.session.session_key == session_key_actual %}
+                       <button class="btn btn-sm btn-outline-secondary" disabled>Actual</button>
+                    {% else %}
+                       <form method="post" style="display:inline;">
+                         {% csrf_token %}
+                         <input type="hidden" name="session_key" value="{{ sesion.session.session_key }}">
+                         <button type="submit" name="action_revoke_session" class="btn btn-sm btn-outline-danger">
+                           Cerrar sesión
+                         </button>
+                       </form>
+                    {% endif %}
+                  </div>
+
+                </li>
+              {% endfor %}
+            </ul>
+        {% else %}
+            <div class="text-center text-muted py-3">
+                <i class="fas fa-info-circle me-1"></i> No hay información detallada de sesiones disponible.
             </div>
-            <button class="btn btn-sm btn-outline-secondary ms-auto" disabled>Actual</button>
-          </li>
-          <li class="session-item">
-            <div class="session-icon"><i class="fas fa-mobile-alt"></i></div>
-            <div class="session-details">
-              <strong>App Móvil en iPhone 15</strong>
-              <span>Cerca de Valparaíso, Chile · Hace 2 días</span>
-            </div>
-            <button class="btn btn-sm btn-outline-danger ms-auto">Cerrar sesión</button>
-          </li>
-        </ul>
+        {% endif %}
       </div>
-      <div class="card-footer settings-actions">
-        <button class="btn btn-danger" type="submit" name="action_logout_all">Cerrar sesión en todos los demás dispositivos</button>
+      
+      <!-- Opcional: Botón global (requiere lógica adicional en la vista si deseas implementarlo) -->
+      <!-- 
+      <div class="card-footer settings-actions bg-light text-end">
+        <button class="btn btn-danger" type="button" disabled title="Funcionalidad en desarrollo">Cerrar sesión en todos los demás dispositivos</button>
       </div>
-    </div>
-  </div>
-</div>
-    
-<div class="settings-section row">
-  <div class="col-md-4 settings-section-info">
-    <h4>Exportar datos</h4>
-    <p>Puedes solicitar una exportación de todos tus datos personales almacenados en SGIDT.</p>
-  </div>
-  <div class="col-md-8 settings-section-content">
-    <div class="card">
-      <div class="card-body p-4">
-        <p class="settings-help mb-3">Generaremos un archivo ZIP con tus datos y te enviaremos un enlace de descarga a tu email.</p>
-        <button class="btn btn-primary" type="submit" name="action_export_data">Iniciar exportación de datos</button>
-      </div>
+      -->
     </div>
   </div>
 </div>
