@@ -29,9 +29,14 @@ class VistaLogin(LoginView):
 
     def form_valid(self, form):
         """
-        Validación personalizada para soporte de 2FA y dispositivos de confianza.
+        Validación personalizada para soporte de 2FA, dispositivos de confianza y 'Recordarme'.
         """
+        # 1. Capturamos el valor de 'remember' (Recordarme)
+        remember = form.cleaned_data.get('remember')
+
         user = form.get_user()
+
+        # === Lógica de 2FA ===
         if user.two_fa_enabled:
             is_device_trusted = False
             try:
@@ -44,18 +49,24 @@ class VistaLogin(LoginView):
                     is_device_trusted = True
             except (KeyError, BadSignature, SignatureExpired):
                 is_device_trusted = False
+
+            # Si el dispositivo NO es de confianza, pedimos el código OTP
             if not is_device_trusted:
                 otp_code = form.cleaned_data.get("otp_code")
                 trust_this_device = form.cleaned_data.get("trust_device")
+
                 if not otp_code:
                     context = self.get_context_data(form=form)
                     context['requires_2fa'] = True
                     return render(self.request, self.template_name, context)
+                
                 verificado = False
                 if user.two_fa_secret:
                     totp = pyotp.TOTP(user.two_fa_secret)
                     if totp.verify(otp_code):
                         verificado = True
+                
+                # Verificar códigos de recuperación si TOTP falla
                 if not verificado and user.two_fa_recovery_codes:
                     if otp_code in user.two_fa_recovery_codes:
                         verificado = True
@@ -67,8 +78,17 @@ class VistaLogin(LoginView):
                     context = self.get_context_data(form=form)
                     context['requires_2fa'] = True
                     return render(self.request, self.template_name, context)
+                
+                # --- LOGIN EXITOSO CON 2FA ---
                 response = super().form_valid(form)
                 
+                # Aplicar lógica de 'Recordarme' (Caso 2FA)
+                if remember:
+                    self.request.session.set_expiry(1209600) # 2 semanas
+                else:
+                    self.request.session.set_expiry(0) # Expira al cerrar navegador
+
+                # Configurar cookie de dispositivo de confianza si se solicitó
                 if trust_this_device:
                     response.set_signed_cookie(
                         TRUSTED_DEVICE_COOKIE_NAME,
@@ -79,7 +99,17 @@ class VistaLogin(LoginView):
                         samesite='Lax'
                     )
                 return response
-        return super().form_valid(form)
+
+        # === LOGIN EXITOSO NORMAL (Sin 2FA o Dispositivo ya confiable) ===
+        response = super().form_valid(form)
+
+        # Aplicar lógica de 'Recordarme' (Caso normal)
+        if remember:
+            self.request.session.set_expiry(1209600) # 2 semanas
+        else:
+            self.request.session.set_expiry(0) # Expira al cerrar navegador
+
+        return response
 
 
 def cerrar_sesion(request):

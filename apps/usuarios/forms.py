@@ -34,12 +34,20 @@ class FormularioLogin(AuthenticationForm):
         })
     )
 
-    # Campo para recordar el dispositivo
+
     trust_device = forms.BooleanField(
         label="No pedir código en este dispositivo por 30 días",
         required=False,
         widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
     )
+
+
+    remember = forms.BooleanField(
+        label="Recordarme",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+    )
+    
 
 
 

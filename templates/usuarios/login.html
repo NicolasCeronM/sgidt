@@ -20,7 +20,6 @@
         display: block;
         margin-bottom: 0.5rem;
     }
-    /* Estilo para el checkbox de confiar */
     .trust-device-option {
         display: flex;
         align-items: center;
@@ -120,9 +119,12 @@
         </div>
 
         <div class="form-checkbox">
-          <input type="checkbox" id="remember" name="remember">
-          <label for="remember">Recordarme</label>
-          <a href="{% url 'usuarios:password_reset_request' %}">¿Olvidaste tu contraseña?</a>
+          <div class="remember-box">
+            <input type="checkbox" id="remember" name="remember">
+            <label for="remember">Recordarme</label>
+          </div>
+
+          <a href="{% url 'usuarios:password_reset_request' %}" class="link-forgot">¿Olvidaste tu contraseña?</a>
         </div>
 
         <button type="submit" class="btn-login">
