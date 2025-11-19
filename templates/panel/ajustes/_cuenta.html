@@ -9,43 +9,24 @@
       <form method="post" class="settings-form" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="card-body p-4">
-
-          <div class="settings-row">
-            <div class="settings-label">Foto de perfil</div>
-            <div class="settings-field">
-              <div class="avatar-upload">
-                <img src="{% static 'panel/img/avatar_default.png' %}" alt="Avatar" class="avatar-preview">
-                <div class="avatar-actions">
-                  <label for="avatar-input" class="btn btn-sm btn-outline-primary">Subir foto</label>
-                  <button type="button" class="btn btn-sm btn-outline-secondary">Quitar</button>
-                  <input type="file" id="avatar-input" name="avatar" class="d-none" accept="image/png, image/jpeg">
-                  <div class="settings-help">JPG o PNG. Máx 2MB.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div class="settings-row">
             <div class="settings-label">Nombre</div>
             <div class="settings-field">
               <input class="form-control" type="text" name="first_name" value="{{ user.first_name }}">
             </div>
           </div>
-
           <div class="settings-row">
             <div class="settings-label">Apellido</div>
             <div class="settings-field">
               <input class="form-control" type="text" name="last_name" value="{{ user.last_name }}">
             </div>
           </div>
-          
           <div class="settings-row">
             <div class="settings-label">Cargo o Rol</div>
             <div class="settings-field">
               <input class="form-control" type="text" name="job_title" value="{{ user.profile.job_title|default:'' }}" placeholder="Ej: Gerente de Finanzas">
             </div>
           </div>
-
         </div>
         <div class="card-footer settings-actions">
           <button class="btn btn-primary" type="submit" name="action_update_profile">Actualizar perfil</button>
