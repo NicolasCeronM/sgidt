@@ -10,7 +10,6 @@ from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 import json, pyotp, secrets, os
 
-
 from django.contrib.sessions.models import Session
 from apps.usuarios.models import SesionUsuario
 
@@ -155,15 +154,22 @@ class AjustesCuentaView(AjustesBase):
                 return redirect(reverse("panel:ajustes_cuenta"))
 
             try:
+                # Datos básicos
                 user.first_name = first_name
                 user.last_name = last_name
 
-                if hasattr(user, "profile"):
-                    user.profile.job_title = job_title
-                    if avatar_file:
-                        avatar_path = handle_uploaded_file(avatar_file, "avatars", f"user_{user.id}")
-                        user.profile.avatar = avatar_path
-                    user.profile.save()
+                # Si el modelo Usuario tiene job_title, lo actualizamos
+                if hasattr(user, "job_title"):
+                    user.job_title = job_title
+
+                # Foto de perfil: se guarda en el campo `foto` del usuario
+                if avatar_file:
+                    avatar_path = handle_uploaded_file(
+                        avatar_file,
+                        "avatars",
+                        f"user_{user.id}"
+                    )
+                    user.foto = avatar_path  # ImageField en Usuario
 
                 user.save()
                 messages.success(request, "Perfil actualizado correctamente.")
@@ -209,26 +215,20 @@ class AjustesPrivacidadView(AjustesBase):
         user = self.request.user
         ctx["user"] = user
 
-        # --- NUEVO: Obtener sesiones activas ---
-        # Obtenemos las sesiones asociadas al usuario, ordenadas por la más reciente
+        # Sesiones activas del usuario
         ctx["sesiones_activas"] = SesionUsuario.objects.filter(user=user).order_by('-last_activity')
-        
-        # Pasamos la key actual para identificar "Este dispositivo" en el template
         ctx["session_key_actual"] = self.request.session.session_key
-        
         return ctx
 
     @method_decorator(require_POST)
     def post(self, request, *args, **kwargs):
         user = request.user
 
-        # --- Lógica existente: Habilitar 2FA ---
         if "action_enable_2fa" in request.POST:
             if "2fa_secret" in request.session:
                 del request.session["2fa_secret"]
             return redirect(reverse("panel:ajustes_2fa_setup"))
 
-        # --- Lógica existente: Deshabilitar 2FA ---
         elif "action_disable_2fa" in request.POST:
             user.two_fa_enabled = False
             user.two_fa_secret = None
@@ -237,10 +237,8 @@ class AjustesPrivacidadView(AjustesBase):
             messages.success(request, "La autenticación de dos factores ha sido deshabilitada.")
             response = redirect(reverse("panel:ajustes_privacidad"))
             response.delete_cookie("sgidt_trusted_device")
-            
             return response
 
-        # --- Lógica existente: Preferencias de privacidad ---
         elif "action_update_privacy" in request.POST:
             share_data = "share_data" in request.POST
             user.share_data = share_data
@@ -248,28 +246,20 @@ class AjustesPrivacidadView(AjustesBase):
             messages.success(request, "Preferencias de privacidad guardadas.")
             return redirect(reverse("panel:ajustes_privacidad"))
 
-        # --- NUEVO: Cerrar (Revocar) una sesión remota ---
         elif "action_revoke_session" in request.POST:
             session_key = request.POST.get("session_key")
-            
             if session_key:
                 try:
-                    # Buscamos la sesión específica asegurándonos que pertenezca al usuario actual
-                    # para evitar que alguien cierre sesiones de otros usuarios maliciosamente.
                     sesion_usuario = SesionUsuario.objects.get(
-                        session__session_key=session_key, 
+                        session__session_key=session_key,
                         user=user
                     )
-                    # Eliminamos la sesión de Django. Esto invalida la cookie del otro dispositivo.
-                    # Debido al on_delete=models.CASCADE en el modelo, esto también borra el registro en SesionUsuario.
-                    sesion_usuario.session.delete() 
-                    
+                    sesion_usuario.session.delete()
                     messages.success(request, "La sesión ha sido cerrada exitosamente.")
                 except SesionUsuario.DoesNotExist:
                     messages.error(request, "No se encontró la sesión o ya fue cerrada.")
                 except Exception as e:
                     messages.error(request, f"Error al cerrar sesión: {e}")
-            
             return redirect(reverse("panel:ajustes_privacidad"))
 
         return redirect(reverse("panel:ajustes_privacidad"))
@@ -347,7 +337,8 @@ class Ajustes2FARecoveryView(AjustesBase):
             return redirect(reverse("panel:ajustes_2fa_recovery"))
 
         return redirect(reverse("panel:ajustes_2fa_recovery"))
-    
+
+
 @require_POST
 @login_required
 def desconectar_email_sync(request):
@@ -364,6 +355,7 @@ def desconectar_email_sync(request):
     else:
         messages.error(request, "No se encontró una empresa activa.")
     return redirect("panel:ajustes_integraciones")
+
 
 # ------------------------------
 # EMPRESA
@@ -393,6 +385,7 @@ class AjustesEmpresaView(AjustesBase):
         company_city = request.POST.get("company_city", "").strip()
         company_country = request.POST.get("company_country", "").strip()
         company_logo = request.FILES.get("company_logo")
+        remove_logo = request.POST.get("remove_logo", "0") == "1"
 
         if not company_rut or not company_name:
             messages.error(request, "RUT y Razón Social son obligatorios.")
@@ -412,16 +405,35 @@ class AjustesEmpresaView(AjustesBase):
             empresa.comuna = company_city
             empresa.region = company_country
 
+            user = request.user
+
             if company_logo:
+                # Subir nuevo logo
                 logo_path = handle_uploaded_file(company_logo, "logos", f"empresa_{empresa.id}")
                 empresa.logo = logo_path
-            elif "remove_logo" in request.POST:
+
+                # Sincronizar también la foto del usuario con el logo
+                if hasattr(user, "foto"):
+                    user.foto = logo_path
+                    user.save()
+
+            elif remove_logo:
+                # Quitar logo de empresa
                 if empresa.logo:
                     try:
                         empresa.logo.delete(save=False)
                     except Exception:
                         pass
                 empresa.logo = None
+
+                # Quitar también la foto del usuario
+                if hasattr(user, "foto") and user.foto:
+                    try:
+                        user.foto.delete(save=False)
+                    except Exception:
+                        pass
+                    user.foto = None
+                    user.save()
 
             empresa.save()
             messages.success(request, "Datos de la empresa guardados correctamente.")
@@ -437,19 +449,6 @@ class AjustesEmpresaView(AjustesBase):
 # INTEGRACIONES
 # ------------------------------
 
-# class AjustesIntegracionesView(AjustesBase):
-#     seccion = "integraciones"
-#     page_title = "Integraciones"
-#
-#     def get_context_data(self, **kwargs):
-#         ctx = super().get_context_data(**kwargs)
-#         u = self.request.user
-#         ctx["drive_connected"] = GoogleDriveCredential.objects.filter(user=u).exists()
-#         ctx["dropbox_connected"] = DropboxCredential.objects.filter(user=u).exists()
-#         return ctx
-
-    
-
 class AjustesIntegracionesView(AjustesBase):
     seccion = "integraciones"
     page_title = "Integraciones"
@@ -458,7 +457,6 @@ class AjustesIntegracionesView(AjustesBase):
         ctx = super().get_context_data(**kwargs)
         u = self.request.user
         
-        # 1. Agregamos la empresa al contexto para poder verificar el email_host
         try:
             ctx["empresa"] = get_empresa_activa(self.request)
         except Exception:
@@ -521,5 +519,6 @@ def save_email_sync_config(request):
         return JsonResponse({"status": "success", "message": "¡Configuración guardada correctamente!"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 
 

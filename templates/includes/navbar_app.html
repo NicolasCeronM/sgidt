@@ -15,13 +15,8 @@
   <a href="#" class="sidebar-profile" aria-label="Perfil SGIDT" style="text-decoration: none; ">
     <div class="avatar" aria-hidden="true">
       {% if user.foto %}
-        <!-- Foto de perfil del usuario -->
         <img src="{{ user.foto.url }}" alt="{{ user.first_name }} {{ user.last_name }}" class="avatar-logo">
-      {% elif empresa and empresa.logo %}
-        <!-- Si el usuario no tiene foto, usamos el logo de la empresa (cuando exista en contexto) -->
-        <img src="{{ empresa.logo.url }}" alt="Logo de {{ empresa.razon_social }}" class="avatar-logo">
       {% else %}
-        <!-- Fallback -->
         <i class="fas fa-user-circle"></i>
       {% endif %}
     </div>
@@ -138,3 +133,4 @@
 </button>
 
 <script src="{% static 'panel/js/sidebar_mobile.js' %}"></script>
+
