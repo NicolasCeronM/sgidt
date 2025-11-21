@@ -14,7 +14,8 @@ SGIDT{% endblock %} {% block content %} {% block css %}
   <div class="docs-container">
     <header class="page-header">
       <h1 id="docs-title" class="docs-title">Gestión de Documentos</h1>
-      <div class="page-actions">
+
+      <div class="page-actions" style="display:flex; gap:10px; align-items:center;">
         <button
           id="btnToggleUpload"
           class="btn btn-primary"
@@ -24,8 +25,29 @@ SGIDT{% endblock %} {% block content %} {% block css %}
           <i class="fas fa-plus" aria-hidden="true"></i>
           <span>Subir Documento</span>
         </button>
+
+        <button
+          id="btnScanMail"
+          class="btn btn-scan btn-primary"
+          aria-expanded="false"
+          aria-pressed="false"
+          aria-label="Buscar documentos en correo"
+          style="display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:8px;background:linear-gradient(90deg,#0b74de,#0459a8);color:#ffffff;border:0;box-shadow:0 6px 18px rgba(4,41,84,0.18);transition:transform .14s ease,box-shadow .14s ease,filter .14s ease;cursor:pointer;font-weight:600;font-size:14px;"
+          onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 28px rgba(4,41,84,0.22)'; this.style.filter='brightness(1.03)';"
+          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 18px rgba(4,41,84,0.18)'; this.style.filter='none';"
+        >
+          <span class="icon" aria-hidden="true" style="display:inline-flex;align-items:center;font-size:15px;">
+            <i class="fas fa-envelope-open-text" style="width:20px;text-align:center;"></i>
+          </span>
+          <span class="label" style="font-weight:700;font-size:15px;">Buscar en Mail</span>
+          <span class="sr-only" aria-hidden="true" style="width:0;height:0;overflow:hidden;">.</span>
+          <span class="spinner" hidden aria-hidden="true" style="margin-left:6px;">
+            <i class="fas fa-spinner fa-spin"></i>
+          </span>
+        </button>
       </div>
     </header>
+
 
     <div id="uploadContainer" class="upload-container" hidden>
       <section class="card upload-card" aria-labelledby="up-title">
@@ -118,27 +140,6 @@ SGIDT{% endblock %} {% block content %} {% block css %}
       </div>
       <p id="result-info" class="result-info" aria-live="polite"></p>
     </section>
-
-    <div class="page-actions">
-      <button
-        id="btnScanMail"
-        class="btn btn-secondary"
-        style="margin-right: 10px"
-      >
-        <i class="fas fa-sync-alt" aria-hidden="true"></i>
-        <span>Buscar en Mail</span>
-      </button>
-
-      <button
-        id="btnToggleUpload"
-        class="btn btn-primary"
-        aria-expanded="false"
-        aria-controls="uploadContainer"
-      >
-        <i class="fas fa-plus" aria-hidden="true"></i>
-        <span>Subir Documento</span>
-      </button>
-    </div>
 
     <section class="card table-card" aria-labelledby="table-title">
       <h2 id="table-title" class="card-title-hidden">Lista de Documentos</h2>
