@@ -12,6 +12,11 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from apps.empresas.models import EmpresaUsuario, Empresa
+from .tasks import start_email_processing_chain 
+
 # Intento de inline CSS si existe premailer + staticfiles
 def _render_html_con_css_inline(request, template, context):
     html = render_to_string(template, context)
@@ -98,3 +103,38 @@ def enviar_bienvenida_prueba(request):
         messages.error(request, f"No se pudo enviar: {e}")
 
     return redirect(reverse("correo:test_form"))
+
+@login_required
+@require_POST
+def trigger_email_scan(request):
+    """
+    Dispara manualmente la búsqueda de correos solo para la empresa activa del usuario.
+    """
+    # 1. Obtener la empresa activa (Lógica similar a documentos_upload_api)
+    empresa = None
+    eid = request.session.get("empresa_activa_id")
+    
+    if eid:
+        empresa = Empresa.objects.filter(id=eid, miembros__usuario=request.user).first()
+    
+    if not empresa:
+        # Fallback: tomar la primera empresa del usuario si no hay una en sesión
+        eu = EmpresaUsuario.objects.filter(usuario=request.user).first()
+        if eu: 
+            empresa = eu.empresa
+
+    if not empresa:
+        return JsonResponse({"ok": False, "error": "No tienes una empresa configurada."}, status=400)
+
+    if not all([empresa.email_host, empresa.email_user, empresa.email_password]):
+        return JsonResponse({"ok": False, "error": "Faltan configurar las credenciales de correo."}, status=400)
+
+    # 2. Disparar la tarea Celery SOLO para esta empresa
+    # Usamos .delay() para que sea asíncrono y no congele el navegador
+    task = start_email_processing_chain.delay(empresa.id)
+
+    return JsonResponse({
+        "ok": True, 
+        "message": f"Escaneo iniciado para {empresa.razon_social}. Los documentos aparecerán pronto.",
+        "task_id": task.id
+    })  

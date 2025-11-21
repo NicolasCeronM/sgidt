@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     # Sitio público / landings
     path("", include("apps.sitio.urls")),
+    path("correo/", include("apps.correo.urls", namespace="correo")),
 
     # Panel (solo HTML)
     path("panel/", include("apps.panel.urls")),

@@ -12,11 +12,15 @@ SGIDT{% endblock %} {% block content %} {% block css %}
 
 <section class="docs-page" aria-labelledby="docs-title">
   <div class="docs-container">
-    
     <header class="page-header">
       <h1 id="docs-title" class="docs-title">Gestión de Documentos</h1>
       <div class="page-actions">
-        <button id="btnToggleUpload" class="btn btn-primary" aria-expanded="false" aria-controls="uploadContainer">
+        <button
+          id="btnToggleUpload"
+          class="btn btn-primary"
+          aria-expanded="false"
+          aria-controls="uploadContainer"
+        >
           <i class="fas fa-plus" aria-hidden="true"></i>
           <span>Subir Documento</span>
         </button>
@@ -27,13 +31,29 @@ SGIDT{% endblock %} {% block content %} {% block css %}
       <section class="card upload-card" aria-labelledby="up-title">
         <h2 id="up-title" class="card-title-hidden">Subir Nuevo Documento</h2>
 
-        <div id="uploadArea" class="upload-area" role="group" tabindex="0" aria-describedby="drop-hint">
+        <div
+          id="uploadArea"
+          class="upload-area"
+          role="group"
+          tabindex="0"
+          aria-describedby="drop-hint"
+        >
           <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
-          <p class="dz-title">Arrastra archivos aquí o haz clic para seleccionar</p>
-          <p id="drop-hint" class="upload-hint">PDF, JPG, PNG (máx. 10MB por archivo)</p>
+          <p class="dz-title">
+            Arrastra archivos aquí o haz clic para seleccionar
+          </p>
+          <p id="drop-hint" class="upload-hint">
+            PDF, JPG, PNG (máx. 10MB por archivo)
+          </p>
         </div>
 
-        <input type="file" id="fileInput" multiple hidden accept=".pdf,.jpg,.jpeg,.png" />
+        <input
+          type="file"
+          id="fileInput"
+          multiple
+          hidden
+          accept=".pdf,.jpg,.jpeg,.png"
+        />
 
         <div class="upload-actions">
           <button id="btnSelect" class="btn btn-secondary">
@@ -99,6 +119,27 @@ SGIDT{% endblock %} {% block content %} {% block css %}
       <p id="result-info" class="result-info" aria-live="polite"></p>
     </section>
 
+    <div class="page-actions">
+      <button
+        id="btnScanMail"
+        class="btn btn-secondary"
+        style="margin-right: 10px"
+      >
+        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        <span>Buscar en Mail</span>
+      </button>
+
+      <button
+        id="btnToggleUpload"
+        class="btn btn-primary"
+        aria-expanded="false"
+        aria-controls="uploadContainer"
+      >
+        <i class="fas fa-plus" aria-hidden="true"></i>
+        <span>Subir Documento</span>
+      </button>
+    </div>
+
     <section class="card table-card" aria-labelledby="table-title">
       <h2 id="table-title" class="card-title-hidden">Lista de Documentos</h2>
       <div class="table-wrap">
@@ -116,13 +157,15 @@ SGIDT{% endblock %} {% block content %} {% block css %}
               <th class="actions">Acciones</th>
             </tr>
           </thead>
-          <tbody id="documentsTableBody">
-            </tbody>
+          <tbody id="documentsTableBody"></tbody>
         </table>
       </div>
-      
+
       <div id="tbl-skeleton" class="table-skeleton" aria-hidden="true">
-        <div></div><div></div><div></div><div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
       </div>
 
       <div id="tbl-empty" class="empty" hidden>
@@ -138,8 +181,13 @@ SGIDT{% endblock %} {% block content %} {% block css %}
 </section>
 
 <div id="docDetailOverlay" class="modal-overlay" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="docDetailTitle" tabindex="-1">
-    
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="docDetailTitle"
+    tabindex="-1"
+  >
     <button class="modal-close-icon" id="docDetailClose" aria-label="Cerrar">
       <i class="fa-solid fa-xmark"></i>
     </button>
@@ -147,16 +195,29 @@ SGIDT{% endblock %} {% block content %} {% block css %}
     <div class="modal-body">
       <div id="docDetailContent">
         <div class="kv-skel">
-          <div class="skeleton"></div><div class="skeleton"></div>
-          <div class="skeleton"></div><div class="skeleton"></div>
-          <div class="skeleton"></div><div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
         </div>
       </div>
     </div>
-    
+
     <div class="modal-actions">
-      <a id="docViewBtn" class="btn-min" href="#" target="_blank" rel="noopener" hidden><i class="fa-solid fa-eye"></i> Ver archivo</a>
-      <a id="docDownloadBtn" class="btn-min" href="#" download hidden><i class="fa-solid fa-download"></i> Descargar</a>
+      <a
+        id="docViewBtn"
+        class="btn-min"
+        href="#"
+        target="_blank"
+        rel="noopener"
+        hidden
+        ><i class="fa-solid fa-eye"></i> Ver archivo</a
+      >
+      <a id="docDownloadBtn" class="btn-min" href="#" download hidden
+        ><i class="fa-solid fa-download"></i> Descargar</a
+      >
       <span id="docEstadoPill" class="pill" hidden></span>
       <span id="docSiiPill" class="pill" hidden></span>
     </div>
@@ -165,4 +226,73 @@ SGIDT{% endblock %} {% block content %} {% block css %}
 
 {% endblock %} {% block js %}
 <script type="module" src="{% static 'documentos/js/main.js' %}?v=2"></script>
+<script>
+  // Agregar esto en tu JS (ej: static/documentos/js/main.js o al final del html)
+
+document.addEventListener('DOMContentLoaded', function() {
+    const btnScan = document.getElementById('btnScanMail');
+    
+    if (btnScan) {
+        btnScan.addEventListener('click', function() {
+            // 1. UI Feedback: Deshabilitar botón y poner spinner
+            const originalContent = btnScan.innerHTML;
+            btnScan.disabled = true;
+            btnScan.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+
+            // 2. Llamada Fetch al backend
+            fetch('/correo/trigger-scan/', {
+                method: 'POST',
+                headers: {  
+                    'X-CSRFToken': getCookie('csrftoken'), // Asegúrate de tener esta función de Django docs
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    // Éxito: Mostrar Toast y recargar tabla
+                    showToast("success", data.message); // Asumiendo que tienes una función showToast
+                    
+                    // Opcional: Recargar la tabla de documentos automáticamente después de unos segundos
+                    setTimeout(() => {
+                        // Si tienes una función para recargar la tabla, úsala aquí.
+                        // Ej: loadDocumentos(); 
+                        // O si no, reload simple:
+                        window.location.reload();
+                    }, 3000); 
+                } else {
+                    showToast("error", "Error: " + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast("error", "Ocurrió un error al conectar con el servidor.");
+            })
+            .finally(() => {
+                // 3. Restaurar botón después de unos segundos (para evitar spam de clicks)
+                setTimeout(() => {
+                    btnScan.innerHTML = originalContent;
+                    btnScan.disabled = false;
+                }, 2000);
+            });
+        });
+    }
+});
+
+// Función auxiliar para obtener el CSRF token (estándar de Django)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock %}
