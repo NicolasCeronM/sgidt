@@ -21,7 +21,7 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'check-emails-cada-5-min': {
         'task': 'correo.check_all_emails',   # <- TU tarea real
-        'schedule': 300.0,                   # 5 minutos (corrige el comentario)
+        'schedule': crontab(hour=15, minute=20),               # 5 minutos (corrige el comentario)
         'options': {'queue': 'correos'},     # opcional: rutar a cola "correos"
     },
 }

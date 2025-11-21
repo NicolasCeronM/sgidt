@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* Estilos inline para compatibilidad con clientes de correo */
+        .email-container {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #e0e0e0;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #dc3545; /* Rojo alerta */
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            color: #333333;
+        }
+        .alert-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .table-container th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        .table-container td {
+            border-bottom: 1px solid #dee2e6;
+            padding: 8px;
+        }
+        .btn-action {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h2 style="margin:0;">⚠️ Alertas Pendientes</h2>
+        </div>
+        
+        <div class="content">
+            <p>Hola,</p>
+            <p>Hemos detectado <strong>{{ total_alertas }} documentos</strong> en {{ empresa.razon_social }} que requieren tu atención inmediata.</p>
+
+            {% if alertas.sii_pending %}
+            <div class="section">
+                <h3 style="color: #dc3545; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    🔍 Pendientes Validación SII ({{ alertas.sii_pending|length }})
+                </h3>
+                <p style="font-size: 13px; color: #666;">Documentos leídos pero aún no confirmados en el SII.</p>
+                <table class="table-container">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Folio</th>
+                            <th>Fecha Emisión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in alertas.sii_pending|slice:":5" %}
+                        <tr>
+                            <td>{{ doc.get_tipo_documento_display }}</td>
+                            <td>{{ doc.folio|default:"--" }}</td>
+                            <td>{{ doc.fecha_emision|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if alertas.sii_pending|length > 5 %}
+                    <p style="text-align: center; font-size: 12px;"><em>... y {{ alertas.sii_pending|length|add:"-5" }} más.</em></p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if alertas.vencidos %}
+            <div class="section" style="margin-top: 25px;">
+                <h3 style="color: #fd7e14; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    📅 Documentos Vencidos ({{ alertas.vencidos|length }})
+                </h3>
+                <p style="font-size: 13px; color: #666;">Facturas emitidas hace más de 30 días.</p>
+                <table class="table-container">
+                    <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Folio</th>
+                            <th>Monto Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in alertas.vencidos|slice:":5" %}
+                        <tr>
+                            <td>{{ doc.razon_social_proveedor|truncatechars:15 }}</td>
+                            <td>{{ doc.folio }}</td>
+                            <td>${{ doc.total|floatformat:0 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if alertas.errores %}
+            <div class="section" style="margin-top: 25px;">
+                <h3 style="color: #6c757d; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    ❌ Errores de Procesamiento ({{ alertas.errores|length }})
+                </h3>
+                <p style="font-size: 13px; color: #666;">No pudimos leer estos archivos automáticamente.</p>
+                <ul>
+                    {% for doc in alertas.errores|slice:":3" %}
+                        <li style="font-size: 13px;">{{ doc.nombre_archivo_original }} <br><small>Subido el: {{ doc.creado_en|date:"d/m H:i" }}</small></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>Este es un mensaje automático del sistema SGIDT.</p>
+            <p>Si ya gestionaste estos documentos, por favor ignora este correo.</p>
+        </div>
+    </div>
+</body>
+</html>
