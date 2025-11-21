@@ -144,18 +144,32 @@
     const folio = d.folio || "-";
     const monto = (d.total!=null) ? "$"+fmtCL.format(Number(d.total)) : "";
     
-    // Busca la fecha en varios campos posibles para evitar NaN
-    const rawDate = d.fecha_emision || d.created_at || d.creado_en || d.fecha;
-    const dateStr = formatDate(rawDate);
+    // --- CORRECCIÓN AQUÍ ---
+    // Priorizamos 'creado_en' (fecha de subida) sobre 'fecha_emision'
+    let rawDate = d.creado_en || d.created_at || d.fecha_emision || d.fecha;
+    
+    let dateStr = "—";
+
+    if (rawDate) {
+        // Limpieza de fecha si viene con hora (ej: "21/11/2025 14:30")
+        if (typeof rawDate === 'string' && rawDate.includes('/')) {
+             dateStr = rawDate.split(' ')[0]; 
+        } else {
+             dateStr = formatDate(rawDate);
+        }
+    }
 
     li.innerHTML = `
       <div class="recent-left">
         <div class="rec-title">F-${folio} ${badge(d.estado)}</div>
         <div class="rec-sub">${prov || "Documento tributario"}</div>
       </div>
-      <div class="recent-right">
+      
+      <div class="recent-right" style="display: flex; align-items: center; gap: 10px;">
         <strong class="rec-amount">${monto}</strong>
-        <small class="text-muted">${dateStr}</small>
+        <small class="text-muted" style="font-size: 0.85em; white-space: nowrap;" title="Fecha de subida">
+            ${dateStr}
+        </small>
       </div>
     `;
     return li;
