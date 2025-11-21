@@ -70,62 +70,64 @@
 
   // ---------- Chart: ApexCharts ----------
   async function loadChart(){
-  const elChart = document.getElementById("gastosChart");
-  const elSk = document.querySelector(".chart-skeleton");
-  if(!elChart) return;
+    const elChart = document.getElementById("gastosChart");
+    const elSk = document.querySelector(".chart-skeleton");
+    if(!elChart) return;
 
-  const url = elChart.dataset.chartUrl;
-  if(!url) return;
+    const url = elChart.dataset.chartUrl;
+    if(!url) return;
 
-  try{
-    const r = await fetch(url, { credentials: "same-origin" });
-    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    try{
+      const r = await fetch(url, { credentials: "same-origin" });
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
 
-    const data = await r.json(); // [{label, total}]
-    const labels = Array.isArray(data) ? data.map(d=>String(d.label||"")) : [];
-    const values = Array.isArray(data) ? data.map(d=>Number(d.total||0)) : [];
+      const data = await r.json(); 
+      const labels = Array.isArray(data) ? data.map(d=>String(d.label||"")) : [];
+      const values = Array.isArray(data) ? data.map(d=>Number(d.total||0)) : [];
 
-    if(!labels.length){
+      if(!labels.length){
+        elSk?.remove();
+        elChart.innerHTML = `<div style="padding:12px;color:#6b7280">Sin datos para los últimos 6 meses.</div>`;
+        return;
+      }
+
+      const options = {
+        chart: { type: 'bar', height: 300, toolbar: { show:false } },
+        series: [{ name: 'Gastos', data: values }],
+        xaxis: { categories: labels, axisBorder:{show:false}, axisTicks:{show:false} },
+        yaxis: { labels: { formatter: v => "$" + new Intl.NumberFormat("es-CL").format(Math.round(v)) } },
+        grid: { borderColor: '#eef2f7' },
+        plotOptions: { bar: { borderRadius: 6, columnWidth: '45%' } },
+        dataLabels: { enabled: false },
+        tooltip: { y: { formatter: val => "$" + new Intl.NumberFormat("es-CL").format(Math.round(val)) } },
+        colors: ['#111827']
+      };
+
+      const chart = new ApexCharts(elChart, options);
+      await chart.render();
       elSk?.remove();
-      elChart.innerHTML = `<div style="padding:12px;color:#6b7280">Sin datos para los últimos 6 meses.</div>`;
-      return;
+
+    } catch (err) {
+      console.error("[gastos6m] error:", err);
+      elSk?.remove();
+      elChart.innerHTML = `<div style="padding:12px;color:#b91c1c">Error al cargar gráfico.</div>`;
     }
-
-    const options = {
-      chart: { type: 'bar', height: 300, toolbar: { show:false } },
-      series: [{ name: 'Gastos', data: values }],
-      xaxis: { categories: labels, axisBorder:{show:false}, axisTicks:{show:false} },
-      yaxis: { labels: { formatter: v => "$" + new Intl.NumberFormat("es-CL").format(Math.round(v)) } },
-      grid: { borderColor: '#eef2f7' },
-      plotOptions: { bar: { borderRadius: 6, columnWidth: '45%' } },
-      dataLabels: { enabled: false },
-      tooltip: { y: { formatter: val => "$" + new Intl.NumberFormat("es-CL").format(Math.round(val)) } },
-      colors: ['#111827']
-    };
-
-    const chart = new ApexCharts(elChart, options);
-    await chart.render();
-    elSk?.remove();
-
-  } catch (err) {
-    console.error("[gastos6m] error:", err);
-    elSk?.remove();
-    elChart.innerHTML = `<div style="padding:12px;color:#b91c1c">
-      No se pudo cargar el gráfico. Revisa la consola (F12 → Network) y que la URL <code>${url}</code> responda 200 con JSON válido.
-    </div>`;
   }
-}
 
 
-  // ---------- Recent list ----------
-  const relTime = (iso)=>{
-    if(!iso) return "";
-    const now = new Date(), t = new Date(iso);
-    const diffMs = now - t;
-    const hrs = Math.floor(diffMs / 36e5);
-    if(hrs < 1){ const min = Math.max(1, Math.floor(diffMs/6e4)); return `Hace ${min} min`; }
-    if(hrs < 24) return `Hace ${hrs} ${hrs===1?"hora":"horas"}`;
-    const d = Math.floor(hrs/24); return `Hace ${d} ${d===1?"día":"días"}`;
+  // ---------- Formateo de Fechas (MEJORADO) ----------
+  const formatDate = (iso) => {
+    if(!iso) return "—";
+    const d = new Date(iso);
+    // Validar si la fecha es correcta
+    if(isNaN(d.getTime())) return "—";
+    
+    // Retorna formato dd/mm/yyyy (ej: 21/11/2025)
+    return d.toLocaleDateString("es-CL", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
   };
 
   function badge(estado){
@@ -141,16 +143,19 @@
     const prov = d.razon_social_proveedor || d.proveedor || "";
     const folio = d.folio || "-";
     const monto = (d.total!=null) ? "$"+fmtCL.format(Number(d.total)) : "";
-    const when = relTime(d.fecha_emision || d.creado_en);
+    
+    // Busca la fecha en varios campos posibles para evitar NaN
+    const rawDate = d.fecha_emision || d.created_at || d.creado_en || d.fecha;
+    const dateStr = formatDate(rawDate);
 
     li.innerHTML = `
       <div class="recent-left">
         <div class="rec-title">F-${folio} ${badge(d.estado)}</div>
         <div class="rec-sub">${prov || "Documento tributario"}</div>
       </div>
-      <div class="rec-right">
+      <div class="recent-right">
         <strong class="rec-amount">${monto}</strong>
-        <small>${when}</small>
+        <small class="text-muted">${dateStr}</small>
       </div>
     `;
     return li;
@@ -159,18 +164,45 @@
   async function loadRecent(){
     const url = elRecent?.dataset.latestUrl;
     if(!url) return;
-    const r = await fetch(url, {credentials:"same-origin"});
-    if(!r.ok) throw new Error("latest failed");
-    const data = await r.json();
-    const results = Array.isArray(data.results) ? data.results : [];
-    elRecent.innerHTML = "";
-    if(!results.length){
-      elEmpty.hidden = false;
-      elRecentSk?.remove();
-      return;
+
+    // 1. Ocultar "Vacío" forzosamente antes de cargar
+    if(elEmpty) {
+        elEmpty.hidden = true;
+        elEmpty.style.display = 'none'; 
     }
-    results.forEach(d=>elRecent.appendChild(buildRecentItem(d)));
-    elRecentSk?.remove();
+
+    try {
+        const r = await fetch(url, {credentials:"same-origin"});
+        if(!r.ok) throw new Error("latest failed");
+        const data = await r.json();
+        const results = Array.isArray(data.results) ? data.results : [];
+        
+        elRecent.innerHTML = "";
+
+        // 2. Si NO hay resultados, mostrar "Vacío"
+        if(!results.length){
+            if(elEmpty) {
+                elEmpty.hidden = false;
+                elEmpty.style.display = ''; // Restaurar display original (flex/block)
+            }
+            elRecentSk?.remove();
+            return;
+        }
+
+        // 3. Si HAY resultados, asegurar que "Vacío" siga oculto
+        if(elEmpty) {
+            elEmpty.hidden = true;
+            elEmpty.style.display = 'none'; 
+        }
+
+        results.forEach(d=>elRecent.appendChild(buildRecentItem(d)));
+        elRecentSk?.remove();
+
+    } catch(e) {
+        console.error(e);
+        elRecentSk?.remove();
+        // Opcional: mostrar mensaje de error si falla la carga
+    }
   }
 
   async function boot(){

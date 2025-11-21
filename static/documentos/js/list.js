@@ -9,7 +9,6 @@ const docCache = new Map();
 
 // refs del modal
 const $overlay = () => document.getElementById("docDetailOverlay");
-// const $title    = () => document.getElementById("docDetailTitle"); // 👈 ELIMINADO
 const $content = () => document.getElementById("docDetailContent");
 const $closeBtn = () => document.getElementById("docDetailClose");
 const $viewBtn = () => document.getElementById("docViewBtn");
@@ -58,7 +57,7 @@ export function wireFilters() {
       const tr = e.target.closest("tr[data-doc-id]");
       if (tr) {
         const id = tr.getAttribute("data-doc-id");
-        openDetailModal(id); // <--- CAMBIADO
+        openDetailModal(id);
       }
     });
 
@@ -92,7 +91,13 @@ export async function loadDocuments() {
   // --- 2. ESTADO DE CARGA ---
   // Ocultar "vacío", mostrar "skeleton" y limpiar la tabla de datos viejos.
   if (tb) tb.innerHTML = "";
-  if (empty) empty.hidden = true;
+  
+  // [MEJORA] Forzar ocultado del estado vacío
+  if (empty) {
+      empty.hidden = true;
+      empty.style.display = 'none'; 
+  }
+  
   if (skeleton) skeleton.hidden = false;
 
   try {
@@ -121,10 +126,18 @@ export async function loadDocuments() {
     if (!results.length) {
       // No hay resultados: Ocultar tabla, mostrar "vacío"
       if (tb) tb.innerHTML = "";
-      if (empty) empty.hidden = false;
+      // [MEJORA] Mostrar estado vacío y limpiar estilo inline
+      if (empty) {
+          empty.hidden = false;
+          empty.style.display = ''; 
+      }
     } else {
       // Hay resultados: Ocultar "vacío", renderizar filas en la tabla
-      if (empty) empty.hidden = true;
+      // [MEJORA] Asegurar que vacío esté oculto
+      if (empty) {
+          empty.hidden = true;
+          empty.style.display = 'none'; 
+      }
       renderRows(results);
     }
 
@@ -139,7 +152,12 @@ export async function loadDocuments() {
     // --- 5. MANEJO DE ERROR ---
     console.error("Error al cargar documentos:", e);
     if (skeleton) skeleton.hidden = true; // Ocultar skeleton
-    if (empty) empty.hidden = true;     // Ocultar "vacío"
+    
+    // [MEJORA] Asegurar que vacío esté oculto si mostramos error en tabla
+    if (empty) {
+        empty.hidden = true;
+        empty.style.display = 'none';
+    }
     
     // Mostrar un error dentro del cuerpo de la tabla
     if (tb) tb.innerHTML = `
@@ -207,7 +225,7 @@ function renderRows(rows){
 }
 
 // =================================================================
-// LÓGICA DEL MODAL MEJORADA
+// LÓGICA DEL MODAL
 // =================================================================
 
 // --- 1. Definición de Etiquetas y Formato ---
@@ -281,8 +299,6 @@ function openDetailModal(docId) {
       <div class="skeleton"></div><div class="skeleton"></div>
       <div class="skeleton"></div><div class="skeleton"></div>
     </div>`;
-
-  // $title().textContent = ...; // 👈 ELIMINADO
 
   // Construir y mostrar el contenido real
   paintDetail(doc, false); // false = no es solo un refresco
