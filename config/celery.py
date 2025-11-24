@@ -19,10 +19,19 @@ app.autodiscover_tasks()
 # --- NUEVO: Configuración de Tareas Periódicas (Celery Beat) ---
 # Aquí es donde se define la ejecución recurrente de tareas.
 app.conf.beat_schedule = {
-    'check-emails-cada-5-min': {
-        'task': 'correo.check_all_emails',   # <- TU tarea real
-        'schedule': crontab(hour=15, minute=20),               # 5 minutos (corrige el comentario)
-        'options': {'queue': 'correos'},     # opcional: rutar a cola "correos"
+    # 1. TAREA DE CORREOS: Se ejecutará cada 2 minutos (ej: 14:00, 14:02, 14:04...)
+    'check-emails-frecuente': {
+        'task': 'correo.check_all_emails',
+        'schedule': crontab(minute='*/2'), 
+        'options': {'queue': 'correos'},
+    },
+
+    # 2. TAREA DE ALERTAS: Se ejecutará cada 5 minutos (ej: 14:00, 14:05, 14:10...)
+    # Esto te asegura que en máximo 5 min recibirás el correo de prueba.
+    'alerta-diaria-test': {
+        'task': 'documentos.check_daily_alerts',
+        'schedule': crontab(minute='*/5'), 
+        'options': {'queue': 'correos'},
     },
 }
 
