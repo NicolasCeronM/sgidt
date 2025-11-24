@@ -31,7 +31,7 @@ app.conf.beat_schedule = {
     'alerta-diaria-test': {
         'task': 'documentos.check_daily_alerts',
         'schedule': crontab(minute='*/5'), 
-        'options': {'queue': 'default'},
+        'options': {'queue': 'correos'},
     },
 }
 
