@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =====================================================================
 DEBUG = True
 SECRET_KEY = 'django-insecure-=g+wgz+d6t+u60f(ar0$!#o#-$m=(nwcv)!_df5oz^gyuee*e0'
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "192.168.18.119", "sgidt.onrender.com"]
 
 # Confianza CSRF (dominios desde donde se permiten POST)
 CSRF_TRUSTED_ORIGINS = [
