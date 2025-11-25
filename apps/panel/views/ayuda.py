@@ -215,7 +215,7 @@ def _suggest_from_query(qn: str, k: int = 4) -> List[str]:
     return [s for _, s in scored[:k]]
 
 # =============================================================================
-#   Cliente IA (Groq) + respuesta
+#   Cliente IA + respuesta
 # =============================================================================
 def _get_groq_client() -> Optional["Groq"]:
     api_key = getattr(settings, "GROQ_API_KEY", None)

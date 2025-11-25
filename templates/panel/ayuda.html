@@ -27,21 +27,11 @@
         <i class="fas fa-book help-icon" aria-hidden="true"></i>
         <h3>Manual de Usuario</h3>
         <p>Guía completa con ejemplos para aprovechar todas las funciones.</p>
-        <!-- FIX: nombre correcto de la url del view -->
         <a href="{% url 'panel:manual_pdf' %}" class="btn btn-secondary">
           <i class="fas fa-file-download" aria-hidden="true"></i> Descargar Manual (PDF)
         </a>
       </div>
-
-      <div class="help-card">
-        <i class="fas fa-headset help-icon" aria-hidden="true"></i>
-        <h3>Soporte Técnico</h3>
-        <p>¿Problemas técnicos? Nuestro equipo está para ayudarte.</p>
-        <a href="#contactar-soporte" id="btnContactarSoporte" class="btn btn-secondary">
-          <i class="fas fa-comments" aria-hidden="true"></i> Contactar Soporte
-        </a>
-      </div>
-    </div>
+    </div>  
 
     <!-- Contacto rápido -->
     <div class="settings-card contact-card" id="contactar-soporte">
@@ -59,63 +49,24 @@
             <label for="helpEmail">Email</label>
             <input type="email" id="helpEmail" name="email" class="form-input" placeholder="tu@correo.cl" required>
           </div>
-          <div class="form-group" style="grid-column: 1 / -1">
-            <label for="helpMessage">Mensaje</label>
-            <textarea id="helpMessage" name="message" class="form-input" rows="4"
-              placeholder="Cuéntanos tu duda o problema" required></textarea>
-          </div>
         </div>
-        <button class="btn btn-primary" type="submit">
+
+        <div class="form-group">
+          <label for="helpMessage">Mensaje</label>
+          <textarea id="helpMessage" name="message" class="form-input" rows="4"
+                    placeholder="Cuéntanos tu duda o problema" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
           <i class="fas fa-paper-plane" aria-hidden="true"></i> Enviar Mensaje
         </button>
       </form>
+
+      <p id="helpContactFeedback" class="form-feedback" aria-live="polite"></p>
     </div>
   </div>
 </section>
 
-<!-- Chatbot (modal) -->
-<div class="chatbot-modal" id="chatbotModal" aria-hidden="true">
-  <div class="chatbot-backdrop" data-close="true"></div>
-
-  <div class="chatbot-window" role="dialog" aria-modal="true" aria-labelledby="chatbotTitle">
-    <div class="chatbot-header">
-      <div class="agent">
-        <span class="avatar" aria-hidden="true">🤖</span>
-        <div class="titles">
-          <h3 id="chatbotTitle">Asistente de Soporte</h3>
-          <small class="muted">Respuestas guiadas por IA + Base de Conocimiento</small>
-        </div>
-      </div>
-      <button class="chatbot-close" type="button" aria-label="Cerrar" data-close="true">×</button>
-    </div>
-
-    <div class="chatbot-body">
-      <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
-        <div class="msg bot">¡Hola! 👋 Soy tu asistente de SGIDT. ¿En qué puedo ayudarte?</div>
-      </div>
-
-      <div id="chatSuggest" class="chat-suggest" aria-label="Sugerencias"></div>
-
-      <form class="chatbot-input" id="chatbotForm" data-endpoint="{% url 'panel:chatbot_ask' %}">
-        {% csrf_token %}
-        <input
-          type="text"
-          id="chatbotText"
-          class="form-input"
-          placeholder="Escribe tu mensaje… (p. ej. Conectar Google Drive)"
-          autocomplete="off"
-          aria-label="Mensaje para el asistente"
-          required
-        >
-        <button class="btn btn-primary" type="submit" aria-label="Enviar">
-          <i class="fas fa-paper-plane" aria-hidden="true"></i>
-        </button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Scripts -->
 <script src="{% static 'ayuda/js/ayuda_contacto.js' %}?v=3"></script>
-<script src="{% static 'ayuda/js/chatbot.js' %}?v=7"></script>
 {% endblock %}
+
