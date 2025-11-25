@@ -10,10 +10,11 @@ from apps.empresas.utils import get_empresa_activa
 from apps.empresas.models import Empresa
 from .serializers import ReporteGeneralSerializer
 
+
 class ReporteKpiAPIView(APIView):
     """
     API view para obtener los KPIs y datos de gráficos para los reportes.
-    Acepta 'month' y 'year' como query parameters.
+    Acepta 'mes' y 'anio' desde el frontend, o 'month' y 'year'.
     """
     permission_classes = [IsAuthenticated]
 
@@ -24,22 +25,80 @@ class ReporteKpiAPIView(APIView):
             return Response({'error': 'No se ha seleccionado una empresa.'}, status=400)
 
         today = datetime.today()
-        year = int(request.query_params.get('year', today.year))
-        month = int(request.query_params.get('month', today.month))
 
-        docs = Documento.objects.filter(
-            empresa=empresa_activa,
-            creado_en__year=year,
-            creado_en__month=month
+        # -----------------------------------------------
+        #   ✔ CORREGIDO: aceptar mes/anio y month/year
+        # -----------------------------------------------
+        year = int(
+            request.query_params.get('anio')
+            or request.query_params.get('year')
+            or today.year
         )
 
-        ingresos = docs.filter(tipo_documento__in=['factura_afecta', 'factura_exenta', 'boleta_afecta', 'boleta_exenta']).aggregate(
-            total=Coalesce(Sum('total'), 0, output_field=IntegerField())
-        )['total']
-        gastos = docs.filter(tipo_documento__in=['nota_credito']).aggregate(
+        month = int(
+            request.query_params.get('mes')
+            or request.query_params.get('month')
+            or today.month
+        )
+
+        # -----------------------------------------------
+        #   ✔ CORREGIDO: filtrar por FECHA DE EMISIÓN
+        # -----------------------------------------------
+        docs = Documento.objects.filter(
+            empresa=empresa_activa,
+            fecha_emision__year=year,
+            fecha_emision__month=month
+        )
+
+        # -----------------------------------------------
+        #   KPIs
+        # -----------------------------------------------
+        ingresos = docs.filter(
+            tipo_documento__in=[
+                'factura_afecta', 'factura_exenta',
+                'boleta_afecta', 'boleta_exenta'
+            ]
+        ).aggregate(
             total=Coalesce(Sum('total'), 0, output_field=IntegerField())
         )['total']
 
+        gastos = docs.filter(
+            tipo_documento='nota_credito'
+        ).aggregate(
+            total=Coalesce(Sum('total'), 0, output_field=IntegerField())
+        )['total']
+
+        # -----------------------------------------------
+        #   IVAs
+        # -----------------------------------------------
+        iva_credito = docs.filter(
+            tipo_documento='nota_credito'
+        ).aggregate(
+            total=Coalesce(Sum('iva'), 0, output_field=IntegerField())
+        )['total']
+
+        iva_debito = docs.filter(
+            tipo_documento__in=['factura_afecta', 'boleta_afecta']
+        ).aggregate(
+            total=Coalesce(Sum('iva'), 0, output_field=IntegerField())
+        )['total']
+
+        # -----------------------------------------------
+        #   Distribuciones
+        # -----------------------------------------------
+        distrib_ing = {
+            tipo[1]: docs.filter(tipo_documento=tipo[0], total__gt=0).count()
+            for tipo in TIPOS
+            if tipo[0] not in ['nota_credito', 'desconocido']
+        }
+
+        distrib_gas = {
+            'Notas de Crédito': docs.filter(tipo_documento='nota_credito').count()
+        }
+
+        # -----------------------------------------------
+        #   Ensamblar respuesta para el serializer
+        # -----------------------------------------------
         data = {
             'kpis': {
                 'total_ingresos': ingresos,
@@ -51,25 +110,12 @@ class ReporteKpiAPIView(APIView):
                 'gastos': gastos
             },
             'analisis_iva_chart': {
-                'iva_credito': docs.filter(tipo_documento__in=['nota_credito']).aggregate(
-                    total=Coalesce(Sum('iva'), 0, output_field=IntegerField())
-                )['total'],
-                'iva_debito': docs.filter(tipo_documento__in=['factura_afecta', 'boleta_afecta']).aggregate(
-                    total=Coalesce(Sum('iva'), 0, output_field=IntegerField())
-                )['total']
+                'iva_credito': iva_credito,
+                'iva_debito': iva_debito
             },
-            'distribucion_ingresos_chart': {
-                tipo[1]: docs.filter(tipo_documento=tipo[0], total__gt=0).count()
-                for tipo in TIPOS if tipo[0] not in ['nota_credito', 'desconocido']
-            },
-            'distribucion_gastos_chart': {
-                'Notas de Crédito': docs.filter(tipo_documento='nota_credito').count()
-            }
+            'distribucion_ingresos_chart': distrib_ing,
+            'distribucion_gastos_chart': distrib_gas,
         }
-        
-        # --- CORREGIDO: Usamos 'instance' para serializar el objeto que creamos ---
+
         serializer = ReporteGeneralSerializer(instance=data)
-        # No es necesario llamar a is_valid() cuando estamos serializando.
-        
         return Response(serializer.data)
-        # -------------------------------------------------------------------------
