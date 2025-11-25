@@ -18,12 +18,12 @@ urlpatterns = [
     path("empresas/", include("apps.empresas.urls")),
     path("proveedores/", include("apps.proveedores.urls")),
     path("integraciones/", include("apps.integraciones.urls")),
-    path("sii-web/", include("apps.sii.urls")),  # si quieres mantener vistas HTML de pruebas
+    path("sii-web/", include("apps.sii.urls")), 
 
     path("admin/", admin.site.urls),
 
     # APIs (todo DRF bajo /api/v1/)
-    path("api/v1/", include("config.api_v1")),  # <- un router centralizado
+    path("api/v1/", include("config.api_v1")),  
 ]
 
 if settings.DEBUG:

@@ -139,6 +139,12 @@ class AjustesCuentaView(AjustesBase):
     seccion = "cuenta"
     page_title = "Perfil y Cuenta"
 
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["job_title"] = "Gerente de Finanzas"
+        return ctx
+
     def post(self, request, *args, **kwargs):
         user = request.user
 
@@ -519,6 +525,7 @@ def save_email_sync_config(request):
         return JsonResponse({"status": "success", "message": "¡Configuración guardada correctamente!"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 
 
 

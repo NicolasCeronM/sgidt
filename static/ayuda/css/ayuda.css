@@ -354,7 +354,7 @@ i{ opacity:.95; }
     inset 0 -1px 0 rgba(0,0,0,.10);
   background:
     radial-gradient(120% 120% at 30% 18%, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 45%) ,
-    linear-gradient(135deg, #192132, #0f172a); /* un pelín más “deep” */
+    linear-gradient(135deg, #192132, #0f172a); 
 }
 .chat-fab:hover::before,
 .chat-fab:focus-visible::before{

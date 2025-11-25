@@ -23,6 +23,7 @@ class Usuario(AbstractUser):
     two_fa_secret = models.CharField(max_length=255, null=True, blank=True)
     share_data = models.BooleanField(default=True) 
     two_fa_recovery_codes = models.JSONField(default=list, null=True, blank=True) 
+    
 
     def __str__(self):
         return f"{self.username} ({self.rut})"

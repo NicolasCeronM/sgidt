@@ -21,12 +21,6 @@
               <input class="form-control" type="text" name="last_name" value="{{ user.last_name }}">
             </div>
           </div>
-          <div class="settings-row">
-            <div class="settings-label">Cargo o Rol</div>
-            <div class="settings-field">
-              <input class="form-control" type="text" name="job_title" value="{{ user.profile.job_title|default:'' }}" placeholder="Ej: Gerente de Finanzas">
-            </div>
-          </div>
         </div>
         <div class="card-footer settings-actions">
           <button class="btn btn-primary" type="submit" name="action_update_profile">Actualizar perfil</button>
