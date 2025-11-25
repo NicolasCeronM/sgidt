@@ -43,6 +43,9 @@ urlpatterns = [
     # NUEVAS RUTAS
     path("ajustes/empresa/", AjustesEmpresaView.as_view(), name="ajustes_empresa"),
     path("ajustes/integraciones/", AjustesIntegracionesView.as_view(), name="ajustes_integraciones"),
+    path("ajustes/integraciones/",AjustesIntegracionesView.as_view(),name="configuraciones_legacy",),
+
+    
 
     path("reportes/", ReportsView.as_view(), name="reportes"),
     path("reportes/exportar/<str:file_type>/", export_report_data, name="exportar_reporte"),

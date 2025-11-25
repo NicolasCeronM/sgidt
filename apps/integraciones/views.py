@@ -16,8 +16,8 @@ import time
 from dropbox.exceptions import ApiError
 
 
-# A dónde volver siempre (ajusta si usas namespace: p.ej. "panel:configuraciones")
-REDIRECT_NAME = "panel:ajustes"
+# A dónde volver siempre 
+REDIRECT_NAME = "panel:ajustes_integraciones"
 
 # ----- Google Integration -------#
 def _flow():
@@ -37,7 +37,7 @@ def _flow():
 
 
 # -------------------------
-# Conectar (inicia OAuth)
+# Conectar 
 # -------------------------
 @login_required
 def google_connect(request):
@@ -230,7 +230,7 @@ def dropbox_files(request):
     )
 
     try:
-        res = dbx.files_list_folder(path="")  # raíz; ajusta si navegas por carpetas
+        res = dbx.files_list_folder(path="") 
 
         files = []
         for e in res.entries:
@@ -243,30 +243,24 @@ def dropbox_files(request):
             link = None
             if not is_folder:
                 try:
-                    # 1) ¿Ya existe un shared link directo para esta ruta?
                     existing = dbx.sharing_list_shared_links(
                         path=e.path_lower, direct_only=True
                     ).links
                     if existing:
                         link = existing[0].url
                     else:
-                        # 2) Créalo si no existe
                         link = dbx.sharing_create_shared_link_with_settings(
                             e.path_lower
                         ).url
-
-                    # Opcional: forzar descarga directa
                     if link:
                         link = link.replace("?dl=0", "?dl=1")
-                        # o: link = link.replace("?dl=0","?raw=1") para vista en navegador
                 except ApiError:
-                    # Falta scope de sharing o política del equipo no permite crear links
                     link = None
 
             files.append({
                 "name": e.name,
                 "id": getattr(e, "id", None),
-                "tag": tag,                       # "file" | "folder"
+                "tag": tag,                       
                 "is_folder": is_folder,
                 "path": getattr(e, "path_lower", None) or getattr(e, "path_display", None),
                 "client_modified": client_mod.isoformat() if client_mod else None,
