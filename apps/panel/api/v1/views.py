@@ -119,3 +119,5 @@ class ReporteKpiAPIView(APIView):
 
         serializer = ReporteGeneralSerializer(instance=data)
         return Response(serializer.data)
+    
+    

@@ -104,32 +104,45 @@ document.addEventListener("DOMContentLoaded", function () {
    * Rellena los selectores de Mes y Año.
    */
   function populateSelectors() {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
 
-    for (let i = 0; i < 5; i++) {
-      const year = currentYear - i;
-      const option = new Option(year, year);
-      yearSelector.add(option);
-    }
-    const months = [
-      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-    ];
-    months.forEach((month, index) => {
-      const option = new Option(month, index + 1);
-      monthSelector.add(option);
-    });
-
-    monthSelector.value = currentMonth;
-    yearSelector.value = currentYear;
-
-    // Cargar datos al cambiar la selección
-    monthSelector.addEventListener("change", loadDataForPeriod);
-    yearSelector.addEventListener("change", loadDataForPeriod);
+  // --- Poblar años ---
+  for (let i = 0; i < 5; i++) {
+    const year = currentYear - i;
+    const option = new Option(year, year);
+    yearSelector.add(option);
   }
 
+  // --- Poblar meses ---
+  const months = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  ];
+  months.forEach((month, index) => {
+    const option = new Option(month, index + 1);
+    monthSelector.add(option);
+  });
+
+  // --- Recuperar última selección de localStorage ---
+  const savedMonth = localStorage.getItem("selectedMonth");
+  const savedYear = localStorage.getItem("selectedYear");
+
+  monthSelector.value = savedMonth || currentMonth;
+  yearSelector.value = savedYear || currentYear;
+
+  // --- Guardar selección al cambiar ---
+  monthSelector.addEventListener("change", () => {
+    localStorage.setItem("selectedMonth", monthSelector.value);
+    loadDataForPeriod();
+  });
+
+  yearSelector.addEventListener("change", () => {
+    localStorage.setItem("selectedYear", yearSelector.value);
+    loadDataForPeriod();
+  });
+}
   /**
    * Función maestra que se llama al cambiar la fecha.
    * Ejecuta ambas peticiones (KPIs y Tabla) en paralelo.
@@ -434,7 +447,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // --- INICIALIZACIÓN ---
+  // --- INICIALIZACIÓN --
   populateSelectors();
   inicializarGraficos();
   loadDataForPeriod(); // Carga inicial
