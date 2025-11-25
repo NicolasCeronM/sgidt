@@ -20,11 +20,11 @@ from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from weasyprint import CSS, HTML
 
-# ==== IA (Groq) ==============================================================
+# ==== IA  ==============================================================
 try:
-    from groq import Groq  # type: ignore
-except Exception:  # biblioteca no instalada en algunos entornos
-    Groq = None  # type: ignore
+    from groq import Groq  
+except Exception:  
+    Groq = None  
 
 # =============================================================================
 #   Vistas estáticas
@@ -222,6 +222,7 @@ def _get_groq_client() -> Optional["Groq"]:
     if not api_key or Groq is None:
         return None
     try:
+        client = Groq(api_key=settings.GROQ_API_KEY)
         return Groq(api_key=api_key)
     except Exception:
         return None

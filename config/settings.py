@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from celery.schedules import crontab
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -256,3 +257,6 @@ SII_BASE_URL = "https://api.sii.cl"   # placeholder para el real
 # =====================================================================
 # Chatbot AI
 # =====================================================================
+load_dotenv(BASE_DIR / ".env")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")

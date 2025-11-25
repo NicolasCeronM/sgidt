@@ -2,7 +2,7 @@
 
 **Proyecto de Título para optar al título de Ingeniero en Informática | Duoc UC**
 
-**Autor: Nicolás Cerón, Benjamin Barraza, Claudio Tobar**
+**Autor: Nicolás Cerón, Benjamin Barraza, Claudio Tobar, Ignacio Brito**
 
 ---
 
