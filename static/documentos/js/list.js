@@ -1,4 +1,4 @@
-// static/panel/js/documentos/list.js
+// static/documentos/js/list.js
 import { listUrl, csrftoken } from "./api.js";
 import { showToast } from "./ui.js";
 
@@ -20,10 +20,55 @@ const $pillSII = () => document.getElementById("docSiiPill");
 const validarSiiUrl = (id) => `/api/v1/documentos/${id}/validar-sii/`;
 const estadoSiiUrl = (id) => `/api/v1/documentos/${id}/estado-sii/`;
 
-export function wireFilters() {
-  document.getElementById("btnFilter")?.addEventListener("click", loadDocuments);
+// --- UTILIDAD DEBOUNCE (Retraso inteligente) ---
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    const context = this;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(context, args), wait);
+  };
+}
 
-  // carga inicial + retorno de historial
+export function wireFilters() {
+  // Referencias a los inputs
+  const searchInput = document.getElementById("filterSearch");
+  const dateFromInput = document.getElementById("filterDateFrom");
+  const dateToInput = document.getElementById("filterDateTo");
+  const typeInput = document.getElementById("filterType");
+  const statusInput = document.getElementById("filterStatus");
+  const resetBtn = document.getElementById("btnResetFilters");
+
+  // 1. Función de recarga con debounce (para texto)
+  // Espera 400ms después de dejar de escribir para recargar
+  const debouncedLoad = debounce(() => loadDocuments(), 400);
+
+  // 2. Eventos para Búsqueda de Texto (Tiempo real)
+  if (searchInput) {
+    searchInput.addEventListener("input", debouncedLoad);
+  }
+
+  // 3. Eventos para Selectores y Fechas (Cambio inmediato pero suave)
+  // Usamos debouncedLoad también aquí para unificar la experiencia fluida
+  [dateFromInput, dateToInput, typeInput, statusInput].forEach(el => {
+    if (el) el.addEventListener("change", debouncedLoad);
+  });
+
+  // 4. Botón Limpiar Filtros
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      if (dateFromInput) dateFromInput.value = "";
+      if (dateToInput) dateToInput.value = "";
+      if (typeInput) typeInput.value = "";
+      if (statusInput) statusInput.value = "";
+      
+      // Recargar inmediatamente
+      loadDocuments();
+    });
+  }
+
+  // 5. Carga inicial + retorno de historial
   function bootLoad() {
     try {
       loadDocuments();
@@ -32,28 +77,40 @@ export function wireFilters() {
   if (document.readyState === "loading")
     document.addEventListener("DOMContentLoaded", bootLoad, { once: true });
   else bootLoad();
+  
   window.addEventListener("pageshow", bootLoad);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") bootLoad();
   });
   document.addEventListener("docs:reload", loadDocuments);
 
-  // click en filas y en acciones
+  // 6. Clicks en la tabla (Acciones y Modal)
   document
     .getElementById("documentsTable")
     ?.addEventListener("click", async (e) => {
       const act = e.target?.closest?.(".act");
+      
+      // Si es un botón de acción
       if (act) {
         e.preventDefault();
         e.stopPropagation();
-        const id =
-          act.dataset.id || act.closest("tr")?.getAttribute("data-doc-id");
+        const id = act.dataset.id || act.closest("tr")?.getAttribute("data-doc-id");
         if (!id) return;
+        
         if (act.classList.contains("act-validate")) return onValidateSii(id);
         if (act.classList.contains("act-refresh")) return onRefreshSii(id);
-        if (act.classList.contains("act-open")) return; // enlaces normales
+        if (act.classList.contains("act-open")) {
+            // Para ver/descargar dejamos que el navegador maneje el link si tiene href,
+            // o implementamos lógica custom si fuera necesario.
+            if (act.getAttribute('href') && act.getAttribute('href') !== '#') {
+                window.open(act.getAttribute('href'), '_blank');
+            }
+            return; 
+        }
         return;
       }
+      
+      // Si es click en la fila (abrir modal)
       const tr = e.target.closest("tr[data-doc-id]");
       if (tr) {
         const id = tr.getAttribute("data-doc-id");
@@ -61,43 +118,36 @@ export function wireFilters() {
       }
     });
 
-  // auto-refresh suave: si hay filas “validando…”, actualizar cada 10s
+  // 7. Auto-refresh suave si hay documentos validando
   setInterval(() => {
-    const anyProcessing = !!document.querySelector(
-      "#documentsTable .badge--info"
-    );
+    const anyProcessing = !!document.querySelector("#documentsTable .badge--info");
     if (anyProcessing) document.dispatchEvent(new Event("docs:reload"));
   }, 10000);
 }
 
 export async function loadDocuments() {
-  // filtros
+  // Obtener valores de los filtros
+  const search = document.getElementById("filterSearch")?.value || "";
   const dateFrom = document.getElementById("filterDateFrom")?.value || "";
   const dateTo = document.getElementById("filterDateTo")?.value || "";
   const docType = document.getElementById("filterType")?.value || "";
   const docStatus = document.getElementById("filterStatus")?.value || "";
 
+  // Construir parámetros URL
   const params = new URLSearchParams();
+  if (search) params.set("search", search);
   if (dateFrom) params.set("dateFrom", dateFrom);
   if (dateTo) params.set("dateTo", dateTo);
   if (docType) params.set("docType", docType);
   if (docStatus) params.set("docStatus", docStatus);
 
-  // --- 1. OBTENER REFERENCIAS ---
+  // --- UI: Estado de Carga ---
   const tb = tbody();
   const empty = document.getElementById("tbl-empty");
   const skeleton = document.getElementById("tbl-skeleton");
 
-  // --- 2. ESTADO DE CARGA ---
-  // Ocultar "vacío", mostrar "skeleton" y limpiar la tabla de datos viejos.
   if (tb) tb.innerHTML = "";
-  
-  // [MEJORA] Forzar ocultado del estado vacío
-  if (empty) {
-      empty.hidden = true;
-      empty.style.display = 'none'; 
-  }
-  
+  if (empty) empty.hidden = true;
   if (skeleton) skeleton.hidden = false;
 
   try {
@@ -106,8 +156,7 @@ export async function loadDocuments() {
       credentials: "include",
     });
 
-    // --- 3. CARGA FINALIZADA ---
-    // Ocultar "skeleton" SIEMPRE, ya sea éxito o error.
+    // Ocultar skeleton al recibir respuesta
     if (skeleton) skeleton.hidden = true;
 
     if (!res.ok) {
@@ -116,24 +165,22 @@ export async function loadDocuments() {
 
     const { results = [] } = await res.json();
 
-    // refrescar cache
+    // Refrescar cache local
     docCache.clear();
     results.forEach((r) => {
       if (r?.id != null) docCache.set(String(r.id), r);
     });
 
-    // --- 4. MOSTRAR RESULTADOS O ESTADO VACÍO ---
+    // --- UI: Renderizar Resultados ---
     if (!results.length) {
-      // No hay resultados: Ocultar tabla, mostrar "vacío"
+      // Sin resultados
       if (tb) tb.innerHTML = "";
-      // [MEJORA] Mostrar estado vacío y limpiar estilo inline
       if (empty) {
           empty.hidden = false;
-          empty.style.display = ''; 
+          empty.style.display = ''; // Asegurar display block/grid
       }
     } else {
-      // Hay resultados: Ocultar "vacío", renderizar filas en la tabla
-      // [MEJORA] Asegurar que vacío esté oculto
+      // Con resultados
       if (empty) {
           empty.hidden = true;
           empty.style.display = 'none'; 
@@ -141,25 +188,20 @@ export async function loadDocuments() {
       renderRows(results);
     }
 
-    // Actualizar contador
+    // Actualizar texto de conteo
     const info = document.getElementById("result-info");
-    if (info)
-      info.textContent = results.length
-        ? `${results.length} resultados`
-        : "Sin resultados";
+    if (info) {
+        if (results.length === 0) info.textContent = "Sin resultados";
+        else if (results.length === 1) info.textContent = "1 resultado";
+        else info.textContent = `${results.length} resultados`;
+    }
 
   } catch (e) {
-    // --- 5. MANEJO DE ERROR ---
     console.error("Error al cargar documentos:", e);
-    if (skeleton) skeleton.hidden = true; // Ocultar skeleton
+    if (skeleton) skeleton.hidden = true;
+    if (empty) empty.hidden = true;
     
-    // [MEJORA] Asegurar que vacío esté oculto si mostramos error en tabla
-    if (empty) {
-        empty.hidden = true;
-        empty.style.display = 'none';
-    }
-    
-    // Mostrar un error dentro del cuerpo de la tabla
+    // Mostrar mensaje de error en la tabla
     if (tb) tb.innerHTML = `
       <tr>
         <td colspan="9" class="empty-text">
@@ -225,12 +267,9 @@ function renderRows(rows){
 }
 
 // =================================================================
-// LÓGICA DEL MODAL
+// LÓGICA DEL MODAL DE DETALLE
 // =================================================================
 
-// --- 1. Definición de Etiquetas y Formato ---
-
-// Formateador de moneda
 const fmtMoney = (n) =>
   n == null
     ? "—"
@@ -240,30 +279,28 @@ const fmtMoney = (n) =>
         maximumFractionDigits: 0,
       }).format(n);
 
-// Formateador de número simple
 const fmtNumber = (n) =>
   n == null ? "—" : new Intl.NumberFormat("es-CL").format(n);
 
-// Mapa de etiquetas para traducir claves de la API
+// Mapa de etiquetas
 const LABELS = {
-  // Clave de API : [Etiqueta legible, Grupo]
   tipo_documento: ["Tipo de Documento", "principal"],
   folio: ["Folio", "principal"],
   rut_proveedor: ["RUT Proveedor", "principal"],
   nombre_proveedor: ["Razón Social", "principal"],
-  rut_emisor: ["RUT Proveedor", "principal"], // Alias
-  razon_social: ["Razón Social", "principal"], // Alias
+  rut_emisor: ["RUT Proveedor", "principal"], 
+  razon_social: ["Razón Social", "principal"], 
 
   fecha_emision: ["Fecha Emisión", "fechas"],
   fecha_vencimiento: ["Fecha Vencimiento", "fechas"],
   fecha_recepcion: ["Fecha Recepción", "fechas"],
-  fecha: ["Fecha Emisión", "fechas"], // Alias
+  fecha: ["Fecha Emisión", "fechas"], 
   created_at: ["Fecha Creación", "fechas"],
 
   monto_neto: ["Neto", "montos"],
-  neto: ["Neto", "montos"], // Alias
+  neto: ["Neto", "montos"], 
   monto_exento: ["Exento", "montos"],
-  exento: ["Exento", "montos"], // Alias
+  exento: ["Exento", "montos"], 
   iva: ["IVA", "montos"],
   total: ["Total", "montos"],
 
@@ -278,12 +315,9 @@ const LABELS = {
   origen: ["Origen de Carga", "meta"],
 };
 
-// Función para saber si una clave es de dinero
 function isMoneyKey(key) {
   return ["monto_neto", "neto", "monto_exento", "exento", "iva", "total"].includes(key);
 }
-
-// --- 2. Lógica para construir y mostrar el modal ---
 
 function openDetailModal(docId) {
   const doc = docCache.get(String(docId));
@@ -292,7 +326,7 @@ function openDetailModal(docId) {
     return;
   }
 
-  // Limpiar contenido anterior y mostrar esqueleto
+  // Mostrar skeleton en modal mientras carga detalle completo (si falta)
   $content().innerHTML = `
     <div class="kv-skel">
       <div class="skeleton"></div><div class="skeleton"></div>
@@ -300,14 +334,11 @@ function openDetailModal(docId) {
       <div class="skeleton"></div><div class="skeleton"></div>
     </div>`;
 
-  // Construir y mostrar el contenido real
-  paintDetail(doc, false); // false = no es solo un refresco
+  paintDetail(doc, false);
 
-  // Abrir modal
   $overlay().style.display = "flex";
   $overlay().setAttribute("aria-hidden", "false");
 
-  // Buscar detalles completos en segundo plano
   fetchDetailIfNeeded(docId);
 }
 
@@ -322,7 +353,7 @@ $overlay()?.addEventListener("click", (e) => {
 
 async function fetchDetailIfNeeded(id) {
   const cached = docCache.get(String(id));
-  // Si ya tenemos el 'nombre_archivo', asumimos que es el detalle completo
+  // Si ya tenemos datos detallados (ej: nombre_archivo), no volvemos a pedir
   if (cached && cached.nombre_archivo) {
     return;
   }
@@ -338,26 +369,16 @@ async function fetchDetailIfNeeded(id) {
       docCache.set(String(id), merged);
       paintDetail(merged, true); // true = es un refresco
     }
-  } catch (_) {
-    /* silencioso */
-  }
+  } catch (_) { }
 }
 
-/**
- * Pinta el contenido del modal.
- * Si isRefresh=true, solo actualiza el contenido.
- * Si isRefresh=false, actualiza todo (contenido, botones, pills).
- */
 function paintDetail(doc, isRefresh = false) {
-  
-  // 1. Construir y mostrar el contenido principal
   const modalHtml = buildModalContent(doc);
   $content().innerHTML = modalHtml;
 
-  // Si es la carga inicial (no un refresco), también configurar botones y pills
   if (isRefresh) return;
 
-  // 2. Pills estado y SII
+  // Pills
   if (doc.estado) {
     const kind =
       doc.estado === "procesado" || doc.estado === "validado"
@@ -382,7 +403,7 @@ function paintDetail(doc, isRefresh = false) {
       );
   } else setPill($pillSII(), "", "");
 
-  // 3. Acciones (Botones Ver/Descargar)
+  // Botones
   if (doc.archivo) {
     $viewBtn().href = doc.archivo;
     $viewBtn().hidden = false;
@@ -394,10 +415,6 @@ function paintDetail(doc, isRefresh = false) {
   }
 }
 
-/**
- * Construye el HTML del modal basado en los datos
- * y el mapa de etiquetas (LABELS).
- */
 function buildModalContent(data) {
   const groups = {
     principal: [],
@@ -405,21 +422,18 @@ function buildModalContent(data) {
     montos: [],
     detalle: [],
     meta: [],
-    otros: [], // Para cualquier clave no definida en LABELS
+    otros: [], 
   };
 
-  // Claves conocidas que no queremos en "Otros Datos" (ya se muestran en pills/botones)
   const knownKeys = new Set([
       'estado', 'sii_estado', 'sii_track_id', 'validado_sii', 'archivo',
   ]);
 
-  // 1. Clasificar todos los datos en grupos
   for (const [key, value] of Object.entries(data)) {
-    if (value === null || value === "" || knownKeys.has(key)) continue; // Omitir nulos, vacíos o conocidos
+    if (value === null || value === "" || knownKeys.has(key)) continue;
 
     const [label, group] = LABELS[key] || [key, 'otros'];
 
-    // Si el grupo es 'otros', formateamos la clave (ej: "mi_clave_rara" -> "Mi Clave Rara")
     const finalLabel =
       group === "otros"
         ? key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
@@ -427,20 +441,15 @@ function buildModalContent(data) {
 
     groups[group].push({
       key: finalLabel,
-      value: formatValue(value, key), // Pasamos la clave original para formateo
+      value: formatValue(value, key),
     });
   }
 
-  // 2. Construir el HTML
   let html = "";
-
-  // Añadimos el título principal (que antes estaba en el header)
-  // Usamos el ID "docDetailTitle" para accesibilidad (aria-labelledby)
   const tipoDoc = data.tipo_documento || data.tipo || "Documento";
   const folio = data.folio || data.id;
   html += `<h3 id="docDetailTitle" class="detail-section-title">${tipoDoc} #${folio}</h3>`;
 
-  // Añadir secciones que tengan contenido
   const groupOrder = [
     { id: "principal", title: "Información Principal" },
     { id: "montos", title: "Montos" },
@@ -452,12 +461,10 @@ function buildModalContent(data) {
 
   for (const group of groupOrder) {
     const items = groups[group.id];
-    
-    // Evitar duplicados (ej: si 'rut_proveedor' y 'rut_emisor' están, solo mostrar uno)
+    // Deduplicar items por clave visual
     const uniqueItems = Array.from(new Map(items.map(item => [item.key, item])).values());
     
     if (uniqueItems.length > 0) {
-      // No añadir el título de "Información Principal" si ya pusimos el título del documento
       if (group.id !== "principal") {
         html += `<h4 class="detail-section-title">${group.title}</h4>`;
       }
@@ -479,7 +486,7 @@ function buildModalContent(data) {
 }
 
 /* =======================
-    Acciones SII (fetch)
+    Acciones SII (Fetch)
    ======================= */
 async function onValidateSii(id) {
   const K = `valida-${id}`;
@@ -497,12 +504,11 @@ async function onValidateSii(id) {
       duration: 6000,
     });
 
-    // recarga lista para reflejar sii_estado/sii_track_id
     document.dispatchEvent(new Event("docs:reload"));
 
-    // auto seguimiento (solo si hay track)
     const tid = data?.result?.track_id;
     if (tid) {
+      // Polling breve para ver si cambia estado rápido
       for (let i = 0; i < 3; i++) {
         await new Promise((r) => setTimeout(r, 5000));
         await onRefreshSii(id, { silent: i < 2 });
@@ -517,7 +523,6 @@ async function onValidateSii(id) {
 }
 
 async function onRefreshSii(id, { silent = false } = {}) {
-  // protección: evitar 400 si no hay track
   try {
     const dRes = await fetch(`${listUrl}${id}/`, {
       headers: { Accept: "application/json" },
@@ -529,9 +534,7 @@ async function onRefreshSii(id, { silent = false } = {}) {
         showToast("Primero valida el documento para obtener Track ID.", "warning");
       return;
     }
-  } catch (_) {
-    /* ignore */
-  }
+  } catch (_) { }
 
   const K = `estado-${id}`;
   if (!silent)
@@ -572,71 +575,59 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-/**
- * Formatea un valor para mostrar en el modal.
- * AHORA ACEPTA LA CLAVE (key) para un formato inteligente.
- */
 function formatValue(v, key = "") {
   if (v === null || v === undefined || v === "") {
     return `<span class="text-muted">—</span>`;
   }
 
-  // 1. Booleanos
   if (typeof v === "boolean") {
     return v
       ? `<span class="text-success">Sí</span>`
       : `<span class="text-danger">No</span>`;
   }
 
-  // 2. Números (¡AHORA DISTINGUE MONEDA!)
   if (typeof v === "number") {
     if (isMoneyKey(key)) {
-      return fmtMoney(v); // <--- ¡Formato de Peso Chileno!
+      return fmtMoney(v); 
     }
-    // No formatear el folio como número con separador de miles
     if (key === "folio") {
       return v.toString();
     }
-    return fmtNumber(v); // <--- Formato de número estándar
+    return fmtNumber(v); 
   }
 
-  // 3. Manejo de cadenas (detección de fechas)
   if (typeof v === "string") {
-    // Intenta detectar un formato de fecha ISO
+    // Detección simple de fecha ISO
     const dateMatch = v.match(/^(\d{4}-\d{2}-\d{2})T?([\d:.]+)?Z?$/);
     if (dateMatch) {
       const d = new Date(v);
       if (!isNaN(d.getTime())) {
         const hasTime = dateMatch[2] || v.includes("T");
-        // Usamos 'es-CL' para el formato de fecha
         const options = { year: "numeric", month: "2-digit", day: "2-digit" };
         if (hasTime) {
           options.hour = "2-digit";
           options.minute = "2-digit";
         }
-
         const formatted = d.toLocaleString("es-CL", options);
         return `<span class="text-date">${formatted}</span>`;
       }
     }
     
-    // Si es un objeto JSON en string
+    // Detectar JSON stringificado
     if (v.startsWith("{") && v.endsWith("}")) {
       try {
         const obj = JSON.parse(v);
         return `<pre class="json-display">${escapeHtml(JSON.stringify(obj, null, 2))}</pre>`;
-      } catch (e) { /* no es json, sigue */ }
+      } catch (e) { }
     }
 
-    // Cadena normal: escapar HTML
     return escapeHtml(v).replace(/\n/g, "<br>");
   }
 
-  // Fallback para otros tipos (ej: arrays u objetos)
   if (typeof v === "object") {
      try {
         return `<pre class="json-display">${escapeHtml(JSON.stringify(v, null, 2))}</pre>`;
-      } catch { /* sigue */ }
+      } catch { }
   }
   
   return escapeHtml(String(v));

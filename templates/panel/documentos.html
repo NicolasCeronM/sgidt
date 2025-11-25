@@ -15,7 +15,10 @@ SGIDT{% endblock %} {% block content %} {% block css %}
     <header class="page-header">
       <h1 id="docs-title" class="docs-title">Gestión de Documentos</h1>
 
-      <div class="page-actions" style="display:flex; gap:10px; align-items:center;">
+      <div
+        class="page-actions"
+        style="display: flex; gap: 10px; align-items: center"
+      >
         <button
           id="btnToggleUpload"
           class="btn btn-primary"
@@ -32,22 +35,55 @@ SGIDT{% endblock %} {% block content %} {% block css %}
           aria-expanded="false"
           aria-pressed="false"
           aria-label="Buscar documentos en correo"
-          style="display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:8px;background:linear-gradient(90deg,#0b74de,#0459a8);color:#ffffff;border:0;box-shadow:0 6px 18px rgba(4,41,84,0.18);transition:transform .14s ease,box-shadow .14s ease,filter .14s ease;cursor:pointer;font-weight:600;font-size:14px;"
+          style="
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #0b74de, #0459a8);
+            color: #ffffff;
+            border: 0;
+            box-shadow: 0 6px 18px rgba(4, 41, 84, 0.18);
+            transition: transform 0.14s ease, box-shadow 0.14s ease,
+              filter 0.14s ease;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+          "
           onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 28px rgba(4,41,84,0.22)'; this.style.filter='brightness(1.03)';"
           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 18px rgba(4,41,84,0.18)'; this.style.filter='none';"
         >
-          <span class="icon" aria-hidden="true" style="display:inline-flex;align-items:center;font-size:15px;">
-            <i class="fas fa-envelope-open-text" style="width:20px;text-align:center;"></i>
+          <span
+            class="icon"
+            aria-hidden="true"
+            style="display: inline-flex; align-items: center; font-size: 15px"
+          >
+            <i
+              class="fas fa-envelope-open-text"
+              style="width: 20px; text-align: center"
+            ></i>
           </span>
-          <span class="label" style="font-weight:700;font-size:15px;">Buscar en Mail</span>
-          <span class="sr-only" aria-hidden="true" style="width:0;height:0;overflow:hidden;">.</span>
-          <span class="spinner" hidden aria-hidden="true" style="margin-left:6px;">
+          <span class="label" style="font-weight: 700; font-size: 15px"
+            >Buscar en Mail</span
+          >
+          <span
+            class="sr-only"
+            aria-hidden="true"
+            style="width: 0; height: 0; overflow: hidden"
+            >.</span
+          >
+          <span
+            class="spinner"
+            hidden
+            aria-hidden="true"
+            style="margin-left: 6px"
+          >
             <i class="fas fa-spinner fa-spin"></i>
           </span>
         </button>
       </div>
     </header>
-
 
     <div id="uploadContainer" class="upload-container" hidden>
       <section class="card upload-card" aria-labelledby="up-title">
@@ -89,55 +125,76 @@ SGIDT{% endblock %} {% block content %} {% block css %}
     </div>
 
     <section class="card filters" aria-labelledby="filter-title">
-      <h2 id="filter-title" class="card-title">Filtrar Documentos</h2>
-      <div class="filters-grid">
-        <div class="f-item">
-          <label for="filterDateFrom">Desde</label>
-          <div class="f-input">
-            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
-            <input type="date" id="filterDateFrom" class="form-control" />
+      <h2 id="filter-title" class="card-title">Búsqueda y Filtros</h2>
+
+      <div class="filters-container">
+        <div class="filter-row-top">
+          <div class="f-input search-group">
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <input
+              type="text"
+              id="filterSearch"
+              class="form-control search-control"
+              placeholder="Buscar por RUT, Folio o Razón Social..."
+              autocomplete="off"
+            />
           </div>
-        </div>
-        <div class="f-item">
-          <label for="filterDateTo">Hasta</label>
-          <div class="f-input">
-            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
-            <input type="date" id="filterDateTo" class="form-control" />
-          </div>
-        </div>
-        <div class="f-item">
-          <label for="filterType">Tipo</label>
-          <div class="f-input">
-            <i class="fas fa-file-alt" aria-hidden="true"></i>
-            <select id="filterType" class="form-control">
-              <option value="">Todos</option>
-              <option value="factura_afecta">Factura Afecta</option>
-              <option value="factura_exenta">Factura Exenta</option>
-              <option value="nota_credito">Nota de Crédito</option>
-              <option value="boleta_honorarios">Boleta Honorarios</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-        </div>
-        <div class="f-item">
-          <label for="filterStatus">Estado</label>
-          <div class="f-input">
-            <i class="fas fa-tasks" aria-hidden="true"></i>
-            <select id="filterStatus" class="form-control">
-              <option value="">Todos</option>
-              <option value="procesado">Procesado</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="error">Error</option>
-            </select>
-          </div>
-        </div>
-        <div class="f-actions">
-          <button id="btnFilter" class="btn btn-primary">
-            <i class="fas fa-filter" aria-hidden="true"></i>
-            Filtrar
+          <button
+            id="btnResetFilters"
+            class="btn btn-secondary btn-icon-only"
+            title="Limpiar filtros"
+          >
+            <i class="fas fa-eraser"></i>
           </button>
         </div>
+
+        <div class="filter-row-bottom">
+          <div class="f-item">
+            <label for="filterDateFrom">Desde</label>
+            <div class="f-input">
+              <i class="fas fa-calendar-alt"></i>
+              <input type="date" id="filterDateFrom" class="form-control" />
+            </div>
+          </div>
+
+          <div class="f-item">
+            <label for="filterDateTo">Hasta</label>
+            <div class="f-input">
+              <i class="fas fa-calendar-alt"></i>
+              <input type="date" id="filterDateTo" class="form-control" />
+            </div>
+          </div>
+
+          <div class="f-item">
+            <label for="filterType">Tipo</label>
+            <div class="f-input">
+              <i class="fas fa-file-alt"></i>
+              <select id="filterType" class="form-control">
+                <option value="">Todos los tipos</option>
+                <option value="factura_afecta">Factura Afecta</option>
+                <option value="factura_exenta">Factura Exenta</option>
+                <option value="boleta_afecta">Boleta Afecta</option>
+                <option value="boleta_exenta">Boleta Exenta</option>
+                <option value="nota_credito">Nota de Crédito</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="f-item">
+            <label for="filterStatus">Estado</label>
+            <div class="f-input">
+              <i class="fas fa-tasks"></i>
+              <select id="filterStatus" class="form-control">
+                <option value="">Todos los estados</option>
+                <option value="procesado">Procesado</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="error">Error</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
+
       <p id="result-info" class="result-info" aria-live="polite"></p>
     </section>
 
@@ -230,70 +287,71 @@ SGIDT{% endblock %} {% block content %} {% block css %}
 <script>
   // Agregar esto en tu JS (ej: static/documentos/js/main.js o al final del html)
 
-document.addEventListener('DOMContentLoaded', function() {
-    const btnScan = document.getElementById('btnScanMail');
-    
+  document.addEventListener("DOMContentLoaded", function () {
+    const btnScan = document.getElementById("btnScanMail");
+
     if (btnScan) {
-        btnScan.addEventListener('click', function() {
-            // 1. UI Feedback: Deshabilitar botón y poner spinner
-            const originalContent = btnScan.innerHTML;
-            btnScan.disabled = true;
-            btnScan.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+      btnScan.addEventListener("click", function () {
+        // 1. UI Feedback: Deshabilitar botón y poner spinner
+        const originalContent = btnScan.innerHTML;
+        btnScan.disabled = true;
+        btnScan.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Buscando...';
 
-            // 2. Llamada Fetch al backend
-            fetch('/correo/trigger-scan/', {
-                method: 'POST',
-                headers: {  
-                    'X-CSRFToken': getCookie('csrftoken'), // Asegúrate de tener esta función de Django docs
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.ok) {
-                    // Éxito: Mostrar Toast y recargar tabla
-                    showToast("success", data.message); // Asumiendo que tienes una función showToast
-                    
-                    // Opcional: Recargar la tabla de documentos automáticamente después de unos segundos
-                    setTimeout(() => {
-                        // Si tienes una función para recargar la tabla, úsala aquí.
-                        // Ej: loadDocumentos(); 
-                        // O si no, reload simple:
-                        window.location.reload();
-                    }, 3000); 
-                } else {
-                    showToast("error", "Error: " + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast("error", "Ocurrió un error al conectar con el servidor.");
-            })
-            .finally(() => {
-                // 3. Restaurar botón después de unos segundos (para evitar spam de clicks)
-                setTimeout(() => {
-                    btnScan.innerHTML = originalContent;
-                    btnScan.disabled = false;
-                }, 2000);
-            });
-        });
-    }
-});
+        // 2. Llamada Fetch al backend
+        fetch("/correo/trigger-scan/", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken"), // Asegúrate de tener esta función de Django docs
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.ok) {
+              // Éxito: Mostrar Toast y recargar tabla
+              showToast("success", data.message); // Asumiendo que tienes una función showToast
 
-// Función auxiliar para obtener el CSRF token (estándar de Django)
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+              // Opcional: Recargar la tabla de documentos automáticamente después de unos segundos
+              setTimeout(() => {
+                // Si tienes una función para recargar la tabla, úsala aquí.
+                // Ej: loadDocumentos();
+                // O si no, reload simple:
+                window.location.reload();
+              }, 3000);
+            } else {
+              showToast("error", "Error: " + data.error);
             }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            showToast("error", "Ocurrió un error al conectar con el servidor.");
+          })
+          .finally(() => {
+            // 3. Restaurar botón después de unos segundos (para evitar spam de clicks)
+            setTimeout(() => {
+              btnScan.innerHTML = originalContent;
+              btnScan.disabled = false;
+            }, 2000);
+          });
+      });
+    }
+  });
+
+  // Función auxiliar para obtener el CSRF token (estándar de Django)
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
         }
+      }
     }
     return cookieValue;
-}
+  }
 </script>
 {% endblock %}

@@ -1,12 +1,25 @@
 # apps/documentos/api/v1/filters.py
 from django.utils.dateparse import parse_date
 from datetime import date, datetime
+from django.db.models import Q  # <--- IMPORTANTE: Importar Q
 
 def apply_document_filters(request, qs):
     f_desde = request.query_params.get("from") or request.query_params.get("date_from") or request.query_params.get("dateFrom")
     f_hasta = request.query_params.get("to") or request.query_params.get("date_to") or request.query_params.get("dateTo")
     tipo  = request.query_params.get("type") or request.query_params.get("docType")
     estado= request.query_params.get("status") or request.query_params.get("docStatus")
+    
+    # --- NUEVO: Parámetro de búsqueda ---
+    search = request.query_params.get("search") or request.query_params.get("q")
+
+    if search:
+        # Busca si el texto está en el RUT O en el Folio O en la Razón Social
+        qs = qs.filter(
+            Q(rut_proveedor__icontains=search) | 
+            Q(folio__icontains=search) | 
+            Q(razon_social_proveedor__icontains=search)
+        )
+    # ------------------------------------
 
     if f_desde:
         fd = parse_date(f_desde)
@@ -19,9 +32,14 @@ def apply_document_filters(request, qs):
 
     if tipo:
         t = tipo.lower()
-        if t == "factura": qs = qs.filter(tipo_documento__startswith="factura_")
-        elif t == "boleta": qs = qs.filter(tipo_documento__startswith="boleta_")
-        elif t in {"nc","nota_credito"}: qs = qs.filter(tipo_documento="nota_credito")
+        if t == "factura": 
+            qs = qs.filter(tipo_documento__startswith="factura_")
+        elif t == "boleta": 
+            qs = qs.filter(tipo_documento__startswith="boleta_")
+        elif t in {"nc","nota_credito"}: 
+            qs = qs.filter(tipo_documento="nota_credito")
+        else:
+            qs = qs.filter(tipo_documento=t)
 
     if estado:
         e = estado.lower()

@@ -779,3 +779,60 @@ body {
   font-size: 0.85em;
   color: #334155;
 }
+
+/* =======================================
+   FILTROS REORGANIZADOS
+   ======================================= */
+.filters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Fila Superior: Buscador grande */
+.filter-row-top {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-group {
+  flex: 1; /* Ocupa todo el espacio disponible */
+}
+
+.search-control {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-size: 1rem; /* Texto un poco más grande para búsqueda */
+  border-color: var(--b-300);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.btn-icon-only {
+  padding: 0;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+/* Fila Inferior: Grid de 4 columnas */
+.filter-row-bottom {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* Ajuste para móviles */
+@media (max-width: 768px) {
+  .filter-row-bottom {
+    grid-template-columns: 1fr 1fr; /* 2 columnas en tablet */
+  }
+}
+@media (max-width: 480px) {
+  .filter-row-bottom {
+    grid-template-columns: 1fr; /* 1 columna en móvil */
+  }
+}
