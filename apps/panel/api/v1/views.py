@@ -2,7 +2,7 @@ from datetime import datetime
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Sum, IntegerField
+from django.db.models import Sum, IntegerField, Q  # <--- IMPORTANTE: Agrega Q aquí
 from django.db.models.functions import Coalesce
 
 from apps.documentos.models import Documento, TIPOS
@@ -14,7 +14,6 @@ from .serializers import ReporteGeneralSerializer
 class ReporteKpiAPIView(APIView):
     """
     API view para obtener los KPIs y datos de gráficos para los reportes.
-    Acepta 'mes' y 'anio' desde el frontend, o 'month' y 'year'.
     """
     permission_classes = [IsAuthenticated]
 
@@ -26,9 +25,6 @@ class ReporteKpiAPIView(APIView):
 
         today = datetime.today()
 
-        # -----------------------------------------------
-        #   ✔ CORREGIDO: aceptar mes/anio y month/year
-        # -----------------------------------------------
         year = int(
             request.query_params.get('anio')
             or request.query_params.get('year')
@@ -41,13 +37,16 @@ class ReporteKpiAPIView(APIView):
             or today.month
         )
 
-        # -----------------------------------------------
-        #   ✔ CORREGIDO: filtrar por FECHA DE EMISIÓN
-        # -----------------------------------------------
+        # -------------------------------------------------------------------------
+        #   SOLUCIÓN: Lógica Híbrida
+        #   1. Si tiene fecha de emisión, filtramos por esa fecha (Lógica contable).
+        #   2. Si NO tiene fecha de emisión (está procesando/pendiente), 
+        #      filtramos por la fecha de subida (creado_en) para que no desaparezca.
+        # -------------------------------------------------------------------------
         docs = Documento.objects.filter(
             empresa=empresa_activa,
-            fecha_emision__year=year,
-            fecha_emision__month=month
+            creado_en__year=year,
+            creado_en__month=month
         )
 
         # -----------------------------------------------
@@ -86,6 +85,8 @@ class ReporteKpiAPIView(APIView):
         # -----------------------------------------------
         #   Distribuciones
         # -----------------------------------------------
+        # Nota: Aquí se contarán también los documentos 'procesando' si su tipo
+        # ha sido detectado o si por defecto es 'desconocido' (según tu modelo)
         distrib_ing = {
             tipo[1]: docs.filter(tipo_documento=tipo[0], total__gt=0).count()
             for tipo in TIPOS
@@ -95,10 +96,10 @@ class ReporteKpiAPIView(APIView):
         distrib_gas = {
             'Notas de Crédito': docs.filter(tipo_documento='nota_credito').count()
         }
+        
+        # Opcional: Agregar conteo de documentos pendientes/desconocidos para debug
+        pendientes = docs.filter(fecha_emision__isnull=True).count()
 
-        # -----------------------------------------------
-        #   Ensamblar respuesta para el serializer
-        # -----------------------------------------------
         data = {
             'kpis': {
                 'total_ingresos': ingresos,
@@ -119,5 +120,3 @@ class ReporteKpiAPIView(APIView):
 
         serializer = ReporteGeneralSerializer(instance=data)
         return Response(serializer.data)
-    
-    
