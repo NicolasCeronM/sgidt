@@ -1,201 +1,310 @@
-{% extends "base_public.html" %} {% load static %} {% block content %}
-<!-- Hero -->
+{% extends "base_public.html" %} 
+{% load static %} 
+{% block content %}
+
 <section class="hero" id="inicio">
   <div class="hero-container">
     <div class="hero-content">
-      <h1>Gestión Inteligente de Documentos Tributarios para tu PYME</h1>
+      <h1>Gestión Tributaria Inteligente con Conexión al SII</h1>
       <p>
-        Sube, organiza y valida facturas y boletas automáticamente con conexión
-        al SII.
+        Automatiza la lectura de tus DTEs, valida documentos en tiempo real y controla tu IVA desde la web o tu celular.
       </p>
       <div class="hero-buttons">
-        <a href="{% url 'usuarios:login' %}" class="btn-primary">Comenzar ahora</a>
-        <a href="#caracteristicas" class="btn-outline">Ver características</a>
+        <a href="{% url 'empresas:registro_pyme-legacy' %}" class="btn-primary">Probar Gratis</a>
+        <a href="#app-movil" class="btn-outline">Ver App Móvil</a>
       </div>
     </div>
     <div class="hero-image">
-      <img src="{% static 'sitio/img/fert.gif' %}" />
+      <img src="{% static 'sitio/img/fert.gif' %}" alt="Plataforma SGIDT" />
     </div>
   </div>
 </section>
 
-<!-- Features -->
 <section class="features" id="caracteristicas">
   <div class="container">
-    <h2 class="section-title">Características Principales</h2>
+    <h2 class="section-title">Tecnología real para tu PYME</h2>
     <div class="features-grid">
       <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-file-upload"></i></div>
-        <h3>Subir y organizar documentos</h3>
+        <div class="feature-icon"><i class="fas fa-robot"></i></div>
+        <h3>OCR Inteligente</h3>
         <p>
-          Carga facturas y boletas de forma masiva. El sistema organiza por
-          fecha, proveedor y tipo.
+          Nuestro motor extrae automáticamente fecha, RUT, montos e IVA de tus imágenes y PDFs. Adiós al tipeo manual.
         </p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
-        <h3>Reportes e IVA automático</h3>
+        <div class="feature-icon"><i class="fas fa-sync-alt"></i></div>
+        <h3>Sincronización SII</h3>
         <p>
-          Genera reportes tributarios con cálculos precisos de IVA y totales
-          para tu declaración.
+          Conexión directa con el SII para descargar tu Registro de Compras y Ventas (RCV) automáticamente.
         </p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
-        <h3>Validación directa con SII</h3>
+        <div class="feature-icon"><i class="fas fa-chart-pie"></i></div>
+        <h3>Reportes en Tiempo Real</h3>
         <p>
-          Conecta con el Servicio de Impuestos Internos para validar la
-          autenticidad de los documentos.
+          Visualiza tu pre-balance de IVA F29 y estado de resultados al instante desde el panel de control.
         </p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Benefits -->
-<section class="benefits" id="beneficios">
+<section class="mobile-app" id="app-movil">
   <div class="container">
-    <h2 class="section-title">Beneficios para tu PYME</h2>
-    <div class="benefits-grid">
-      <div class="benefit-item">
-        <div class="benefit-icon"><i class="fas fa-lightbulb"></i></div>
-        <div class="benefit-content">
-          <h4>Ahorra tiempo en tu contabilidad</h4>
-          <p>
-            Reduce hasta un 80% el tiempo dedicado a la gestión contable y
-            tributaria.
-          </p>
+    <div class="app-card">
+      
+      <div class="mobile-content">
+        <span class="badge-app">Exclusivo Clientes</span>
+        <h2>Lleva tu contabilidad en el bolsillo</h2>
+        <p>Gestiona tu negocio desde cualquier lugar con nuestra aplicación nativa. Optimizada para tu productividad.</p>
+        
+        <ul class="app-features">
+          <li>
+              <div class="icon-box"><i class="fas fa-camera"></i></div>
+              <div class="text-box">
+                  <strong>Carga al instante</strong>
+                  <span>Sube fotos de boletas y documentos físicos.</span>
+              </div>
+          </li>
+          <li>
+              <div class="icon-box"><i class="fas fa-user-circle"></i></div>
+              <div class="text-box">
+                  <strong>Tu Perfil</strong>
+                  <span>Visualiza el perfil de tu cuenta.</span>
+              </div>
+          </li>
+          <li>
+              <div class="icon-box"><i class="fas fa-file-invoice-dollar"></i></div>
+              <div class="text-box">
+                  <strong>Gestión Documental</strong>
+                  <span>Visualiza DTEs y reportes en tiempo real.</span>
+              </div>
+          </li>
+          <li>
+              <div class="icon-box"><i class="fas fa-adjust"></i></div>
+              <div class="text-box">
+                  <strong>Adaptable a ti</strong>
+                  <span>Modo Oscuro/Claro para trabajar cómodo.</span>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="mobile-image">
+        <img src="{% static 'sitio/img/gif.webp' %}" alt="App SGIDT Demo" class="app-gif" />
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<section class="chatbot-promo" id="chatbot-info">
+  <div class="container">
+    <div class="chatbot-grid">
+      <div class="chatbot-visual">
+        <div class="chat-bubble">
+          <p>Hola, ¿cómo corrijo un error en el F29?</p>
+        </div>
+        <div class="chat-bubble reply">
+          <p>Para corregir el F29, debes ingresar al menú "Impuestos" y seleccionar "Rectificatoria"...</p>
         </div>
       </div>
-      <div class="benefit-item">
-        <div class="benefit-icon"><i class="fas fa-lock"></i></div>
-        <div class="benefit-content">
-          <h4>Seguridad en tus datos</h4>
-          <p>
-            Almacenamiento seguro con respaldo automático y acceso controlado.
-          </p>
-        </div>
-      </div>
-      <div class="benefit-item">
-        <div class="benefit-icon"><i class="fas fa-chart-line"></i></div>
-        <div class="benefit-content">
-          <h4>Control tributario simplificado</h4>
-          <p>Mantén el control con herramientas intuitivas y automatizadas.</p>
-        </div>
-      </div>
-      <div class="benefit-item">
-        <div class="benefit-icon"><i class="fas fa-handshake"></i></div>
-        <div class="benefit-content">
-          <h4>Hecho para PYMEs e independientes</h4>
-          <p>Diseñado para pequeñas empresas y profesionales de honorarios.</p>
-        </div>
+      <div class="chatbot-info">
+        <h2>Soporte Inteligente 24/7</h2>
+        <p>¿Tienes dudas a las 3 AM? No hay problema.</p>
+        <p>Integramos un <strong>Asistente Virtual</strong> entrenado con nuestra base de conocimientos para resolver tus dudas sobre errores, uso de la plataforma y conceptos tributarios al instante.</p>
+        <a href="#faq" class="btn-text">Ver preguntas frecuentes <i class="fas fa-arrow-right"></i></a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Stats -->
-<section class="stats" id="precios">
-  <div class="container">
-    <h2 class="section-title section-title--light">
-      Resultados que hablan por sí solos
-    </h2>
-    <div class="stats-grid">
-      <div class="stat-item">
-        <h3>+1000</h3>
-        <p>documentos procesados</p>
-      </div>
-      <div class="stat-item">
-        <h3>+50</h3>
-        <p>PYMEs activas</p>
-      </div>
-      <div class="stat-item">
-        <h3>99%</h3>
-        <p>validaciones exitosas</p>
-      </div>
+<section class="faq" id="faq">
+  <div class="container faq-container">
+    <h2 class="section-title">Preguntas Frecuentes</h2>
+    <div class="faq-list">
+      
+      <details class="faq-item">
+        <summary>¿Cómo funciona la lectura de documentos?</summary>
+        <p>Utilizamos un motor OCR híbrido capaz de procesar <strong>imágenes (JPG, PNG), archivos PDF y XML</strong>. El sistema extrae automáticamente el RUT, Folio, Montos y Fechas, validando la información para evitar errores de digitación.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Puedo importar documentos desde la nube?</summary>
+        <p>Sí. SGIDT se integra directamente con <strong>Google Drive y Dropbox</strong>. Puedes configurar carpetas para que el sistema monitoree y cargue automáticamente cualquier documento tributario nuevo que guardes ahí.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Qué tan segura está mi información?</summary>
+        <p>La seguridad es prioridad. Además de la encriptación de datos, ofrecemos <strong>Autenticación de Dos Factores (2FA)</strong> para proteger tu cuenta. Incluso si alguien obtiene tu contraseña, no podrá entrar sin tu código de verificación móvil.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Qué hago si el SII rechaza un documento?</summary>
+        <p>El sistema detecta el estado del documento en tiempo real. Si hay un rechazo, recibirás una <strong>alerta automática por correo</strong> y nuestro asistente virtual te explicará el código de error del SII para solucionarlo rápidamente.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Qué reportes tributarios puedo generar?</summary>
+        <p>El sistema genera automáticamente tus <strong>Libros de Compra y Venta</strong> y el <strong>Resumen de IVA (F29)</strong> preliminar. Además, puedes exportar todos los reportes a <strong>Excel y PDF</strong> con un solo clic para facilitar tu declaración.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Cómo verifican la validez de las facturas?</summary>
+        <p>Contamos con un módulo de validación que consulta el estado del documento en el SII en tiempo real. Podrás ver el <strong>Estado Actual</strong> y acceder a un <strong>Historial de Validaciones</strong> para detectar cualquier rechazo a tiempo.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Puedo gestionar la información de mis proveedores?</summary>
+        <p>Sí. SGIDT incluye un mantenedor de proveedores donde puedes registrar y visualizar ordenadamente el <strong>RUT, Razón Social, Rubro y datos de contacto</strong> (Email/Teléfono) de quienes te facturan.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Tengo acceso a los archivos originales?</summary>
+        <p>Siempre. En tu listado de documentos puedes filtrar por fecha o emisor, y tienes botones directos para <strong>descargar el XML y PDF</strong> legal de cada documento tributario procesado.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Puedo importar documentos desde la nube?</summary>
+        <p>Absolutamente. Nos integramos con <strong>Google Drive y Dropbox</strong>. Puedes configurar carpetas para que el sistema detecte y procese automáticamente los documentos que subas ahí.</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>¿Qué tan segura está mi información?</summary>
+        <p>Tu seguridad es prioridad. Usamos encriptación avanzada y protegemos el acceso a tu cuenta con <strong>Autenticación de Dos Factores (2FA)</strong>, asegurando que solo tú puedas ver tu información financiera.</p>
+      </details>
+
     </div>
   </div>
 </section>
 
-<!-- Testimonials -->
-<section class="testimonials">
+<section class="testimonials" id="testimonial-author">
   <div class="container">
     <h2 class="section-title">Lo que dicen nuestros clientes</h2>
-
-    <div class="testimonials-grid">
-
-      <!-- Reseña 1 -->
-      <div class="testimonial-card">
-        <p class="testimonial-text">
-          "SGIDT nos ahorra horas de trabajo cada mes. Ahora el SII ya no es un
-          dolor de cabeza."
-        </p>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">MR</div>
-          <div class="testimonial-info">
-            <h5>María Rodríguez</h5>
-            <p>Gerente General, Comercial Los Andes</p>
+    
+    <div class="testimonial-slider">
+      <div class="testimonial-track">
+        
+        <div class="testimonial-card">
+          <p class="testimonial-text">"La App móvil me salvó la vida. Puedo subir los gastos de almuerzos y bencina en el momento sin perder las boletas."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MR</div>
+            <div class="testimonial-info">
+              <h5>María Rodríguez</h5>
+              <p>Comercial Los Andes</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Reseña 2 -->
-      <div class="testimonial-card">
-        <p class="testimonial-text">
-          "La automatización del SGI nos permitió reducir errores y agilizar 
-          procesos clave de nuestra operación."
-        </p>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">JP</div>
-          <div class="testimonial-info">
-            <h5>José Pérez</h5>
-            <p>Jefe de Operaciones, Transportes del Sur</p>
+        <div class="testimonial-card">
+          <p class="testimonial-text">"El soporte automático es genial. Resolví un problema de sincronización con el SII en 2 minutos sin esperar un correo."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">JP</div>
+            <div class="testimonial-info">
+              <h5>José Pérez</h5>
+              <p>Transportes del Sur</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Reseña 3 -->
-      <div class="testimonial-card">
-        <p class="testimonial-text">
-          "Implementar SGIDT fue una de las mejores decisiones del año. 
-          El soporte es excelente."
-        </p>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">AC</div>
-          <div class="testimonial-info">
-            <h5>Ana Castillo</h5>
-            <p>Encargada de Administración, Grupo Altavista</p>
+        <div class="testimonial-card">
+          <p class="testimonial-text">"Conecté mi Google Drive y me olvidé de cargar documentos. El sistema detecta los archivos nuevos y los procesa solo."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">CM</div>
+            <div class="testimonial-info">
+              <h5>Carlos Méndez</h5>
+              <p>Constructora CM</p>
+            </div>
           </div>
         </div>
-      </div>
 
+        <div class="testimonial-card">
+          <p class="testimonial-text">"Los reportes del F29 son exactos. Ahora llego a fin de mes con el cálculo de IVA listo para declarar y sin estrés."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">AC</div>
+            <div class="testimonial-info">
+              <h5>Ana Castillo</h5>
+              <p>Consultora Digital</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <p class="testimonial-text">"La App móvil me salvó la vida. Puedo subir los gastos de almuerzos y bencina en el momento sin perder las boletas."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MR</div>
+            <div class="testimonial-info">
+              <h5>María Rodríguez</h5>
+              <p>Comercial Los Andes</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <p class="testimonial-text">"El soporte automático es genial. Resolví un problema de sincronización con el SII en 2 minutos sin esperar un correo."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">JP</div>
+            <div class="testimonial-info">
+              <h5>José Pérez</h5>
+              <p>Transportes del Sur</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <p class="testimonial-text">"Conecté mi Google Drive y me olvidé de cargar documentos. El sistema detecta los archivos nuevos y los procesa solo."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">CM</div>
+            <div class="testimonial-info">
+              <h5>Carlos Méndez</h5>
+              <p>Constructora CM</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <p class="testimonial-text">"Los reportes del F29 son exactos. Ahora llego a fin de mes con el cálculo de IVA listo para declarar y sin estrés."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">AC</div>
+            <div class="testimonial-info">
+              <h5>Ana Castillo</h5>
+              <p>Consultora Digital</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta">
+<section class="final-cta">
   <div class="container">
-    <h2>Empieza a digitalizar tu gestión tributaria hoy mismo</h2>
-    <p>Únete a las PYMEs que ya confían en SGIDT</p>
-    <a href="{% url 'usuarios:login' %}" class="btn-secondary">Entrar a mi espacio</a>
+    <div class="final-cta-content">
+      <h2>¿Listo para ordenar tu contabilidad?</h2>
+      <p>Únete a las empresas que ya automatizaron su gestión con SGIDT. Sin contratos forzosos ni letras chicas.</p>
+      
+      <div class="final-cta-buttons">
+        <a href="{% url 'empresas:registro_pyme-legacy' %}" class="btn-white-solid">
+          Comenzar Gratis
+        </a>
+        <a href="https://wa.me/56979665294" target="_blank" class="btn-white-outline">
+          <i class="fab fa-whatsapp"></i> Tengo una duda
+        </a>
+      </div>
+
+      <div class="trust-badges">
+        <span><i class="fas fa-check"></i> Gratis</span>
+        <span><i class="fas fa-check"></i> No requiere tarjeta</span>
+        <span><i class="fas fa-check"></i> Soporte incluido</span>
+      </div>
+    </div>
   </div>
 </section>
 
-
-<a href="https://wa.me/56912345678?text=Hola,%20quisiera%20más%20información%20sobre%20SGIDT" class="whatsapp-btn" target="_blank" title="Contáctanos por WhatsApp">
+<a href="https://wa.me/56979665294" class="whatsapp-btn" target="_blank" title="Contáctanos">
     <i class="fab fa-whatsapp"></i>
 </a>
-
-<script type="text/javascript">
-(function(d, script) {
-    script = d.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-    script.src = 'https://w.app/widget-v1/avDwXu.js';
-    d.getElementsByTagName('head')[0].appendChild(script);
-}(document));
-</script>
-
 
 {% endblock %}
