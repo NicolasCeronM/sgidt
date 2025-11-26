@@ -11,9 +11,10 @@
   </title>
   {% block css %} {% endblock css%}
 
-  <!-- Fonts / Icons (CDN – si luego quieres local, lo cambiamos) -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <!-- CSS propio -->
   <link rel="stylesheet" href="{% static 'sitio/css/landing.css' %}" />
@@ -34,6 +35,24 @@
   {% block js %}
   <script src="{% static 'sitio/js/landing.js' %}"></script>
   {% endblock %}
-</body>
 
+  {% if messages %}
+    {% for message in messages %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          Swal.fire({
+            title: "{% if message.tags == 'success' %}¡Mensaje Enviado!{% else %}Ups...{% endif %}",
+            text: "{{ message }}",
+            icon: "{% if message.tags == 'success' %}success{% else %}error{% endif %}",
+            confirmButtonColor: '#27ae60', /* Tu color verde */
+            confirmButtonText: 'Aceptar',
+            timer: 5000, /* Se cierra solo en 5 segundos */
+            timerProgressBar: true
+          });
+        });
+      </script>
+    {% endfor %}
+  {% endif %}
+
+</body>
 </html>

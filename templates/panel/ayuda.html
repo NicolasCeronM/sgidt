@@ -3,6 +3,8 @@
 {% block title %}Ayuda · SGIDT{% endblock %}
 
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <link rel="stylesheet" href="{% static 'ayuda/css/ayuda.css' %}?v=11">
 
 <section class="section">
@@ -12,7 +14,6 @@
       Encuentra respuestas rápidas, guías prácticas y soporte directo para <strong>SGIDT</strong>.
     </p>
 
-    <!-- Tarjetas de ayuda -->
     <div class="help-grid">
       <div class="help-card">
         <i class="fas fa-question-circle help-icon" aria-hidden="true"></i>
@@ -33,7 +34,6 @@
       </div>
     </div>  
 
-    <!-- Contacto rápido -->
     <div class="settings-card contact-card" id="contactar-soporte">
       <h3 class="card-title">Contacto Rápido</h3>
 
@@ -68,5 +68,24 @@
 </section>
 
 <script src="{% static 'ayuda/js/ayuda_contacto.js' %}?v=3"></script>
-{% endblock %}
 
+{% if messages %}
+  {% for message in messages %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+          // Título dinámico según si es éxito o error
+          title: "{% if message.tags == 'success' %}¡Mensaje Enviado!{% else %}Atención{% endif %}",
+          text: "{{ message }}",
+          icon: "{% if message.tags == 'success' %}success{% else %}error{% endif %}",
+          confirmButtonColor: '#27ae60', /* Tu verde corporativo */
+          confirmButtonText: 'Aceptar',
+          timer: 5000,
+          timerProgressBar: true
+        });
+      });
+    </script>
+  {% endfor %}
+{% endif %}
+
+{% endblock %}

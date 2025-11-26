@@ -1,57 +1,120 @@
 <footer class="footer" id="contacto">
   <div class="container">
     <div class="footer-content">
-      
+      <div class="footer-section form-section">
+        <h4>Escríbenos</h4>
+        <p class="footer-desc">¿Dudas sobre el sistema? Déjanos un mensaje.</p>
+
+        <form
+          class="footer-form"
+          method="POST"
+          action="{% url 'sitio:contacto' %}"
+        >
+          {% csrf_token %}
+
+          <input
+            type="text"
+            name="hp"
+            style="display: none"
+            tabindex="-1"
+            autocomplete="off"
+          />
+
+          <div class="input-group">
+            <input
+              type="text"
+              name="name"
+              placeholder="Nombre"
+              class="footer-input"
+              required
+            />
+          </div>
+
+          <div class="input-group">
+            <input
+              type="email"
+              name="email"
+              placeholder="Correo electrónico"
+              class="footer-input"
+              required
+            />
+          </div>
+
+          <div class="input-group">
+            <textarea
+              name="message"
+              placeholder="Tu mensaje..."
+              class="footer-input footer-textarea"
+              rows="2"
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn-footer-submit">
+            Enviar Mensaje <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+
       <div class="footer-section brand-section">
         <h4>SGIDT</h4>
         <p class="footer-desc">
-          Sistema de Gestión Inteligente de Documentos Tributarios. Potenciando tu negocio con tecnología de punta.
+          Sistema de Gestión Inteligente de Documentos Tributarios. Automatiza
+          tu negocio con tecnología de punta.
         </p>
-
         <div class="social-links">
-          <!-- Youtube -->
-          <a href="https://www.youtube.com/channel/UCjoznlJDd4RAljjt20pV6tQ" target="_blank" title="Youtube">
-            <i class="fab fa-youtube"></i>
-          </a>
-
-          <!-- Instagram -->
-          <a href="https://www.instagram.com/sgidt_chile?igsh=MW10bjIzOWZxMGhmbw%3D%3D&utm_source=qr" target="_blank" title="Instagram">
-            <i class="fab fa-instagram"></i>
-          </a>
-
-          <!-- LinkedIn -->
-          <a href="https://www.linkedin.com/in/sgidt-chile-41884b39a/" target="_blank" title="LinkedIn">
-            <i class="fab fa-linkedin-in"></i>
-          </a>
+          <a
+            href="https://www.youtube.com/channel/UCjoznlJDd4RAljjt20pV6tQ"
+            target="_blank"
+            aria-label="Youtube"
+            ><i class="fab fa-youtube"></i
+          ></a>
+          <a
+            href="https://www.instagram.com/sgidt_chile"
+            target="_blank"
+            aria-label="Instagram"
+            ><i class="fab fa-instagram"></i
+          ></a>
+          <a
+            href="https://www.linkedin.com/in/sgidt-chile-41884b39a/"
+            target="_blank"
+            aria-label="LinkedIn"
+            ><i class="fab fa-linkedin-in"></i
+          ></a>
         </div>
       </div>
 
-      <div class="footer-section">
-        <h4>Navegación</h4>
-        <a href="#inicio">Inicio</a>
-        <a href="#caracteristicas">Características</a>
-        <a href="#contacto">Contacto</a>
-        <a href="#soporte">Soporte</a>
-      </div>
+      <div class="footer-section links-section">
+        <h4>Enlaces</h4>
+        <ul class="footer-nav-list">
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#caracteristicas">Características</a></li>
+          <li><a href="#planes">Planes</a></li>
+          <li><a href="#soporte">Soporte</a></li>
+        </ul>
 
-      <div class="footer-section contact-section">
-        <h4>Contáctanos</h4>
-        <a href="mailto:sgidtchile@gmail.com" class="contact-item">
-          <div class="icon-box"><i class="fas fa-envelope"></i></div>
-          <span>sgidtchile@gmail.com</span>
-        </a>
-        <a href="https://w.app/sgidt_chile" target="_blank" class="contact-item">
-          <div class="icon-box"><i class="fas fa-phone"></i></div>
-          <span>+569 7966 5294</span>
-        </a>
+        <h4 style="margin-top: 25px">Contacto</h4>
+        <div class="contact-info-list">
+          <a href="mailto:sgidtchile@gmail.com" class="contact-item">
+            <div class="icon-box-footer"><i class="fas fa-envelope"></i></div>
+            <span>sgidtchile@gmail.com</span>
+          </a>
+          <a
+            href="https://w.app/sgidt_chile"
+            target="_blank"
+            class="contact-item"
+          >
+            <div class="icon-box-footer"><i class="fab fa-whatsapp"></i></div>
+            <span>+56 9 7966 5294</span>
+          </a>
+        </div>
       </div>
-
     </div>
   </div>
 
   <div class="footer-bottom">
     <div class="container">
-      <p>&copy; 2025 SGIDT. Todos los derechos reservados.</p>
+      <p>&copy; 2025 SGIDT Chile. Todos los derechos reservados.</p>
     </div>
   </div>
 </footer>
